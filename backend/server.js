@@ -51,32 +51,19 @@ app.get('/api/auth/me', (req, res) => {
 
 // --- 2. PUBLIC PATIENT TOKEN LOOKUP ---
 app.get('/api/patient/:tokenNumber', (req, res) => {
-  const tokenNum = req.params.tokenNumber.toUpperCase();
-  const tokenItem = store.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+  const cleanNum = req.params.tokenNumber.toUpperCase().replace(/\s+/g, '');
+  const tokenItem = store.queue.find(q => {
+    if (!q.tokenNumber) return false;
+    const t = q.tokenNumber.toUpperCase().replace(/\s+/g, '');
+    return t === cleanNum || t.replace('-', '') === cleanNum.replace('-', '');
+  });
   
   if (tokenItem) {
     res.json({ success: true, patientToken: tokenItem });
   } else {
     res.json({
-      success: true,
-      patientToken: {
-        id: `q-${Date.now()}`,
-        tokenNumber: tokenNum,
-        patientName: 'OPD Patient',
-        age: 30,
-        gender: 'Male',
-        department: 'General Medicine',
-        doctor: 'Dr. Sunita Rao',
-        doctorId: 'doc-1',
-        waitTime: 15,
-        patientsAhead: 1,
-        room: 'OPD Room #104',
-        priority: 'Standard',
-        status: 'Waiting',
-        registrationTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        smsSent: true,
-        whatsappSent: true
-      }
+      success: false,
+      message: `Token ${cleanNum} not found`
     });
   }
 });

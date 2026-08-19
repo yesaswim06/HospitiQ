@@ -693,24 +693,50 @@ async function loadPatientTokenData(tokenNumber) {
     }
   }
 
-  const tokenNum = String(searchNum).toUpperCase();
+  const cleanNum = String(searchNum).trim().toUpperCase().replace(/\s+/g, '');
 
-  let pt = appState.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+  let pt = appState.queue.find(q => {
+    if (!q.tokenNumber) return false;
+    const t = q.tokenNumber.toUpperCase().replace(/\s+/g, '');
+    return t === cleanNum || t.replace('-', '') === cleanNum.replace('-', '');
+  });
 
   if (!pt) {
     const customTokens = getCustomTokensLocally();
-    pt = customTokens.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+    pt = customTokens.find(q => {
+      if (!q.tokenNumber) return false;
+      const t = q.tokenNumber.toUpperCase().replace(/\s+/g, '');
+      return t === cleanNum || t.replace('-', '') === cleanNum.replace('-', '');
+    });
   }
 
-  if (!pt) {
+  if (!pt && tokenNumber) {
     try {
-      const res = await api.getPatientToken(tokenNumber);
+      const res = await api.getPatientToken(cleanNum);
       if (res.success && res.patientToken) {
         pt = res.patientToken;
       }
     } catch (err) {
       console.error('Error loading patient token:', err);
     }
+  }
+
+  if (!pt && tokenNumber) {
+    showToast(`Token ${cleanNum} not found in active database. Generating new OPD pass preview.`, 'info');
+    const formattedToken = cleanNum.includes('-') ? cleanNum : `${cleanNum.charAt(0)}-${cleanNum.slice(1)}`;
+    pt = {
+      id: `q-${Date.now()}`,
+      tokenNumber: formattedToken,
+      patientName: 'Walk-in OPD Patient',
+      age: 28,
+      gender: 'Male',
+      department: 'General Medicine',
+      doctor: 'Dr. Sunita Rao',
+      room: 'OPD Room #104',
+      waitTime: 15,
+      patientsAhead: 1,
+      status: 'Waiting'
+    };
   }
 
   if (pt) {
