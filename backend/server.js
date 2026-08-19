@@ -34,7 +34,7 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   if (!user) {
-    user = store.users.find(u => u.role === 'Admin') || { id: 'usr-adm', name: 'Dr. Rajesh Sharma', role: 'Admin', email: 'admin@hospitiq.org' };
+    user = store.users.find(u => u.role === 'Admin') || { id: 'usr-adm', name: 'Dr. Vikramaditya Roy', role: 'Admin', email: 'admin@hospitiq.org' };
   }
 
   res.json({

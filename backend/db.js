@@ -5,7 +5,7 @@ const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://tarunkumarn999_db_
 // HOSPITIQ High Performance Rich Dataset (8 Doctors, 10 Patients, 100 Beds)
 const memoryStore = {
   users: [
-    { id: 'usr-adm-1', name: 'Dr. Rajesh Sharma', role: 'Admin', email: 'admin@hospitiq.org', department: 'Administration' },
+    { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', email: 'admin@hospitiq.org', department: 'Administration' },
     { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', email: 'doctor@hospitiq.org', department: 'Cardiology' },
     { id: 'usr-doc-2', name: 'Dr. Vikram Malhotra', role: 'Doctor', email: 'vikram@hospitiq.org', department: 'General Medicine' },
     { id: 'usr-doc-3', name: 'Dr. Ananya Reddy', role: 'Doctor', email: 'ananya@hospitiq.org', department: 'Orthopedics' },
@@ -35,7 +35,7 @@ const memoryStore = {
     { id: 'doc-5', name: 'Dr. Priya Patel', specialization: 'Neurology & Stroke Triage', department: 'Neurology', status: 'Available', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #304', phone: '+91 98555 66677', email: 'priya@hospitiq.org' },
     { id: 'doc-6', name: 'Dr. Suresh Menon', specialization: 'Clinical Dermatology', department: 'Dermatology', status: 'Available', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #110', phone: '+91 98666 77788', email: 'suresh@hospitiq.org' },
     { id: 'doc-7', name: 'Dr. Meera Nambiar', specialization: 'Otolaryngology (ENT)', department: 'ENT', status: 'Available', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #115', phone: '+91 98777 88899', email: 'meera@hospitiq.org' },
-    { id: 'doc-8', name: 'Dr. Rajesh Sharma', specialization: 'Cardiac Electrophysiology', department: 'Cardiology', status: 'Available', patientsWaiting: 0, currentPatient: 'None', room: 'OPD Room #102', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
+    { id: 'doc-8', name: 'Dr. Vikramaditya Roy', specialization: 'Cardiac Electrophysiology', department: 'Cardiology', status: 'Available', patientsWaiting: 0, currentPatient: 'None', room: 'OPD Room #102', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
   ],
   beds: Array.from({ length: 100 }, (_, i) => {
     const bedId = i + 1;

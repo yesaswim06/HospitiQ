@@ -10,7 +10,7 @@ const DEFAULT_DOCTORS = [
   { id: 'doc-5', name: 'Dr. Priya Patel', department: 'Neurology', specialization: 'Neurology & Stroke Triage', room: 'OPD Room #304', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98555 66677', email: 'priya@hospitiq.org' },
   { id: 'doc-6', name: 'Dr. Suresh Menon', department: 'Dermatology', specialization: 'Clinical Dermatology', room: 'OPD Room #110', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98666 77788', email: 'suresh@hospitiq.org' },
   { id: 'doc-7', name: 'Dr. Meera Nambiar', department: 'ENT', specialization: 'Otolaryngology (ENT)', room: 'OPD Room #115', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98777 88899', email: 'meera@hospitiq.org' },
-  { id: 'doc-8', name: 'Dr. Rajesh Sharma', department: 'Cardiology', specialization: 'Cardiac Electrophysiology', room: 'OPD Room #102', status: 'Available', patientsWaiting: 0, currentPatient: 'None', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
+  { id: 'doc-8', name: 'Dr. Vikramaditya Roy', department: 'Cardiology', specialization: 'Cardiac Electrophysiology', room: 'OPD Room #102', status: 'Available', patientsWaiting: 0, currentPatient: 'None', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
 ];
 
 const DEFAULT_QUEUE = [
@@ -185,7 +185,7 @@ async function handlePublicPageLogin(e) {
   const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
 
   const user = { 
-    name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Rajesh Sharma'), 
+    name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Vikramaditya Roy'), 
     role, 
     tokenNumber: tokenNum 
   };
@@ -377,7 +377,7 @@ function initAuth() {
     const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
 
     const user = { 
-      name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Rajesh Sharma'), 
+      name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Vikramaditya Roy'), 
       role, 
       tokenNumber: tokenNum 
     };
