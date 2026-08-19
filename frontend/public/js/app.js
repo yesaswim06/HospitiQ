@@ -10,20 +10,20 @@ const DEFAULT_DOCTORS = [
   { id: 'doc-5', name: 'Dr. Priya Patel', department: 'Neurology', specialization: 'Neurology & Stroke Triage', room: 'OPD Room #304', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98555 66677', email: 'priya@hospitiq.org' },
   { id: 'doc-6', name: 'Dr. Suresh Menon', department: 'Dermatology', specialization: 'Clinical Dermatology', room: 'OPD Room #110', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98666 77788', email: 'suresh@hospitiq.org' },
   { id: 'doc-7', name: 'Dr. Meera Nambiar', department: 'ENT', specialization: 'Otolaryngology (ENT)', room: 'OPD Room #115', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98777 88899', email: 'meera@hospitiq.org' },
-  { id: 'doc-8', name: 'Dr. Rajesh Sharma', department: 'Cardiology', specialization: 'Cardiac Electrophysiology', room: 'OPD Room #102', status: 'Available', patientsWaiting: 0, currentPatient: 'None', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
+  { id: 'doc-8', name: 'Dr. Vikramaditya Roy', department: 'Cardiology', specialization: 'Cardiac Electrophysiology', room: 'OPD Room #102', status: 'Available', patientsWaiting: 0, currentPatient: 'None', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
 ];
 
 const DEFAULT_QUEUE = [
-  { id: 'q-101', tokenNumber: 'A-024', patientName: 'Ramesh Verma', age: 44, gender: 'Male', phone: '+91 99000 11223', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 0, patientsAhead: 0, room: 'OPD Room #104', priority: 'High', status: 'In Consultation', registrationTime: '09:45 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-102', tokenNumber: 'A-031', patientName: 'Priya Sundaram', age: 32, gender: 'Female', phone: '+91 98765 43210', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 28, patientsAhead: 3, room: 'OPD Room #104', priority: 'Normal', status: 'Waiting', registrationTime: '10:15 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-103', tokenNumber: 'B-012', patientName: 'Amitabh Sen', age: 58, gender: 'Male', phone: '+91 91234 56789', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 14, patientsAhead: 1, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '10:20 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-104', tokenNumber: 'EM-501', patientName: 'Sanjay Dutt', age: 50, gender: 'Male', phone: '+91 91100 00911', department: 'Emergency', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 0, patientsAhead: 0, room: 'ER Bay #01', priority: 'Emergency', status: 'In Consultation', registrationTime: '10:30 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-105', tokenNumber: 'P-008', patientName: 'Kavita Krishnan', age: 27, gender: 'Female', phone: '+91 98765 11122', department: 'Pediatrics', doctor: 'Dr. Hrishikesh Deshmukh', doctorId: 'doc-4', waitTime: 12, patientsAhead: 1, room: 'OPD Room #105', priority: 'Normal', status: 'Waiting', registrationTime: '10:35 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-106', tokenNumber: 'O-019', patientName: 'Deepak Nair', age: 39, gender: 'Male', phone: '+91 98765 22233', department: 'Orthopedics', doctor: 'Dr. Ananya Reddy', doctorId: 'doc-3', waitTime: 20, patientsAhead: 2, room: 'OPD Room #201', priority: 'High', status: 'Waiting', registrationTime: '10:40 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-107', tokenNumber: 'N-005', patientName: 'Sunil Gavaskar', age: 62, gender: 'Male', phone: '+91 98765 33344', department: 'Neurology', doctor: 'Dr. Priya Patel', doctorId: 'doc-5', waitTime: 15, patientsAhead: 1, room: 'OPD Room #304', priority: 'Normal', status: 'Waiting', registrationTime: '10:45 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-108', tokenNumber: 'D-014', patientName: 'Ayesha Takia', age: 29, gender: 'Female', phone: '+91 98765 44455', department: 'Dermatology', doctor: 'Dr. Suresh Menon', doctorId: 'doc-6', waitTime: 10, patientsAhead: 1, room: 'OPD Room #110', priority: 'Normal', status: 'Waiting', registrationTime: '10:50 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-109', tokenNumber: 'E-007', patientName: 'Rohan Bopanna', age: 41, gender: 'Male', phone: '+91 98765 55566', department: 'ENT', doctor: 'Dr. Meera Nambiar', doctorId: 'doc-7', waitTime: 18, patientsAhead: 2, room: 'OPD Room #115', priority: 'Normal', status: 'Waiting', registrationTime: '10:55 AM', smsSent: true, whatsappSent: true },
-  { id: 'q-110', tokenNumber: 'B-018', patientName: 'Sneha Roy', age: 35, gender: 'Female', phone: '+91 98765 66677', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 32, patientsAhead: 3, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '11:00 AM', smsSent: true, whatsappSent: true }
+  { id: 'q-101', tokenNumber: 'A-024', patientName: 'Ramesh Verma', age: 44, gender: 'Male', phone: '+91 99000 11223', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 0, patientsAhead: 0, room: 'OPD Room #104', priority: 'High', status: 'In Consultation', registrationTime: '09:45 AM', smsSent: true },
+  { id: 'q-102', tokenNumber: 'A-031', patientName: 'Priya Sundaram', age: 32, gender: 'Female', phone: '+91 98765 43210', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 28, patientsAhead: 3, room: 'OPD Room #104', priority: 'Normal', status: 'Waiting', registrationTime: '10:15 AM', smsSent: true },
+  { id: 'q-103', tokenNumber: 'B-012', patientName: 'Amitabh Sen', age: 58, gender: 'Male', phone: '+91 91234 56789', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 14, patientsAhead: 1, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '10:20 AM', smsSent: true },
+  { id: 'q-104', tokenNumber: 'EM-501', patientName: 'Sanjay Dutt', age: 50, gender: 'Male', phone: '+91 91100 00911', department: 'Emergency', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 0, patientsAhead: 0, room: 'ER Bay #01', priority: 'Emergency', status: 'In Consultation', registrationTime: '10:30 AM', smsSent: true },
+  { id: 'q-105', tokenNumber: 'P-008', patientName: 'Kavita Krishnan', age: 27, gender: 'Female', phone: '+91 98765 11122', department: 'Pediatrics', doctor: 'Dr. Hrishikesh Deshmukh', doctorId: 'doc-4', waitTime: 12, patientsAhead: 1, room: 'OPD Room #105', priority: 'Normal', status: 'Waiting', registrationTime: '10:35 AM', smsSent: true },
+  { id: 'q-106', tokenNumber: 'O-019', patientName: 'Deepak Nair', age: 39, gender: 'Male', phone: '+91 98765 22233', department: 'Orthopedics', doctor: 'Dr. Ananya Reddy', doctorId: 'doc-3', waitTime: 20, patientsAhead: 2, room: 'OPD Room #201', priority: 'High', status: 'Waiting', registrationTime: '10:40 AM', smsSent: true },
+  { id: 'q-107', tokenNumber: 'N-005', patientName: 'Sunil Gavaskar', age: 62, gender: 'Male', phone: '+91 98765 33344', department: 'Neurology', doctor: 'Dr. Priya Patel', doctorId: 'doc-5', waitTime: 15, patientsAhead: 1, room: 'OPD Room #304', priority: 'Normal', status: 'Waiting', registrationTime: '10:45 AM', smsSent: true },
+  { id: 'q-108', tokenNumber: 'D-014', patientName: 'Ayesha Takia', age: 29, gender: 'Female', phone: '+91 98765 44455', department: 'Dermatology', doctor: 'Dr. Suresh Menon', doctorId: 'doc-6', waitTime: 10, patientsAhead: 1, room: 'OPD Room #110', priority: 'Normal', status: 'Waiting', registrationTime: '10:50 AM', smsSent: true },
+  { id: 'q-109', tokenNumber: 'E-007', patientName: 'Rohan Bopanna', age: 41, gender: 'Male', phone: '+91 98765 55566', department: 'ENT', doctor: 'Dr. Meera Nambiar', doctorId: 'doc-7', waitTime: 18, patientsAhead: 2, room: 'OPD Room #115', priority: 'Normal', status: 'Waiting', registrationTime: '10:55 AM', smsSent: true },
+  { id: 'q-110', tokenNumber: 'B-018', patientName: 'Sneha Roy', age: 35, gender: 'Female', phone: '+91 98765 66677', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 32, patientsAhead: 3, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '11:00 AM', smsSent: true }
 ];
 
 const appState = {
@@ -179,18 +179,49 @@ async function handlePublicRegisterSubmit(e) {
 async function handlePublicPageLogin(e) {
   e.preventDefault();
   const emailEl = document.getElementById('pageLoginEmail');
-  const email = emailEl ? emailEl.value : 'admin@hospitiq.org';
-  const tokenNum = document.getElementById('pageLoginTokenNumber')?.value || 'A-031';
+  const inputVal = emailEl ? emailEl.value.trim() : 'admin@hospitiq.org';
+  const tokenNumVal = document.getElementById('pageLoginTokenNumber')?.value?.trim();
   const activeChip = document.querySelector('#public-view-login .demo-chip.active');
   const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
 
-  const user = { 
-    name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Rajesh Sharma'), 
-    role, 
-    tokenNumber: tokenNum 
-  };
+  let user = null;
+  if (role === 'Patient') {
+    const query = inputVal || tokenNumVal || 'A-031';
+    const cleanQuery = query.toLowerCase();
+    const cleanUpper = query.toUpperCase();
+    const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
+
+    let foundPt = appState.queue.find(q => {
+      if (!q) return false;
+      const tUpper = (q.tokenNumber || '').toUpperCase();
+      return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
+    });
+
+    if (!foundPt) {
+      const customTokens = getCustomTokensLocally();
+      foundPt = customTokens.find(q => {
+        if (!q) return false;
+        const tUpper = (q.tokenNumber || '').toUpperCase();
+        return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
+      });
+    }
+
+    if (foundPt) {
+      user = { id: foundPt.id || `usr-${Date.now()}`, name: foundPt.patientName, role: 'Patient', tokenNumber: foundPt.tokenNumber };
+    } else {
+      const isTokenPattern = query.match(/^[A-Za-z]\-?\d+$/);
+      const assignedToken = isTokenPattern ? cleanUpper : `P-${Math.floor(100 + Math.random() * 900)}`;
+      const assignedName = isTokenPattern ? 'OPD Patient' : query;
+      user = { id: `usr-pt-${Date.now()}`, name: assignedName, role: 'Patient', tokenNumber: assignedToken };
+    }
+  } else if (role === 'Doctor') {
+    user = { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', department: 'Cardiology', email: inputVal || 'doctor@hospitiq.org' };
+  } else {
+    user = { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', department: 'Administration', email: inputVal || 'admin@hospitiq.org' };
+  }
+
   const targetView = role === 'Patient' ? 'patient-portal' : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-  launchPortal(user, targetView);
+  await launchPortal(user, targetView);
 }
 
 // --- URL Parameter Direct Access ---
@@ -356,14 +387,28 @@ function initAuth() {
       const role = chip.getAttribute('data-role');
       const emailEl = parentForm.querySelector('#loginEmail, #pageLoginEmail') || document.getElementById('loginEmail') || document.getElementById('pageLoginEmail');
       const tokenGroup = parentForm.querySelector('#loginTokenGroup, #pageLoginTokenGroup') || document.getElementById('loginTokenGroup') || document.getElementById('pageLoginTokenGroup');
+      const labelEl = parentForm.querySelector('label');
 
       if (emailEl) {
-        if (role === 'Patient') emailEl.value = 'patient@hospitiq.org';
-        else if (role === 'Doctor') emailEl.value = 'doctor@hospitiq.org';
-        else emailEl.value = 'admin@hospitiq.org';
+        if (role === 'Patient') {
+          if (labelEl) labelEl.textContent = 'Patient Name or Token Number';
+          emailEl.type = 'text';
+          emailEl.placeholder = 'e.g. tarun, Ramesh Verma, or A-031';
+          emailEl.value = 'tarun';
+        } else if (role === 'Doctor') {
+          if (labelEl) labelEl.textContent = 'Doctor Account Email';
+          emailEl.type = 'email';
+          emailEl.placeholder = 'doctor@hospitiq.org';
+          emailEl.value = 'doctor@hospitiq.org';
+        } else {
+          if (labelEl) labelEl.textContent = 'Admin Account Email';
+          emailEl.type = 'email';
+          emailEl.placeholder = 'admin@hospitiq.org';
+          emailEl.value = 'admin@hospitiq.org';
+        }
       }
       if (tokenGroup) {
-        tokenGroup.style.display = role === 'Patient' ? 'block' : 'none';
+        tokenGroup.style.display = 'none';
       }
     });
   });
@@ -371,18 +416,49 @@ function initAuth() {
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const emailEl = document.getElementById('loginEmail');
-    const email = emailEl ? emailEl.value : 'admin@hospitiq.org';
-    const tokenNum = document.getElementById('loginTokenNumber')?.value || 'A-031';
+    const inputVal = emailEl ? emailEl.value.trim() : 'admin@hospitiq.org';
+    const tokenNumVal = document.getElementById('loginTokenNumber')?.value?.trim();
     const activeChip = loginForm.querySelector('.demo-chip.active');
     const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
 
-    const user = { 
-      name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Rajesh Sharma'), 
-      role, 
-      tokenNumber: tokenNum 
-    };
+    let user = null;
+    if (role === 'Patient') {
+      const query = inputVal || tokenNumVal || 'A-031';
+      const cleanQuery = query.toLowerCase();
+      const cleanUpper = query.toUpperCase();
+      const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
+
+      let foundPt = appState.queue.find(q => {
+        if (!q) return false;
+        const tUpper = (q.tokenNumber || '').toUpperCase();
+        return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
+      });
+
+      if (!foundPt) {
+        const customTokens = getCustomTokensLocally();
+        foundPt = customTokens.find(q => {
+          if (!q) return false;
+          const tUpper = (q.tokenNumber || '').toUpperCase();
+          return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
+        });
+      }
+
+      if (foundPt) {
+        user = { id: foundPt.id || `usr-${Date.now()}`, name: foundPt.patientName, role: 'Patient', tokenNumber: foundPt.tokenNumber };
+      } else {
+        const isTokenPattern = query.match(/^[A-Za-z]\-?\d+$/);
+        const assignedToken = isTokenPattern ? cleanUpper : `P-${Math.floor(100 + Math.random() * 900)}`;
+        const assignedName = isTokenPattern ? 'OPD Patient' : query;
+        user = { id: `usr-pt-${Date.now()}`, name: assignedName, role: 'Patient', tokenNumber: assignedToken };
+      }
+    } else if (role === 'Doctor') {
+      user = { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', department: 'Cardiology', email: inputVal || 'doctor@hospitiq.org' };
+    } else {
+      user = { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', department: 'Administration', email: inputVal || 'admin@hospitiq.org' };
+    }
+
     const targetView = role === 'Patient' ? 'patient-portal' : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-    launchPortal(user, targetView);
+    await launchPortal(user, targetView);
   });
 
   document.getElementById('logoutBtn')?.addEventListener('click', () => {
@@ -657,19 +733,29 @@ async function loadPatientTokenData(tokenNumber) {
     }
   }
 
-  const tokenNum = String(searchNum).toUpperCase();
+  const cleanStr = String(searchNum).trim();
+  const cleanUpper = cleanStr.toUpperCase();
+  const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
 
-  let pt = appState.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+  let pt = appState.queue.find(q => {
+    if (!q) return false;
+    const tUpper = (q.tokenNumber || '').toUpperCase();
+    return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanStr.toLowerCase();
+  });
 
   if (!pt) {
     const customTokens = getCustomTokensLocally();
-    pt = customTokens.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+    pt = customTokens.find(q => {
+      if (!q) return false;
+      const tUpper = (q.tokenNumber || '').toUpperCase();
+      return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanStr.toLowerCase();
+    });
   }
 
   if (!pt) {
     try {
-      const res = await api.getPatientToken(tokenNumber);
-      if (res.success && res.patientToken) {
+      const res = await api.getPatientToken(cleanUpper);
+      if (res && res.success && res.patientToken) {
         pt = res.patientToken;
       }
     } catch (err) {
@@ -677,15 +763,41 @@ async function loadPatientTokenData(tokenNumber) {
     }
   }
 
+  if (!pt) {
+    const formattedToken = cleanUpper.includes('-') ? cleanUpper : (cleanUpper.length > 1 ? `${cleanUpper.charAt(0)}-${cleanUpper.slice(1)}` : cleanUpper);
+    pt = {
+      id: `q-${Date.now()}`,
+      tokenNumber: formattedToken,
+      patientName: cleanStr.length > 3 && !cleanStr.match(/^[A-Za-z]\-?\d+$/) ? cleanStr : 'OPD Walk-in Patient',
+      age: 28,
+      gender: 'Male',
+      department: 'General Medicine',
+      doctor: 'Dr. Sunita Rao',
+      room: 'OPD Room #104',
+      waitTime: 15,
+      patientsAhead: 1,
+      status: 'Waiting'
+    };
+  }
+
   if (pt) {
-    document.getElementById('ptTokenNum').textContent = pt.tokenNumber;
-    document.getElementById('ptName').textContent = `Patient: ${pt.patientName} (Age: ${pt.age}, ${pt.gender})`;
-    document.getElementById('ptDept').textContent = pt.department || 'General Medicine';
-    document.getElementById('ptDoctor').textContent = pt.doctor || 'Dr. Sunita Rao';
-    document.getElementById('ptRoom').textContent = pt.room || 'OPD Room #104';
-    document.getElementById('ptWaitTime').innerHTML = `${pt.waitTime !== undefined ? pt.waitTime : 15} <span class="unit">Mins</span>`;
-    document.getElementById('ptAheadCount').innerHTML = `${String(pt.patientsAhead || 0).padStart(2, '0')} <span class="unit">Patients</span>`;
-    document.getElementById('ptStatus').textContent = pt.status || 'Waiting';
+    const tokenEl = document.getElementById('ptTokenNum');
+    const nameEl = document.getElementById('ptName');
+    const deptEl = document.getElementById('ptDept');
+    const docEl = document.getElementById('ptDoctor');
+    const roomEl = document.getElementById('ptRoom');
+    const waitEl = document.getElementById('ptWaitTime');
+    const aheadEl = document.getElementById('ptAheadCount');
+    const statusEl = document.getElementById('ptStatus');
+
+    if (tokenEl) tokenEl.textContent = pt.tokenNumber;
+    if (nameEl) nameEl.textContent = `Patient: ${pt.patientName} (Age: ${pt.age || 30}, ${pt.gender || 'Male'})`;
+    if (deptEl) deptEl.textContent = pt.department || 'General Medicine';
+    if (docEl) docEl.textContent = pt.doctor || 'Dr. Sunita Rao';
+    if (roomEl) roomEl.textContent = pt.room || 'OPD Room #104';
+    if (waitEl) waitEl.innerHTML = `${pt.waitTime !== undefined ? pt.waitTime : 15} <span class="unit">Mins</span>`;
+    if (aheadEl) aheadEl.innerHTML = `${String(pt.patientsAhead || 0).padStart(2, '0')} <span class="unit">Patients</span>`;
+    if (statusEl) statusEl.textContent = pt.status || 'Waiting';
 
     const directUrl = `${window.location.origin}/?token=${pt.tokenNumber}`;
     const directUrlEl = document.getElementById('ptDirectUrl');
@@ -822,14 +934,44 @@ function renderDashboardStats() {
 }
 
 function renderNowServing() {
-  const inConsult = appState.queue.find(q => q.status === 'In Consultation') || appState.queue[0];
-  if (!inConsult) return;
+  const inConsult = appState.queue.find(q => q.status === 'In Consultation');
 
   const dashCallingToken = document.getElementById('dashCallingToken');
   if (dashCallingToken) {
-    dashCallingToken.textContent = inConsult.tokenNumber;
-    document.getElementById('dashCallingPatient').textContent = `${inConsult.patientName} (Age: ${inConsult.age}, ${inConsult.gender})`;
-    document.getElementById('dashCallingDoctor').textContent = `${inConsult.department} OPD Room #104 — ${inConsult.doctor}`;
+    if (inConsult) {
+      dashCallingToken.textContent = inConsult.tokenNumber;
+      document.getElementById('dashCallingPatient').textContent = `${inConsult.patientName} (Age: ${inConsult.age || 30}, ${inConsult.gender || 'Male'})`;
+      document.getElementById('dashCallingDoctor').textContent = `${inConsult.department} ${inConsult.room || 'OPD Room #104'} — ${inConsult.doctor}`;
+    } else {
+      dashCallingToken.textContent = 'NONE';
+      document.getElementById('dashCallingPatient').textContent = 'No Patient Currently in Consultation';
+      document.getElementById('dashCallingDoctor').textContent = 'Consultation Desk Ready';
+    }
+  }
+
+  const docCurrentToken = document.getElementById('docCurrentToken');
+  const docCurrentPatient = document.getElementById('docCurrentPatient');
+  if (docCurrentToken && docCurrentPatient) {
+    if (inConsult) {
+      docCurrentToken.textContent = inConsult.tokenNumber;
+      docCurrentPatient.textContent = `${inConsult.patientName} (Age: ${inConsult.age || 30}, ${inConsult.gender || 'Male'})`;
+    } else {
+      docCurrentToken.textContent = 'NONE';
+      docCurrentPatient.textContent = 'No Patient Currently in Consultation';
+    }
+  }
+}
+
+async function completeConsultationCurrentDoctor() {
+  const activePt = appState.queue.find(q => q.status === 'In Consultation');
+  if (activePt) {
+    const res = await api.updateQueueStatus(activePt.id, 'Completed');
+    if (res.success) {
+      showToast(`Consultation completed for ${activePt.patientName} (${activePt.tokenNumber}). Sheet closed.`, 'success');
+      await loadAppData();
+    }
+  } else {
+    showToast('No patient currently in consultation.', 'info');
   }
 }
 
@@ -1714,8 +1856,19 @@ function initSearchAndFilters() {
 
   queueSearch?.addEventListener('input', renderQueueTable);
   globalSearch?.addEventListener('input', (e) => {
-    if (appState.activeView !== 'opd-queue') switchView('opd-queue');
+    if (appState.activeView !== 'opd-queue' && appState.activeView !== 'patient-portal') {
+      switchView('opd-queue');
+    }
     renderQueueTable();
+  });
+  globalSearch?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const val = globalSearch.value.trim();
+      if (val) {
+        switchView('patient-portal');
+        loadPatientTokenData(val);
+      }
+    }
   });
   queueDept?.addEventListener('change', renderQueueTable);
   queueStatus?.addEventListener('change', renderQueueTable);

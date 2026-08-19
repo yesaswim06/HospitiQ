@@ -690,7 +690,7 @@
 
             <div class="alert-confirm-strip margin-t-md">
               <i data-lucide="message-square"></i>
-              <span>Live updates sent to phone: <strong>+91 99000 11223</strong> via SMS & WhatsApp</span>
+              <span>Live updates sent to phone: <strong>+91 99000 11223</strong> via SMS Notifications</span>
               <span class="badge-pill green-pill margin-l-auto">Alerts Active</span>
             </div>
 
@@ -744,7 +744,7 @@
             </div>
             <div class="serving-action-bar">
               <button class="action-btn glow-btn width-full" onclick="callPatientToken('doc-1')"><i data-lucide="skip-forward"></i> Call Next Patient</button>
-              <button class="glass-btn success-btn width-full" onclick="showToast('Consultation completed and recorded!', 'success')"><i data-lucide="check"></i> Complete Consultation</button>
+              <button class="glass-btn success-btn width-full" onclick="completeConsultationCurrentDoctor()"><i data-lucide="check-circle"></i> ✓ Mark Complete & Close Sheet</button>
             </div>
           </div>
 
@@ -1285,7 +1285,7 @@
             </div>
 
             <div class="glass-card settings-card">
-              <h3><i data-lucide="message-square"></i> SMS & WhatsApp Notification Gateway</h3>
+              <h3><i data-lucide="message-square"></i> SMS Notification Gateway</h3>
               <div class="form-group margin-t-sm">
                 <label>Twilio / SMS Gateway Key</label>
                 <input type="password" class="glass-input width-full" value="AC_hospitiq_live_key_9981273" />
@@ -1382,7 +1382,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Phone Number for SMS & WhatsApp Alerts</label>
+          <label>Phone Number for SMS Notifications</label>
           <input type="text" id="inputPatientPhone" placeholder="+91 98765 43210" class="glass-input" />
         </div>
         <div class="form-group">
