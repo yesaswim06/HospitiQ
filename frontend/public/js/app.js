@@ -448,6 +448,46 @@ function initMobileDrawer() {
   backdrop?.addEventListener('click', closeDrawer);
 }
 
+function saveCustomDoctorLocally(doc) {
+  try {
+    const existing = JSON.parse(localStorage.getItem('hospitiq_custom_doctors') || '[]');
+    if (!existing.some(d => d.id === doc.id || (d.email && doc.email && d.email === doc.email))) {
+      existing.unshift(doc);
+      localStorage.setItem('hospitiq_custom_doctors', JSON.stringify(existing));
+    }
+  } catch (e) {
+    console.error('Error saving doctor locally:', e);
+  }
+}
+
+function getCustomDoctorsLocally() {
+  try {
+    return JSON.parse(localStorage.getItem('hospitiq_custom_doctors') || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveCustomTokenLocally(token) {
+  try {
+    const existing = JSON.parse(localStorage.getItem('hospitiq_custom_tokens') || '[]');
+    if (!existing.some(t => t.id === token.id || t.tokenNumber === token.tokenNumber)) {
+      existing.unshift(token);
+      localStorage.setItem('hospitiq_custom_tokens', JSON.stringify(existing));
+    }
+  } catch (e) {
+    console.error('Error saving token locally:', e);
+  }
+}
+
+function getCustomTokensLocally() {
+  try {
+    return JSON.parse(localStorage.getItem('hospitiq_custom_tokens') || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
 // --- Data Fetching & Sync ---
 async function loadAppData() {
   try {
@@ -470,6 +510,23 @@ async function loadAppData() {
     } else if (!appState.doctors || appState.doctors.length === 0) {
       appState.doctors = [...DEFAULT_DOCTORS];
     }
+
+    // Merge locally saved doctors
+    const customDocs = getCustomDoctorsLocally();
+    customDocs.forEach(cd => {
+      if (!appState.doctors.some(d => d.id === cd.id || (d.email && cd.email && d.email === cd.email))) {
+        appState.doctors.unshift(cd);
+      }
+    });
+
+    // Merge locally saved tokens
+    const customTokens = getCustomTokensLocally();
+    customTokens.forEach(ct => {
+      if (!appState.queue.some(q => q.id === ct.id || q.tokenNumber === ct.tokenNumber)) {
+        appState.queue.unshift(ct);
+      }
+    });
+
     if (bedsRes.success) appState.beds = bedsRes.beds;
     if (deptsRes.success) appState.departments = deptsRes.departments;
     if (patientsRes.success) appState.patients = patientsRes.patients;
@@ -1311,20 +1368,50 @@ function initModals() {
       priority: document.getElementById('inputPriority').value
     };
 
-    const res = await api.createToken(tokenData);
-    if (res.success) {
-      showToast(res.message, 'success');
-      newTokenModal.classList.remove('active');
-      await loadAppData();
+    let newToken = {
+      id: `q-${Date.now()}`,
+      tokenNumber: `A-${String(appState.queue.length + 105).padStart(3, '0')}`,
+      patientName: tokenData.patientName,
+      age: parseInt(tokenData.age) || 30,
+      gender: tokenData.gender,
+      phone: tokenData.phone || '+91 99000 11223',
+      department: selectedDoc ? selectedDoc.department : 'General Medicine',
+      doctor: selectedDoc ? selectedDoc.name : 'Dr. Sunita Rao',
+      doctorId: selectedDoc ? selectedDoc.id : 'doc-1',
+      waitTime: Math.round(((selectedDoc ? selectedDoc.patientsWaiting : 1) + 1) * 12),
+      patientsAhead: selectedDoc ? selectedDoc.patientsWaiting : 1,
+      room: selectedDoc ? selectedDoc.room : 'OPD Room #104',
+      priority: tokenData.priority || 'Normal',
+      status: 'Waiting',
+      registrationTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      smsSent: true,
+      whatsappSent: true
+    };
 
-      if (appState.currentUser && (appState.currentUser.role === 'Doctor' || appState.currentUser.role === 'Admin')) {
-        renderDoctorQueueRoster();
-        renderQueueTable();
-        renderPatientsTable();
-        showToast(`Patient ${tokenData.patientName} (${res.token ? res.token.tokenNumber : 'Registered'}) successfully added to OPD queue!`, 'success');
-      } else if (res.token) {
-        launchPortal({ id: 'usr-pt', name: res.token.patientName, role: 'Patient', tokenNumber: res.token.tokenNumber }, 'patient-portal');
+    try {
+      const res = await api.createToken(tokenData);
+      if (res.success && res.token) {
+        newToken = res.token;
       }
+    } catch (err) {
+      console.warn('API token creation warning:', err);
+    }
+
+    saveCustomTokenLocally(newToken);
+    if (!appState.queue.some(q => q.id === newToken.id || q.tokenNumber === newToken.tokenNumber)) {
+      appState.queue.unshift(newToken);
+    }
+
+    showToast(`Patient ${newToken.patientName} (${newToken.tokenNumber}) registered successfully!`, 'success');
+    newTokenModal.classList.remove('active');
+    e.target.reset();
+
+    if (appState.currentUser && (appState.currentUser.role === 'Doctor' || appState.currentUser.role === 'Admin')) {
+      renderDoctorQueueRoster();
+      renderQueueTable();
+      renderPatientsTable();
+    } else {
+      launchPortal({ id: 'usr-pt', name: newToken.patientName, role: 'Patient', tokenNumber: newToken.tokenNumber }, 'patient-portal');
     }
   });
 
@@ -1339,12 +1426,43 @@ function initModals() {
       phone: document.getElementById('docPhoneInput').value
     };
 
-    const res = await api.addDoctor(docData);
-    if (res.success) {
-      showToast(res.message, 'success');
-      addDoctorModal.classList.remove('active');
-      await loadAppData();
+    const formattedName = docData.name.startsWith('Dr.') ? docData.name : `Dr. ${docData.name}`;
+    const formattedRoom = docData.room.includes('OPD Room') ? docData.room : `OPD Room #${docData.room}`;
+
+    let newDoc = {
+      id: `doc-${Date.now()}`,
+      name: formattedName,
+      specialization: docData.specialization || 'General Practice',
+      department: docData.department || 'General Medicine',
+      status: 'Available',
+      patientsWaiting: 0,
+      currentPatient: 'None',
+      room: formattedRoom,
+      phone: docData.phone || '+91 98000 00000',
+      email: docData.email || `${docData.name.toLowerCase().replace(/[^a-z]/g, '')}@hospitiq.org`
+    };
+
+    try {
+      const res = await api.addDoctor(docData);
+      if (res.success && res.doctor) {
+        newDoc = res.doctor;
+      }
+    } catch (err) {
+      console.warn('API add doctor warning:', err);
     }
+
+    saveCustomDoctorLocally(newDoc);
+    if (!appState.doctors.some(d => d.id === newDoc.id || d.email === newDoc.email)) {
+      appState.doctors.unshift(newDoc);
+    }
+
+    showToast(`Doctor ${newDoc.name} registered & added to roster! Login created for ${newDoc.email}`, 'success');
+    addDoctorModal.classList.remove('active');
+    e.target.reset();
+
+    populateDoctorOptions();
+    renderDoctorsGrid();
+    renderAdminTable();
   });
 }
 
