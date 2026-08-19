@@ -180,17 +180,35 @@ async function handlePublicPageLogin(e) {
   e.preventDefault();
   const emailEl = document.getElementById('pageLoginEmail');
   const email = emailEl ? emailEl.value : 'admin@hospitiq.org';
-  const tokenNum = document.getElementById('pageLoginTokenNumber')?.value || 'A-031';
+  const tokenNumInput = document.getElementById('pageLoginTokenNumber')?.value;
   const activeChip = document.querySelector('#public-view-login .demo-chip.active');
   const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
 
+  let patientName = 'Ramesh Verma';
+  let tokenNum = tokenNumInput || 'A-031';
+
+  if (role === 'Patient') {
+    const customTokens = getCustomTokensLocally();
+    if (customTokens && customTokens.length > 0) {
+      const latestToken = customTokens[0];
+      patientName = latestToken.patientName;
+      tokenNum = latestToken.tokenNumber;
+    } else if (appState.queue && appState.queue.length > 0) {
+      const latestToken = appState.queue[0];
+      patientName = latestToken.patientName;
+      tokenNum = latestToken.tokenNumber;
+    }
+  }
+
+  const name = role === 'Patient' ? patientName : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Vikramaditya Roy');
+
   const user = { 
-    name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Vikramaditya Roy'), 
+    name, 
     role, 
     tokenNumber: tokenNum 
   };
   const targetView = role === 'Patient' ? 'patient-portal' : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-  launchPortal(user, targetView);
+  await launchPortal(user, targetView);
 }
 
 // --- URL Parameter Direct Access ---
@@ -372,17 +390,35 @@ function initAuth() {
     e.preventDefault();
     const emailEl = document.getElementById('loginEmail');
     const email = emailEl ? emailEl.value : 'admin@hospitiq.org';
-    const tokenNum = document.getElementById('loginTokenNumber')?.value || 'A-031';
+    const tokenNumInput = document.getElementById('loginTokenNumber')?.value;
     const activeChip = loginForm.querySelector('.demo-chip.active');
     const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
 
+    let patientName = 'Ramesh Verma';
+    let tokenNum = tokenNumInput || 'A-031';
+
+    if (role === 'Patient') {
+      const customTokens = getCustomTokensLocally();
+      if (customTokens && customTokens.length > 0) {
+        const latestToken = customTokens[0];
+        patientName = latestToken.patientName;
+        tokenNum = latestToken.tokenNumber;
+      } else if (appState.queue && appState.queue.length > 0) {
+        const latestToken = appState.queue[0];
+        patientName = latestToken.patientName;
+        tokenNum = latestToken.tokenNumber;
+      }
+    }
+
+    const name = role === 'Patient' ? patientName : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Vikramaditya Roy');
+
     const user = { 
-      name: role === 'Patient' ? 'Ramesh Verma' : (role === 'Doctor' ? 'Dr. Sunita Rao' : 'Dr. Vikramaditya Roy'), 
+      name, 
       role, 
       tokenNumber: tokenNum 
     };
     const targetView = role === 'Patient' ? 'patient-portal' : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-    launchPortal(user, targetView);
+    await launchPortal(user, targetView);
   });
 
   document.getElementById('logoutBtn')?.addEventListener('click', () => {
