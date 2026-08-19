@@ -5,7 +5,6 @@
 </p>
 
 <p align="center">
-  <strong>SIH 2026 Innovation Project | Smart India Hackathon 2026</strong><br>
   <em>"Smarter Queues. Better Care." — Eliminating OPD Wait Times & Automating Hospital Operations Across India</em>
 </p>
 
@@ -13,15 +12,7 @@
   <a href="https://hospiti-q.vercel.app/"><img src="https://img.shields.io/badge/Live%20Demo-hospiti--q.vercel.app-brightgreen.svg?style=for-the-badge&logo=vercel" alt="Live Demo" /></a>
 </p>
 
-<p align="center">
-  <a href="https://github.com/yesaswim06/HospitiQ"><img src="https://img.shields.io/badge/SIH-2026-blue.svg" alt="SIH 2026" /></a>
-  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-v18.0+-green.svg" alt="Node.js" /></a>
-  <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-v4.19-lightgrey.svg" alt="Express" /></a>
-  <a href="https://mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-Atlas-brightgreen.svg" alt="MongoDB" /></a>
-  <a href="https://hospiti-q.vercel.app/"><img src="https://img.shields.io/badge/Deployment-Vercel-orange.svg" alt="Deployment" /></a>
-</p>
-
-<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
+---
 
 ## 🌐 Live Web Application & Demonstration
 👉 **Official Live URL**: **[https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)**
@@ -124,7 +115,7 @@ npm start
 Open your browser and navigate to:  
 👉 **`http://localhost:5000`** *(or http://localhost:5001)*
 
-<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
+---
 
 ## 👥 SIH 2026 Innovation Team
 
@@ -143,4 +134,3 @@ Open your browser and navigate to:
 
 - **Customer Care & Support**: `myselfadmin123@gmail.com`
 - **Official Live Application**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
-- **Edition**: Smart India Hackathon 2026 (SIH 2026)
