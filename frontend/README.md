@@ -1,7 +1,7 @@
 # 🏥 HOSPITIQ — Smart OPD Queue & Hospital Bed Management System
 
 <p align="center">
-  <img src="public/images/hospitiq_tab_favicon.jpg" alt="HOSPITIQ Logo" width="120" style="border-radius: 24px;" />
+  <img src="public/images/hospitiq_tab_favicon.jpg" alt="HOSPITIQ Logo" width="130" style="border-radius: 28px;" />
 </p>
 
 <p align="center">
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/your-username/HospitiQ"><img src="https://img.shields.io/badge/SIH-2026-blue.svg" alt="SIH 2026" /></a>
+  <a href="https://github.com/yesaswim06/HospitiQ"><img src="https://img.shields.io/badge/SIH-2026-blue.svg" alt="SIH 2026" /></a>
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-v18.0+-green.svg" alt="Node.js" /></a>
   <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-v4.19-lightgrey.svg" alt="Express" /></a>
   <a href="https://mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-Atlas-brightgreen.svg" alt="MongoDB" /></a>
@@ -18,7 +18,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-purple.svg" alt="License" /></a>
 </p>
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 📌 Executive Summary & Problem Statement
 
@@ -26,7 +26,7 @@ In traditional healthcare systems across India, patients spend up to **3.5 hours
 
 **HOSPITIQ (Med-Space)** resolves this healthcare crisis by implementing a real-time digital OPD token pass system, automated doctor room dispatching, smart bed matrix allocation, and contactless patient QR check-ins.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 🌟 Key Features & Platform Highlights
 
@@ -54,7 +54,7 @@ In traditional healthcare systems across India, patients spend up to **3.5 hours
 - **1-Click Hospital Siren**: Triggers hospital-wide emergency alert protocols across all connected terminals.
 - **Theme-Reactive UI**: Supports sleek dark mode and high-contrast light mode.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 📁 Repository & Project Architecture
 
@@ -79,7 +79,7 @@ HospitiQ/
 └── vercel.json               # Vercel cloud deployment manifest
 ```
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 🛠️ Tech Stack & Technologies Used
 
@@ -88,7 +88,7 @@ HospitiQ/
 - **Database**: MongoDB Atlas (with high-performance in-memory dataset fallback)
 - **Deployment**: Vercel / Render / Netlify
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 🚀 Quick Start & Local Setup Guide
 
@@ -98,7 +98,7 @@ HospitiQ/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/HospitiQ.git
+git clone https://github.com/yesaswim06/HospitiQ.git
 cd HospitiQ
 ```
 
@@ -116,7 +116,7 @@ npm start
 Open your browser and navigate to:  
 👉 **`http://localhost:5000`** *(or http://localhost:5001)*
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 👥 SIH 2026 Innovation Team
 
@@ -129,7 +129,7 @@ Open your browser and navigate to:
 | **SUPRIYA A** | Healthcare Researcher |
 | **CHARAN TEJA M** | Technology Researcher |
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 📧 Support & Contact
 
