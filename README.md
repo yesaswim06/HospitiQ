@@ -117,6 +117,69 @@ Open your browser and navigate to:
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
+## ☁️ Deployment Guide (Vercel & Render)
+
+### 📐 Option 1: Full-Stack Deployment on Vercel (Monorepo - Recommended)
+
+Deploying both Frontend and Backend on Vercel takes under 2 minutes:
+
+1. **Push to GitHub**:
+   Ensure your repository is updated on GitHub (`https://github.com/yesaswim06/HospitiQ.git`).
+
+2. **Connect to Vercel**:
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard) and click **Add New** > **Project**.
+   - Select your `HospitiQ` GitHub repository.
+
+3. **Configure Project Settings**:
+   - **Framework Preset**: `Other`
+   - **Root Directory**: `./` (Leave default)
+   - **Build & Development Settings**: Leave defaults (handled automatically by `vercel.json`).
+
+4. **Environment Variables**:
+   Add the following environment variables in Vercel settings:
+   - `MONGODB_URI`: `mongodb+srv://tarunkumarn999_db_user:yQrv08IV1xbStmHo@cluster0.mongodb.net/hospitiq?retryWrites=true&w=majority`
+   - `NODE_ENV`: `production`
+
+5. **Deploy**:
+   Click **Deploy**. Vercel automatically deploys:
+   - Frontend static application at: `https://hospiti-q.vercel.app/`
+   - Backend REST API serverless endpoints at: `https://hospiti-q.vercel.app/api/...`
+
+---
+
+### 🌐 Option 2: Deploy Backend on Render + Frontend on Vercel (Decoupled)
+
+If you prefer to host your Express REST API server separately on Render:
+
+#### Step A: Deploy Backend API on Render
+
+1. **Go to Render**:
+   - Visit [Render Dashboard](https://dashboard.render.com/) and click **New +** > **Web Service**.
+2. **Connect Repository**:
+   - Select `yesaswim06/HospitiQ`.
+3. **Configure Service**:
+   - **Name**: `hospitiq-backend`
+   - **Root Directory**: `backend`
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start` (or `node server.js`)
+4. **Environment Variables**:
+   - `PORT`: `5000`
+   - `MONGODB_URI`: `mongodb+srv://tarunkumarn999_db_user:yQrv08IV1xbStmHo@cluster0.mongodb.net/hospitiq?retryWrites=true&w=majority`
+   - `NODE_ENV`: `production`
+5. **Click Create Web Service**:
+   Render will provide your live API URL (e.g., `https://hospitiq-backend.onrender.com`).
+
+#### Step B: Deploy Frontend UI on Vercel
+
+1. **Go to Vercel**:
+   - Click **Add New** > **Project** on Vercel.
+2. **Configure Settings**:
+   - **Root Directory**: `frontend`
+3. **Deploy**:
+   - Vercel deploys the frontend web app.
+   - Point API requests to your Render URL by adding `<script>window.HOSPITIQ_API_URL = 'https://hospitiq-backend.onrender.com/api';</script>` in `index.html` head.
+
 ## 👥 SIH 2026 Innovation Team
 
 | Name | Role |
