@@ -1,7 +1,7 @@
 # 🏥 HOSPITIQ — Smart OPD Queue & Hospital Bed Management System
 
 <p align="center">
-  <img src="public/images/hospitiq_tab_favicon.jpg" alt="HOSPITIQ Logo" width="240" style="border-radius: 36px; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.4);" />
+  <img src="frontend/public/images/hospitiq_tab_favicon.jpg" alt="HOSPITIQ Logo" width="200" style="border-radius: 36px; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.4);" />
 </p>
 
 <p align="center">
@@ -9,13 +9,15 @@
 </p>
 
 <p align="center">
-  <a href="https://hospiti-q.vercel.app/"><img src="https://img.shields.io/badge/Live%20Demo-hospiti--q.vercel.app-brightgreen.svg?style=for-the-badge&logo=vercel" alt="Live Demo" /></a>
+  <a href="https://hospiti-q.vercel.app/"><img src="https://img.shields.io/badge/Frontend-hospiti--q.vercel.app-brightgreen.svg?style=for-the-badge&logo=vercel" alt="Vercel Live Web App" /></a>
+  <a href="https://hospitiq.onrender.com/api/queue"><img src="https://img.shields.io/badge/Backend%20API-hospitiq.onrender.com-blue.svg?style=for-the-badge&logo=render" alt="Render Live REST API" /></a>
 </p>
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
-## 🌐 Live Web Application & Demonstration
-👉 **Official Live URL**: **[https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)**
+## 🌐 Live Deployments & Web Services
+- 🌐 **Official Live Web Application (Vercel)**: **[https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)**
+- ⚡ **Official Live REST API (Render)**: **[https://hospitiq.onrender.com/api/queue](https://hospitiq.onrender.com/api/queue)**
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
@@ -39,10 +41,10 @@ In traditional healthcare systems across India, patients spend up to **3.5 hours
 - **Vitals Monitoring Chips**: Displays real-time patient vitals (*Pulse*, *BP*, *Temp*).
 - **1-Click Patient Calling**: Directs patients to assigned OPD consultation rooms (`OPD Room #104 — Cardiology`).
 
-### 🛏️ 3. Hospital 100-Bed Matrix & Ward Layout
-- **Real-Time Ward Monitoring**: Live tracking of ICU, Emergency, General, and Private wards.
+### 🛏️ 3. Hospital 100-Bed Matrix & Ward Admission System
+- **Real-Time Ward Monitoring**: Live tracking of ICU, Emergency, General, Private, Semi-Private, Pediatric, and Maternity wards.
 - **Interactive Bed Map**: Visual grid status (*Occupied*, *Vacant*, *Under Cleaning*).
-- **AI Bed Recommendation Engine**: Recommends optimal bed placement based on diagnosis and urgency.
+- **Dedicated Ward Admission**: Admit patients directly into available ward beds with attending doctor assignment and diagnosis tracking.
 
 ### 👥 4. Role-Based Access Control (3 Distinct User Portals)
 - **Patient Portal**: Live wait-time counter, digital QR code pass, SMS/WhatsApp alert status.
@@ -59,23 +61,26 @@ In traditional healthcare systems across India, patients spend up to **3.5 hours
 
 ```text
 HospitiQ/
-├── backend/                  # Express.js REST API Server & Database
-│   ├── server.js             # REST API endpoints & route dispatchers
-│   └── db.js                 # MongoDB Atlas integration & dataset fallback
+├── backend/                  # Express REST API & MongoDB Cloud Service
+│   ├── server.js             # REST API endpoints & route controllers
+│   ├── db.js                 # MongoDB Mongoose connection & dataset fallback
+│   ├── package.json           # Backend dependencies
+│   ├── vercel.json            # Vercel serverless routing
+│   └── .env.example           # Environment variables
 ├── frontend/                 # Client Web Application
+│   ├── package.json           # Frontend npm scripts
+│   ├── vercel.json            # Static hosting config
 │   └── public/
 │       ├── index.html        # Single-page multi-view markup
 │       ├── css/
 │       │   └── styles.css    # Healthcare Glassmorphic Design System
-│       ├── js/
-│       │   ├── api.js        # REST API fetch client
-│       │   └── app.js        # Dynamic UI state engine & router
-│       └── images/           # Asset images & social icons
+│       └── js/
+│           ├── api.js        # REST API fetch client (Render & Vercel gateway)
+│           └── app.js        # Dynamic UI state engine & router
 ├── HOSPITIQ_Wall_QR_Poster.jpg # Printable Hospital Wall QR Poster Asset
 ├── README.md                 # Documentation
-├── package.json              # Dependencies & startup scripts
-├── server.js                 # Application launcher
-└── vercel.json               # Vercel cloud deployment manifest
+├── package.json              # Monorepo dependencies & scripts
+└── vercel.json               # Full-stack Vercel deployment manifest
 ```
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
@@ -84,8 +89,9 @@ HospitiQ/
 
 - **Frontend**: HTML5, Vanilla JavaScript (ES6+), Vanilla CSS3 (Glassmorphism & CSS Variables), Lucide Vector Icons
 - **Backend**: Node.js, Express.js REST Framework
-- **Database**: MongoDB Atlas (with high-performance in-memory dataset fallback)
-- **Live Deployment**: Vercel (`https://hospiti-q.vercel.app/`)
+- **Database**: MongoDB Atlas Cloud (`Cluster0`) with high-performance memory dataset fallback
+- **Frontend Deployment**: Vercel (`https://hospiti-q.vercel.app/`)
+- **Backend Deployment**: Render (`https://hospitiq.onrender.com/`)
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
@@ -117,68 +123,32 @@ Open your browser and navigate to:
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
-## ☁️ Deployment Guide (Vercel & Render)
+## ☁️ Cloud Deployment Guide (Vercel & Render)
 
-### 📐 Option 1: Full-Stack Deployment on Vercel (Monorepo - Recommended)
+### 📐 Option 1: Full-Stack Deployment on Vercel (Monorepo)
 
-Deploying both Frontend and Backend on Vercel takes under 2 minutes:
-
-1. **Push to GitHub**:
-   Ensure your repository is updated on GitHub (`https://github.com/yesaswim06/HospitiQ.git`).
-
-2. **Connect to Vercel**:
-   - Go to [Vercel Dashboard](https://vercel.com/dashboard) and click **Add New** > **Project**.
-   - Select your `HospitiQ` GitHub repository.
-
-3. **Configure Project Settings**:
-   - **Framework Preset**: `Other`
-   - **Root Directory**: `./` (Leave default)
-   - **Build & Development Settings**: Leave defaults (handled automatically by `vercel.json`).
-
-4. **Environment Variables**:
-   Add the following environment variables in Vercel settings:
-   - `MONGODB_URI`: `mongodb+srv://tarunkumarn999_db_user:yQrv08IV1xbStmHo@cluster0.mongodb.net/hospitiq?retryWrites=true&w=majority`
-   - `NODE_ENV`: `production`
-
-5. **Deploy**:
-   Click **Deploy**. Vercel automatically deploys:
-   - Frontend static application at: `https://hospiti-q.vercel.app/`
-   - Backend REST API serverless endpoints at: `https://hospiti-q.vercel.app/api/...`
+1. **Push to GitHub**: `git push origin main`
+2. **Connect to Vercel**: Import `yesaswim06/HospitiQ` on Vercel.
+3. **Environment Variables**: Add `MONGODB_URI` and `NODE_ENV=production`.
+4. **Deploy**: Vercel deploys frontend at `https://hospiti-q.vercel.app/` and API endpoints at `/api/...`.
 
 ---
 
-### 🌐 Option 2: Deploy Backend on Render + Frontend on Vercel (Decoupled)
-
-If you prefer to host your Express REST API server separately on Render:
+### 🌐 Option 2: Backend on Render + Frontend on Vercel (Decoupled)
 
 #### Step A: Deploy Backend API on Render
-
-1. **Go to Render**:
-   - Visit [Render Dashboard](https://dashboard.render.com/) and click **New +** > **Web Service**.
-2. **Connect Repository**:
-   - Select `yesaswim06/HospitiQ`.
-3. **Configure Service**:
-   - **Name**: `hospitiq-backend`
-   - **Root Directory**: `backend`
-   - **Environment**: `Node`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start` (or `node server.js`)
-4. **Environment Variables**:
-   - `PORT`: `5000`
-   - `MONGODB_URI`: `mongodb+srv://tarunkumarn999_db_user:yQrv08IV1xbStmHo@cluster0.mongodb.net/hospitiq?retryWrites=true&w=majority`
-   - `NODE_ENV`: `production`
-5. **Click Create Web Service**:
-   Render will provide your live API URL (e.g., `https://hospitiq-backend.onrender.com`).
+1. Go to [Render Dashboard](https://dashboard.render.com/) > **New Web Service**.
+2. Select `yesaswim06/HospitiQ`.
+3. Set **Root Directory** to `backend`, **Build Command** to `npm install`, **Start Command** to `npm start`.
+4. Add `PORT=5000` and `MONGODB_URI`.
+5. Render deploys your API at **`https://hospitiq.onrender.com/`**.
 
 #### Step B: Deploy Frontend UI on Vercel
+1. Go to Vercel Dashboard > Import `yesaswim06/HospitiQ`.
+2. Set **Root Directory** to `frontend`.
+3. Vercel deploys your UI at **`https://hospiti-q.vercel.app/`**.
 
-1. **Go to Vercel**:
-   - Click **Add New** > **Project** on Vercel.
-2. **Configure Settings**:
-   - **Root Directory**: `frontend`
-3. **Deploy**:
-   - Vercel deploys the frontend web app.
-   - Point API requests to your Render URL by adding `<script>window.HOSPITIQ_API_URL = 'https://hospitiq-backend.onrender.com/api';</script>` in `index.html` head.
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 👥 SIH 2026 Innovation Team
 
@@ -202,5 +172,6 @@ If you find this project helpful, please consider giving it a ⭐ on GitHub! You
 ## 📧 Support & Contact
 
 - **Customer Care & Support**: `myselfadmin123@gmail.com`
-- **Official Live Application**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
+- **Official Live Application (Vercel)**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
+- **Official Live REST API (Render)**: [https://hospitiq.onrender.com/api/queue](https://hospitiq.onrender.com/api/queue)
 - **Edition**: Smart India Hackathon 2026 (SIH 2026)
