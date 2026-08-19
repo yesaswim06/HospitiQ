@@ -101,28 +101,28 @@ function switchPublicPage(pageName, pushHistory = true) {
     const el = document.getElementById('public-view-about');
     if (el) { el.classList.add('active'); el.style.display = 'block'; }
     if (pushHistory && window.location.hash !== '#about') {
-      window.history.pushState({ page: 'about' }, 'About Us — HOSPITIQ', '#about');
+      window.history.pushState({ page: 'about' }, 'HOSPITIQ', '#about');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (pageName === 'login') {
     const el = document.getElementById('public-view-login');
     if (el) { el.classList.add('active'); el.style.display = 'block'; }
     if (pushHistory && window.location.hash !== '#login') {
-      window.history.pushState({ page: 'login' }, 'Sign In — HOSPITIQ', '#login');
+      window.history.pushState({ page: 'login' }, 'HOSPITIQ', '#login');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else if (pageName === 'register') {
     const el = document.getElementById('public-view-register');
     if (el) { el.classList.add('active'); el.style.display = 'block'; }
     if (pushHistory && window.location.hash !== '#register') {
-      window.history.pushState({ page: 'register' }, 'Register — HOSPITIQ', '#register');
+      window.history.pushState({ page: 'register' }, 'HOSPITIQ', '#register');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
     const el = document.getElementById('public-view-home');
     if (el) { el.classList.add('active'); el.style.display = 'block'; }
     if (pushHistory && window.location.hash !== '#home' && window.location.hash !== '') {
-      window.history.pushState({ page: 'home' }, 'HOSPITIQ — Smart Patient Flow', '#home');
+      window.history.pushState({ page: 'home' }, 'HOSPITIQ', '#home');
     }
 
     if (pageName === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
