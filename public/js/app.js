@@ -372,7 +372,7 @@ function initAuth() {
   });
 }
 
-function launchPortal(user, defaultView) {
+async function launchPortal(user, defaultView) {
   appState.currentUser = user;
 
   const landing = document.getElementById('publicLandingPage');
@@ -395,7 +395,12 @@ function launchPortal(user, defaultView) {
   }
 
   applyRolePermissions(user);
-  loadAppData();
+
+  if (user.role === 'Patient' && user.tokenNumber) {
+    await loadPatientTokenData(user.tokenNumber);
+  }
+
+  await loadAppData();
   switchView(defaultView);
   showToast(`Welcome to HOSPITIQ ${user.role} Portal!`, 'success');
   lucide.createIcons();
