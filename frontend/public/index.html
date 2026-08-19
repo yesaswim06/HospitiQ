@@ -297,18 +297,10 @@
 
           <form id="publicPageLoginForm" class="login-form margin-t-md" onsubmit="handlePublicPageLogin(event)">
             <div class="form-group">
-              <label>Account / Patient Email</label>
+              <label>Account / Patient Email or Token</label>
               <div class="input-icon-wrapper">
                 <i data-lucide="mail"></i>
-                <input type="email" id="pageLoginEmail" required class="glass-input" value="patient@hospitiq.org" />
-              </div>
-            </div>
-
-            <div class="form-group" id="pageLoginTokenGroup">
-              <label>OR Enter Token # for Instant View</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="ticket"></i>
-                <input type="text" id="pageLoginTokenNumber" placeholder="e.g. A-031" class="glass-input" value="A-031" />
+                <input type="text" id="pageLoginEmail" required class="glass-input" value="admin@hospitiq.org" placeholder="Enter Email, Name or Token" />
               </div>
             </div>
 
