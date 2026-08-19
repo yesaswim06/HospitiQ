@@ -612,6 +612,7 @@ function switchView(viewId) {
     panel.classList.toggle('active', panel.id === `view-${viewId}`);
   });
 
+  renderAllViews();
   if (viewId === 'analytics') renderAnalyticsCharts();
   lucide.createIcons();
 }
@@ -1001,16 +1002,18 @@ function renderPatientsTable() {
   const tbody = document.getElementById('patientsTableBody');
   if (!tbody) return;
 
-  tbody.innerHTML = appState.patients.map(p => `
+  const patientList = (appState.queue && appState.queue.length > 0) ? appState.queue : (appState.patients && appState.patients.length > 0 ? appState.patients : DEFAULT_QUEUE);
+
+  tbody.innerHTML = patientList.map(p => `
     <tr>
       <td><span class="font-mono">${p.id}</span></td>
-      <td><strong>${p.name}</strong></td>
+      <td><strong>${p.patientName || p.name}</strong></td>
       <td>${p.age} / ${p.gender}</td>
-      <td>${p.phone}</td>
-      <td>${p.department}</td>
-      <td><strong class="font-mono">${p.token}</strong></td>
-      <td><span class="badge-pill green-pill">${p.visitStatus}</span></td>
-      <td>${p.registrationTime}</td>
+      <td>${p.phone || '+91 99000 11223'}</td>
+      <td>${p.department || 'General Medicine'}</td>
+      <td><strong class="font-mono">${p.tokenNumber || p.token || 'A-100'}</strong></td>
+      <td><span class="badge-pill green-pill">${p.status || p.visitStatus || 'Waiting'}</span></td>
+      <td>${p.registrationTime || '10:00 AM'}</td>
     </tr>
   `).join('');
 }
@@ -1019,7 +1022,9 @@ function renderDoctorsGrid() {
   const grid = document.getElementById('doctorsGrid');
   if (!grid) return;
 
-  grid.innerHTML = appState.doctors.map(d => {
+  const docs = (appState.doctors && appState.doctors.length > 0) ? appState.doctors : DEFAULT_DOCTORS;
+
+  grid.innerHTML = docs.map(d => {
     let statusClass = 'green-pill';
     if (d.status === 'Busy') statusClass = 'orange-pill';
     if (d.status === 'Offline') statusClass = 'red-pill';
@@ -1028,20 +1033,20 @@ function renderDoctorsGrid() {
       <div class="glass-card doctor-card-full">
         <div>
           <div class="doc-avatar-row">
-            <div class="doc-avatar-large">${d.name.split(' ').pop().charAt(0)}</div>
+            <div class="doc-avatar-large">${(d.name || 'Dr').split(' ').pop().charAt(0)}</div>
             <div>
               <h3>${d.name}</h3>
-              <span class="sub-text">${d.specialization}</span>
+              <span class="sub-text">${d.specialization || 'Specialist'}</span>
             </div>
           </div>
-          <div class="margin-b-sm">
-            <span class="badge-pill ${statusClass}">${d.status}</span>
-            <span class="sub-text margin-l-sm">${d.room}</span>
+          <div class="margin-b-sm margin-t-sm">
+            <span class="badge-pill ${statusClass}">${d.status || 'Available'}</span>
+            <span class="sub-text margin-l-sm">${d.room || 'OPD Room #101'}</span>
           </div>
-          <div class="sub-text">
-            <strong>Department:</strong> ${d.department}<br>
-            <strong>Patients Waiting:</strong> ${d.patientsWaiting}<br>
-            <strong>Now Seeing:</strong> ${d.currentPatient}
+          <div class="sub-text margin-t-xs">
+            <strong>Department:</strong> ${d.department || 'General Medicine'}<br>
+            <strong>Patients Waiting:</strong> ${d.patientsWaiting !== undefined ? d.patientsWaiting : 0}<br>
+            <strong>Now Seeing:</strong> ${d.currentPatient || 'None'}
           </div>
         </div>
         <button class="action-btn glow-btn width-full margin-t-md" onclick="callPatientToken('${d.id}')">
