@@ -2,7 +2,7 @@
    HOSPITIQ — REST API CLIENT SERVICE
    ========================================================================== */
 
-const API_BASE = window.HOSPITIQ_API_URL || '/api';
+const API_BASE = window.HOSPITIQ_API_URL || (window.location.origin.includes('localhost') ? '/api' : 'https://hospitiq.onrender.com/api');
 
 const api = {
   async login(credentials) {
