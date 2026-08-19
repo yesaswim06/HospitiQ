@@ -637,10 +637,27 @@ function renderAllViews() {
   updateSidebarBadges();
 }
 
+function lookupPatientTokenFromHeader(tokenNum) {
+  if (tokenNum && tokenNum.trim()) {
+    loadPatientTokenData(tokenNum.trim());
+  }
+}
+
 // --- Patient Portal Render & QR Code Generator ---
 async function loadPatientTokenData(tokenNumber) {
-  if (!tokenNumber) return;
-  const tokenNum = String(tokenNumber).toUpperCase();
+  let searchNum = tokenNumber;
+
+  if (!searchNum) {
+    if (appState.currentUser && appState.currentUser.tokenNumber) {
+      searchNum = appState.currentUser.tokenNumber;
+    } else if (appState.queue && appState.queue.length > 0) {
+      searchNum = appState.queue[0].tokenNumber;
+    } else {
+      searchNum = 'A-031';
+    }
+  }
+
+  const tokenNum = String(searchNum).toUpperCase();
 
   let pt = appState.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
 

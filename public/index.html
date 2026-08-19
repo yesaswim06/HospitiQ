@@ -655,6 +655,10 @@
               <h1>Patient Token & Live Wait Status</h1>
               <p>Real-time queue tracking, consultation room allocation, and QR code pass.</p>
             </div>
+            <div class="action-row">
+              <input type="text" id="ptTokenSearchInput" placeholder="Lookup Token # (e.g. A-024, A-105)" class="glass-input width-auto" onchange="lookupPatientTokenFromHeader(this.value)" />
+              <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="user-plus"></i> Register Patient</button>
+            </div>
           </div>
 
           <div class="glass-card patient-portal-card margin-b-lg">
