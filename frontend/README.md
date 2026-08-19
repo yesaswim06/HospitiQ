@@ -1,7 +1,7 @@
 # 🏥 HOSPITIQ — Smart OPD Queue & Hospital Bed Management System
 
 <p align="center">
-  <img src="public/images/hospitiq_tab_favicon.jpg" alt="HOSPITIQ Logo" width="130" style="border-radius: 28px;" />
+  <img src="public/images/hospitiq_tab_favicon.jpg" alt="HOSPITIQ Logo" width="240" style="border-radius: 36px; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.4);" />
 </p>
 
 <p align="center">
