@@ -17,7 +17,7 @@
 ## 🌐 Live Web Application & Demonstration
 👉 **Official Live URL**: **[https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)**
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 📌 Executive Summary & Problem Statement
 
@@ -25,7 +25,7 @@ In traditional healthcare systems across India, patients spend up to **3.5 hours
 
 **HOSPITIQ (Med-Space)** resolves this healthcare crisis by implementing a real-time digital OPD token pass system, automated doctor room dispatching, smart bed matrix allocation, and contactless patient QR check-ins.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 🌟 Key Features & Platform Highlights
 
@@ -53,7 +53,7 @@ In traditional healthcare systems across India, patients spend up to **3.5 hours
 - **1-Click Hospital Siren**: Triggers hospital-wide emergency alert protocols across all connected terminals.
 - **Theme-Reactive UI**: Supports sleek dark mode and high-contrast light mode.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 📁 Repository & Project Architecture
 
@@ -78,7 +78,7 @@ HospitiQ/
 └── vercel.json               # Vercel cloud deployment manifest
 ```
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 🛠️ Tech Stack & Technologies Used
 
@@ -87,7 +87,7 @@ HospitiQ/
 - **Database**: MongoDB Atlas (with high-performance in-memory dataset fallback)
 - **Live Deployment**: Vercel (`https://hospiti-q.vercel.app/`)
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 🚀 Quick Start & Local Setup Guide
 
@@ -115,7 +115,7 @@ npm start
 Open your browser and navigate to:  
 👉 **`http://localhost:5000`** *(or http://localhost:5001)*
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 👥 SIH 2026 Innovation Team
 
@@ -128,9 +128,16 @@ Open your browser and navigate to:
 | **SUPRIYA A** | Healthcare Researcher |
 | **CHARAN TEJA M** | Technology Researcher |
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
+
+## ⭐ Support the Project
+
+If you find this project helpful, please consider giving it a ⭐ on GitHub! Your support helps to grow the project and reach more contributors.
+
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 📧 Support & Contact
 
 - **Customer Care & Support**: `myselfadmin123@gmail.com`
 - **Official Live Application**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
+- **Edition**: Smart India Hackathon 2026 (SIH 2026)
