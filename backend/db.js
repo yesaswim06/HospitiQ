@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://tarunkumarn999_db_user:yQrv08IV1xbStmHo@cluster0.mongodb.net/hospitiq?retryWrites=true&w=majority";
 
-// HOSPITIQ In-Memory High Performance Dataset
+// HOSPITIQ High Performance Rich Dataset (8 Doctors, 10 Patients, 100 Beds)
 const memoryStore = {
   users: [
     { id: 'usr-adm-1', name: 'Dr. Rajesh Sharma', role: 'Admin', email: 'admin@hospitiq.org', department: 'Administration' },
@@ -80,43 +80,6 @@ const memoryStore = {
   ]
 };
 
-// Mongoose Schemas for MongoDB Atlas Cloud
-const DoctorSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  name: String,
-  specialization: String,
-  department: String,
-  status: String,
-  patientsWaiting: Number,
-  currentPatient: String,
-  room: String,
-  phone: String,
-  email: String
-}, { timestamps: true });
-
-const TokenSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  tokenNumber: { type: String, required: true },
-  patientName: String,
-  age: Number,
-  gender: String,
-  phone: String,
-  department: String,
-  doctor: String,
-  doctorId: String,
-  waitTime: Number,
-  patientsAhead: Number,
-  room: String,
-  priority: String,
-  status: String,
-  registrationTime: String,
-  smsSent: Boolean,
-  whatsappSent: Boolean
-}, { timestamps: true });
-
-const DoctorModel = mongoose.models.Doctor || mongoose.model('Doctor', DoctorSchema);
-const TokenModel = mongoose.models.TokenPass || mongoose.model('TokenPass', TokenSchema);
-
 async function connectDB() {
   try {
     await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 2000 });
@@ -126,40 +89,8 @@ async function connectDB() {
   }
 }
 
-async function saveDoctorToDB(docData) {
-  try {
-    if (mongoose.connection.readyState === 1) {
-      await DoctorModel.findOneAndUpdate({ id: docData.id }, docData, { upsert: true, new: true });
-    }
-  } catch (e) {
-    console.warn('MongoDB save doctor warning:', e.message);
-  }
-}
-
-async function saveTokenToDB(tokenData) {
-  try {
-    if (mongoose.connection.readyState === 1) {
-      await TokenModel.findOneAndUpdate({ tokenNumber: tokenData.tokenNumber }, tokenData, { upsert: true, new: true });
-    }
-  } catch (e) {
-    console.warn('MongoDB save token warning:', e.message);
-  }
-}
-
-async function findTokenFromDB(tokenNum) {
-  try {
-    if (mongoose.connection.readyState === 1) {
-      const doc = await TokenModel.findOne({ tokenNumber: new RegExp(`^${tokenNum}$`, 'i') });
-      if (doc) return doc.toObject();
-    }
-  } catch (e) {
-    console.warn('MongoDB find token warning:', e.message);
-  }
-  return null;
-}
-
 function getStore() {
   return memoryStore;
 }
 
-module.exports = { connectDB, getStore, saveDoctorToDB, saveTokenToDB, findTokenFromDB };
+module.exports = { connectDB, getStore };

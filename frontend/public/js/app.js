@@ -13,6 +13,19 @@ const DEFAULT_DOCTORS = [
   { id: 'doc-8', name: 'Dr. Rajesh Sharma', department: 'Cardiology', specialization: 'Cardiac Electrophysiology', room: 'OPD Room #102', status: 'Available', patientsWaiting: 0, currentPatient: 'None', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
 ];
 
+const DEFAULT_QUEUE = [
+  { id: 'q-101', tokenNumber: 'A-024', patientName: 'Ramesh Verma', age: 44, gender: 'Male', phone: '+91 99000 11223', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 0, patientsAhead: 0, room: 'OPD Room #104', priority: 'High', status: 'In Consultation', registrationTime: '09:45 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-102', tokenNumber: 'A-031', patientName: 'Priya Sundaram', age: 32, gender: 'Female', phone: '+91 98765 43210', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 28, patientsAhead: 3, room: 'OPD Room #104', priority: 'Normal', status: 'Waiting', registrationTime: '10:15 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-103', tokenNumber: 'B-012', patientName: 'Amitabh Sen', age: 58, gender: 'Male', phone: '+91 91234 56789', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 14, patientsAhead: 1, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '10:20 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-104', tokenNumber: 'EM-501', patientName: 'Sanjay Dutt', age: 50, gender: 'Male', phone: '+91 91100 00911', department: 'Emergency', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 0, patientsAhead: 0, room: 'ER Bay #01', priority: 'Emergency', status: 'In Consultation', registrationTime: '10:30 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-105', tokenNumber: 'P-008', patientName: 'Kavita Krishnan', age: 27, gender: 'Female', phone: '+91 98765 11122', department: 'Pediatrics', doctor: 'Dr. Hrishikesh Deshmukh', doctorId: 'doc-4', waitTime: 12, patientsAhead: 1, room: 'OPD Room #105', priority: 'Normal', status: 'Waiting', registrationTime: '10:35 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-106', tokenNumber: 'O-019', patientName: 'Deepak Nair', age: 39, gender: 'Male', phone: '+91 98765 22233', department: 'Orthopedics', doctor: 'Dr. Ananya Reddy', doctorId: 'doc-3', waitTime: 20, patientsAhead: 2, room: 'OPD Room #201', priority: 'High', status: 'Waiting', registrationTime: '10:40 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-107', tokenNumber: 'N-005', patientName: 'Sunil Gavaskar', age: 62, gender: 'Male', phone: '+91 98765 33344', department: 'Neurology', doctor: 'Dr. Priya Patel', doctorId: 'doc-5', waitTime: 15, patientsAhead: 1, room: 'OPD Room #304', priority: 'Normal', status: 'Waiting', registrationTime: '10:45 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-108', tokenNumber: 'D-014', patientName: 'Ayesha Takia', age: 29, gender: 'Female', phone: '+91 98765 44455', department: 'Dermatology', doctor: 'Dr. Suresh Menon', doctorId: 'doc-6', waitTime: 10, patientsAhead: 1, room: 'OPD Room #110', priority: 'Normal', status: 'Waiting', registrationTime: '10:50 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-109', tokenNumber: 'E-007', patientName: 'Rohan Bopanna', age: 41, gender: 'Male', phone: '+91 98765 55566', department: 'ENT', doctor: 'Dr. Meera Nambiar', doctorId: 'doc-7', waitTime: 18, patientsAhead: 2, room: 'OPD Room #115', priority: 'Normal', status: 'Waiting', registrationTime: '10:55 AM', smsSent: true, whatsappSent: true },
+  { id: 'q-110', tokenNumber: 'B-018', patientName: 'Sneha Roy', age: 35, gender: 'Female', phone: '+91 98765 66677', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 32, patientsAhead: 3, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '11:00 AM', smsSent: true, whatsappSent: true }
+];
+
 const appState = {
   currentUser: null,
   activeView: 'dashboard',
@@ -22,7 +35,7 @@ const appState = {
 
   stats: null,
   capacity: null,
-  queue: [],
+  queue: [...DEFAULT_QUEUE],
   doctors: [...DEFAULT_DOCTORS],
   beds: [],
   departments: [],
@@ -527,7 +540,11 @@ async function loadAppData() {
 
     if (statsRes.success) appState.stats = statsRes;
     if (capacityRes.success) appState.capacity = capacityRes;
-    if (queueRes.success) appState.queue = queueRes.queue;
+    if (queueRes.success && Array.isArray(queueRes.queue) && queueRes.queue.length > 0) {
+      appState.queue = queueRes.queue;
+    } else if (!appState.queue || appState.queue.length === 0) {
+      appState.queue = [...DEFAULT_QUEUE];
+    }
     if (docsRes.success && Array.isArray(docsRes.doctors) && docsRes.doctors.length > 0) {
       appState.doctors = docsRes.doctors;
     } else if (!appState.doctors || appState.doctors.length === 0) {

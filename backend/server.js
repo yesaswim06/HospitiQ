@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-const { connectDB, getStore, saveDoctorToDB, saveTokenToDB, findTokenFromDB } = require('./db');
+const { connectDB, getStore } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,7 +24,7 @@ app.post('/api/auth/login', (req, res) => {
   let user = null;
 
   if (role === 'Patient') {
-    user = { id: 'usr-pt', name: 'Ramesh Verma', role: 'Patient', tokenNumber: 'A-031' };
+    user = store.users.find(u => u.role === 'Patient') || { id: 'usr-pt', name: 'Ramesh Verma', role: 'Patient', tokenNumber: 'A-031' };
   } else if (email) {
     user = store.users.find(u => u.email.toLowerCase() === email.toLowerCase());
   }
@@ -50,13 +50,9 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // --- 2. PUBLIC PATIENT TOKEN LOOKUP ---
-app.get('/api/patient/:tokenNumber', async (req, res) => {
+app.get('/api/patient/:tokenNumber', (req, res) => {
   const tokenNum = req.params.tokenNumber.toUpperCase();
-  let tokenItem = store.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
-
-  if (!tokenItem) {
-    tokenItem = await findTokenFromDB(tokenNum);
-  }
+  const tokenItem = store.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
   
   if (tokenItem) {
     res.json({ success: true, patientToken: tokenItem });
@@ -166,8 +162,6 @@ app.post('/api/queue', async (req, res) => {
 
   doc.patientsWaiting += 1;
   store.queue.unshift(newToken);
-
-  await saveTokenToDB(newToken);
 
   res.json({ success: true, message: `Token ${tokenNum} generated! SMS & WhatsApp alerts sent. Estimated wait: ${estWaitMins} mins.`, token: newToken });
 });
