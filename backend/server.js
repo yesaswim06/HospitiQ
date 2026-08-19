@@ -427,6 +427,21 @@ app.get('*', (req, res) => {
   res.sendFile(mainPath);
 });
 
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api')) {
+    const fs = require('fs');
+    const frontPath = path.join(__dirname, '../frontend/public/index.html');
+    const rootPath = path.join(__dirname, '../public/index.html');
+    if (fs.existsSync(frontPath)) {
+      res.sendFile(frontPath);
+    } else if (fs.existsSync(rootPath)) {
+      res.sendFile(rootPath);
+    } else {
+      res.send('HOSPITIQ API Server Running');
+    }
+  }
+});
+
 const startServer = (portToTry) => {
   const currentPort = parseInt(portToTry, 10);
   const server = app.listen(currentPort, () => {

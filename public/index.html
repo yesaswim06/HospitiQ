@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HOSPITIQ</title>
+  <meta name="description" content="HOSPITIQ: No more waiting in long queues. Fast, reliable access to healthcare services, OPD token booking, and real-time hospital intelligence." />
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- QRCode JS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <link rel="icon" type="image/jpeg" href="images/hospitiq_tab_favicon.jpg">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Dynamic Backdrop Animation Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- PUBLIC LANDING PAGE (MED-SPACE REFERENCE STYLE) -->
+  <div class="landing-page-wrapper" id="publicLandingPage">
+    
+    <!-- LANDING HEADER NAVBAR -->
+    <header class="landing-navbar">
+      <div class="brand" onclick="switchPublicPage('home')" style="cursor: pointer;" title="HOSPITIQ Home">
+        <div class="logo-cross-small">
+          <i data-lucide="activity"></i>
+        </div>
+        <span class="logo-title">HOSPIT<span class="cyan-text">IQ</span></span>
+      </div>
+
+      <nav class="landing-nav-links">
+        <a href="#features" class="landing-nav-item" onclick="switchPublicPage('features')">Features</a>
+        <a href="#about" class="landing-nav-item" onclick="switchPublicPage('about')">About Us</a>
+        <a href="#contact" class="landing-nav-item" onclick="switchPublicPage('contact')">Contact Us</a>
+      </nav>
+
+      <div class="landing-nav-actions">
+        <button class="icon-round-btn" id="landingThemeBtn" title="Switch Light/Dark Theme">
+          <i data-lucide="sun" id="landingThemeIcon"></i>
+        </button>
+        <button class="action-btn glow-btn small-btn" onclick="switchPublicPage('login')">
+          <i data-lucide="log-in"></i> Sign In
+        </button>
+      </div>
+    </header>
+
+    <!-- PAGE VIEW 1: HOME PAGE -->
+    <div class="public-page-view active" id="public-view-home">
+      <!-- HERO SECTION -->
+      <section class="landing-hero" id="heroSection">
+        <div class="hero-content">
+          <div class="quote-ticker-badge margin-b-sm">
+            <i data-lucide="quote"></i>
+            <span id="quoteTickerText">"Smarter Queues. Better Care." — Fast, reliable access to healthcare services</span>
+          </div>
+
+          <h1 class="hero-main-title">
+            No more waiting in long queues. <span class="gradient-text">Fast & Reliable Healthcare</span>
+          </h1>
+          <p class="hero-description">
+            HOSPITIQ (Med-Space) eliminates OPD waiting lines, automates doctor consultation dispatching, and provides transparent patient care operations across India's healthcare network.
+          </p>
+
+          <div class="hero-cta-buttons margin-t-md">
+            <button class="action-btn glow-btn" onclick="openPublicTokenModal()">
+              <i data-lucide="ticket"></i> Book OPD Token Now
+            </button>
+            <button class="glass-btn" onclick="switchPublicPage('services')">
+              <i data-lucide="stethoscope"></i> Explore Services
+            </button>
+          </div>
+
+          <div class="hero-stats-strip margin-t-lg">
+            <div class="strip-item">
+              <span class="strip-num">28 Min</span>
+              <span class="strip-label">Avg OPD Wait Saved</span>
+            </div>
+            <div class="strip-item">
+              <span class="strip-num">99.8%</span>
+              <span class="strip-label">Dispatch Accuracy</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual-box">
+          <div class="glowing-medical-cross">
+            <div class="cross-center-icon"><i data-lucide="heart-pulse"></i></div>
+            <div class="pulse-ring ring-1"></div>
+            <div class="pulse-ring ring-2"></div>
+            <div class="pulse-ring ring-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERVICES SECTION -->
+      <section class="landing-section" id="servicesSection">
+        <div class="section-title text-center">
+          <span class="badge-pill cyan-pill margin-b-xs">Healthcare Services</span>
+          <h2>Comprehensive Medical Services</h2>
+          <p class="sub-text">Seamless patient care workflows for OPD consultations, diagnostic testing, and inpatient admissions.</p>
+        </div>
+
+        <div class="features-grid margin-t-md">
+          <div class="glass-card feature-card">
+            <div class="feature-icon blue-icon"><i data-lucide="stethoscope"></i></div>
+            <h3>OPD Consultations</h3>
+            <p>Book digital OPD consultation tokens with estimated wait-time forecasting and live doctor availability.</p>
+          </div>
+
+          <div class="glass-card feature-card">
+            <div class="feature-icon green-icon"><i data-lucide="flask-conical"></i></div>
+            <h3>Lab Tests & Diagnostics</h3>
+            <p>Schedule diagnostic appointments, blood tests, and receive digital health lab reports directly to your phone.</p>
+          </div>
+
+          <div class="glass-card feature-card">
+            <div class="feature-icon purple-icon"><i data-lucide="heart-pulse"></i></div>
+            <h3>Health Checkups</h3>
+            <p>Preventive health screening packages tailored for individuals, families, and senior citizens.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES SECTION -->
+      <section class="landing-section" id="featuresSection">
+        <div class="section-title text-center">
+          <span class="badge-pill blue-pill margin-b-xs">SIH 2026 Core Capabilities</span>
+          <h2>Smart Hospital Management Features</h2>
+        </div>
+
+        <div class="features-grid margin-t-md">
+          <div class="glass-card feature-card">
+            <div class="feature-icon blue-icon"><i data-lucide="ticket"></i></div>
+            <h3>Live OPD Queue Tracker</h3>
+            <p>Instant OPD token generation with precise wait-time forecasting based on doctor speed factors.</p>
+          </div>
+
+          <div class="glass-card feature-card">
+            <div class="feature-icon green-icon"><i data-lucide="sparkles"></i></div>
+            <h3>Smart Bed Allocation</h3>
+            <p>Algorithmic matching of patient triage, ventilator/oxygen requirement, and ward proximity.</p>
+          </div>
+
+          <div class="glass-card feature-card">
+            <div class="feature-icon orange-icon"><i data-lucide="users"></i></div>
+            <h3>Doctor Consultation Roster</h3>
+            <p>Categorizes room queues by emergency priority and patient vitals chips for doctor efficiency.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE VIEW 2: DEDICATED SEPARATE ABOUT US PAGE -->
+    <div class="public-page-view" id="public-view-about">
+      <section class="landing-section">
+        <div class="about-page-header margin-b-lg">
+          <button class="glass-btn small-btn margin-b-md" onclick="switchPublicPage('home')"><i data-lucide="arrow-left"></i> Back to Home</button>
+          <div class="section-title text-center">
+            <span class="badge-pill cyan-pill margin-b-xs"><i data-lucide="users"></i> SIH 2026 Innovation Team</span>
+            <h1 class="about-team-main-title">About Us</h1>
+            <h3 class="about-team-subtitle sub-text font-mono margin-b-md">Meet the Team</h3>
+          </div>
+        </div>
+
+        <!-- 6 TEAM MEMBER CARDS (3 COLUMNS GRID EXACT MATCH TO YOUR IMAGE) -->
+        <div class="team-cards-grid margin-t-md">
+          
+          <!-- Card 1: Team Lead -->
+          <div class="glass-card team-card">
+            <div class="team-card-header">
+              <div class="team-icon-circle purple-bg"><i data-lucide="user-check"></i></div>
+              <div>
+                <span class="role-title-tag purple-text">Team Lead</span>
+                <h3 class="member-name">M N YESASWI BHARGAV (TL)</h3>
+              </div>
+            </div>
+            <p class="member-bio sub-text">
+              As the Team Lead, Yesaswi Bhargav brings strong leadership, coordination, and technical expertise to drive our project forward. He ensures smooth collaboration within the team and focuses on delivering an innovative, reliable, and user-friendly solution.
+            </p>
+          </div>
+
+          <!-- Card 2: Frontend Developer -->
+          <div class="glass-card team-card">
+            <div class="team-card-header">
+              <div class="team-icon-circle blue-bg"><i data-lucide="code-2"></i></div>
+              <div>
+                <span class="role-title-tag blue-text">Frontend Developer</span>
+                <h3 class="member-name">RAMCHARAN G</h3>
+              </div>
+            </div>
+            <p class="member-bio sub-text">
+              As the Frontend Developer, Ramcharan G specializes in building responsive, intuitive, and visually appealing user interfaces. He is dedicated to creating seamless user experiences by translating complex requirements into clean and efficient frontend solutions.
+            </p>
+          </div>
+
+          <!-- Card 3: UI/UX Designer -->
+          <div class="glass-card team-card">
+            <div class="team-card-header">
+              <div class="team-icon-circle cyan-bg"><i data-lucide="pen-tool"></i></div>
+              <div>
+                <span class="role-title-tag cyan-text">UI/UX Designer</span>
+                <h3 class="member-name">MANJULA B</h3>
+              </div>
+            </div>
+            <p class="member-bio sub-text">
+              Manjula B is focused on making our platform user-friendly and engaging. With a strong eye for design and a passion for user experience, she creates seamless interactions and visually appealing layouts that enhance overall usability.
+            </p>
+          </div>
+
+          <!-- Card 4: Graphic Designer -->
+          <div class="glass-card team-card">
+            <div class="team-card-header">
+              <div class="team-icon-circle pink-bg"><i data-lucide="paintbrush"></i></div>
+              <div>
+                <span class="role-title-tag pink-text">Graphic Designer</span>
+                <h3 class="member-name">MANVITHA N</h3>
+              </div>
+            </div>
+            <p class="member-bio sub-text">
+              As our Graphic Designer, Manvitha N brings creativity and a strong sense of visual aesthetics. She creates compelling graphics, icons, and visual elements that elevate our platform's look and feel and strengthen our brand identity.
+            </p>
+          </div>
+
+          <!-- Card 5: Healthcare Researcher -->
+          <div class="glass-card team-card">
+            <div class="team-card-header">
+              <div class="team-icon-circle green-bg"><i data-lucide="activity"></i></div>
+              <div>
+                <span class="role-title-tag green-text">Healthcare Researcher</span>
+                <h3 class="member-name">SUPRIYA A</h3>
+              </div>
+            </div>
+            <p class="member-bio sub-text">
+              Supriya A brings expertise in healthcare research and data analysis. She focuses on understanding the latest trends, outpatient care needs, and healthcare standards to ensure our platform is meaningful, accurate, and impactful.
+            </p>
+          </div>
+
+          <!-- Card 6: Technology Researcher -->
+          <div class="glass-card team-card">
+            <div class="team-card-header">
+              <div class="team-icon-circle orange-bg"><i data-lucide="laptop"></i></div>
+              <div>
+                <span class="role-title-tag orange-text">Technology Researcher</span>
+                <h3 class="member-name">CHARAN TEJA M</h3>
+              </div>
+            </div>
+            <p class="member-bio sub-text">
+              Charan Teja M explores emerging technologies and trends to enhance our platform's functionality. He conducts in-depth research to identify innovative solutions and integrate cutting-edge features for a future-ready system.
+            </p>
+          </div>
+
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE VIEW 3: DEDICATED SEPARATE LOGIN PAGE (/#login) -->
+    <div class="public-page-view" id="public-view-login">
+      <section class="landing-section flex-center-section">
+        <div class="glass-card login-card public-page-card">
+          <div class="about-page-header margin-b-md">
+            <button class="glass-btn small-btn margin-b-sm" onclick="switchPublicPage('home')"><i data-lucide="arrow-left"></i> Back to Home</button>
+          </div>
+          <div class="login-header text-center">
+            <div class="brand-logo-large">
+              <div class="logo-cross-nodes">
+                <i data-lucide="activity"></i>
+              </div>
+            </div>
+            <h1 class="brand-title margin-t-xs">HOSPIT<span class="cyan-text">IQ</span> Sign In</h1>
+            <p class="brand-tagline">"Smarter Queues. Better Care."</p>
+            <span class="badge-pill blue-pill margin-t-xs">Select Your Portal Access</span>
+          </div>
+
+          <div class="quick-login-pills text-center margin-t-md">
+            <div class="role-demo-btns three-roles">
+              <button class="demo-chip active" data-role="Patient"><i data-lucide="user"></i> Patient Portal</button>
+              <button class="demo-chip" data-role="Doctor"><i data-lucide="stethoscope"></i> Doctor Portal</button>
+              <button class="demo-chip" data-role="Admin"><i data-lucide="shield-check"></i> Admin Command</button>
+            </div>
+          </div>
+
+          <form id="publicPageLoginForm" class="login-form margin-t-md" onsubmit="handlePublicPageLogin(event)">
+            <div class="form-group">
+              <label>Account / Patient Email</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="mail"></i>
+                <input type="email" id="pageLoginEmail" required class="glass-input" value="patient@hospitiq.org" />
+              </div>
+            </div>
+
+            <div class="form-group" id="pageLoginTokenGroup">
+              <label>OR Enter Token # for Instant View</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="ticket"></i>
+                <input type="text" id="pageLoginTokenNumber" placeholder="e.g. A-031" class="glass-input" value="A-031" />
+              </div>
+            </div>
+
+            <button type="submit" class="action-btn glow-btn width-full margin-t-md">
+              <i data-lucide="log-in"></i> Launch Selected Portal
+            </button>
+          </form>
+
+          <div class="login-footer text-center margin-t-md">
+            <p class="sub-text">Don't have an account yet? <a href="#register" class="cyan-text" onclick="switchPublicPage('register')">Register Now</a></p>
+            <small class="sub-text display-block margin-t-xs">Support: myselfadmin123@gmail.com</small>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE VIEW 4: DEDICATED SEPARATE REGISTER PAGE (/#register - EXACT MEDI-CONNECT MODEL) -->
+    <div class="public-page-view" id="public-view-register">
+      <section class="landing-section flex-center-section">
+        <div class="glass-card login-card public-page-card">
+          <div class="about-page-header margin-b-md">
+            <button class="glass-btn small-btn margin-b-sm" onclick="switchPublicPage('home')"><i data-lucide="arrow-left"></i> Back to Home</button>
+          </div>
+          <div class="login-header text-center">
+            <div class="brand-logo-large">
+              <div class="logo-cross-nodes">
+                <i data-lucide="user-plus"></i>
+              </div>
+            </div>
+            <h1 class="brand-title margin-t-xs">Create HOSPIT<span class="cyan-text">IQ</span> Account</h1>
+            <p class="brand-tagline">Join the SIH 2026 Smart Healthcare Platform</p>
+          </div>
+
+          <form id="publicRegisterForm" class="login-form margin-t-md" onsubmit="handlePublicRegisterSubmit(event)">
+            <div class="form-group">
+              <label>Full Name</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="user"></i>
+                <input type="text" id="regName" required placeholder="e.g. Ramesh Verma" class="glass-input" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Email Address</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="mail"></i>
+                <input type="email" id="regEmail" required placeholder="name@example.com" class="glass-input" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Age</label>
+                <input type="number" id="regAge" min="1" max="120" required placeholder="35" class="glass-input" />
+              </div>
+              <div class="form-group">
+                <label>Gender</label>
+                <select id="regGender" class="glass-input">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Phone Number for Alerts</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="phone"></i>
+                <input type="text" id="regPhone" required placeholder="+91 98765 43210" class="glass-input" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Account Type / Role</label>
+              <select id="regRole" class="glass-input">
+                <option value="Patient">Patient</option>
+                <option value="Doctor">Doctor / Medical Practitioner</option>
+                <option value="Hospital Staff">Hospital Management / Staff</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="lock"></i>
+                <input type="password" id="regPassword" required placeholder="••••••••" class="glass-input" />
+              </div>
+            </div>
+
+            <button type="submit" class="action-btn glow-btn width-full margin-t-md">
+              <i data-lucide="check-circle2"></i> Register Account & Sign In
+            </button>
+          </form>
+
+          <div class="login-footer text-center margin-t-md">
+            <p class="sub-text">Already have an account? <a href="#login" class="cyan-text" onclick="switchPublicPage('login')">Sign In</a></p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- FOOTER SECTION (EXACT MEDI-CONNECT REFERENCE DESIGN) -->
+    <footer class="mediconnect-footer" id="footerSection">
+      <div class="footer-container">
+        <div class="footer-columns-grid">
+          
+          <!-- Column 1: Services -->
+          <div class="footer-col">
+            <h4 class="footer-title">Services</h4>
+            <ul class="footer-links-list">
+              <li><a href="#services" onclick="switchPublicPage('services')">OPD Consultations</a></li>
+              <li><a href="#services" onclick="switchPublicPage('services')">Lab Tests</a></li>
+              <li><a href="#services" onclick="switchPublicPage('services')">Health Checkup</a></li>
+            </ul>
+          </div>
+
+          <!-- Column 2: About -->
+          <div class="footer-col">
+            <h4 class="footer-title">About</h4>
+            <ul class="footer-links-list">
+              <li><a href="#about" onclick="switchPublicPage('about')">Our Hospital Story</a></li>
+              <li><a href="#about" onclick="switchPublicPage('about')">Meet the Team</a></li>
+              <li><a href="#about" onclick="switchPublicPage('about')">SIH 2026 Project Details</a></li>
+              <li><a href="#about" onclick="switchPublicPage('about')">Terms & Policies</a></li>
+            </ul>
+          </div>
+
+          <!-- Column 3: Contact Us & Support -->
+          <div class="footer-col">
+            <h4 class="footer-title">Contact Us & Support</h4>
+            <ul class="footer-links-list">
+              <li><a href="mailto:myselfadmin123@gmail.com">Customer Care: myselfadmin123@gmail.com</a></li>
+              <li><a href="mailto:myselfadmin123@gmail.com">Support Us</a></li>
+            </ul>
+          </div>
+
+          <!-- Column 4: Follow us on (Exact Image Logos) -->
+          <div class="footer-col">
+            <h4 class="footer-title">Follow us on</h4>
+            <div class="social-icons-row-medi">
+              <a href="https://instagram.com" target="_blank" class="social-img-link" title="Instagram"><img src="images/social_instagram.png" alt="Instagram" class="social-img-icon" /></a>
+              <a href="https://facebook.com" target="_blank" class="social-img-link" title="Facebook"><img src="images/social_facebook.png" alt="Facebook" class="social-img-icon" /></a>
+              <a href="https://twitter.com" target="_blank" class="social-img-link" title="X (Twitter)"><img src="images/social_x.png" alt="X (Twitter)" class="social-img-icon" /></a>
+              <a href="https://linkedin.com" target="_blank" class="social-img-link" title="LinkedIn"><img src="images/social_linkedin.png" alt="LinkedIn" class="social-img-icon" /></a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- DISCLAIMER SECTION -->
+        <div class="disclaimer-box text-center margin-t-lg">
+          <h4 class="disclaimer-title">DISCLAIMER</h4>
+          <p class="disclaimer-text">
+            “The information provided on Med-Space / HOSPITIQ is intended for general informational purposes only and should not be considered as medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider for any medical condition or treatment. Med-Space / HOSPITIQ facilitates OPD appointment booking and hospital data sharing, but it does not endorse or guarantee the quality of services provided by healthcare providers.”
+          </p>
+          <div class="copyright-line margin-t-sm">Medi connect ©2026</div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Back to Top Circular Arrow Button -->
+    <a href="#heroSection" class="back-to-top-btn" title="Back to top">
+      <i data-lucide="arrow-up"></i>
+    </a>
+  </div>
+
+  <!-- LOGIN OVERLAY SCREEN (SUPPORTING 3 ROLES: PATIENT, DOCTOR, ADMIN) -->
+  <div class="login-overlay" id="loginScreen">
+    <div class="glass-card login-card">
+      <div class="login-header text-center">
+        <div class="brand-logo-large">
+          <div class="logo-cross-nodes">
+            <i data-lucide="activity"></i>
+          </div>
+        </div>
+        <h1 class="brand-title">HOSPIT<span class="cyan-text">IQ</span></h1>
+        <p class="brand-tagline">"Smarter Queues. Better Care."</p>
+        <span class="pill-badge blue-pill margin-t-xs">Select Your Portal Access</span>
+      </div>
+
+      <!-- 3 Simplified Role Selection Chips -->
+      <div class="quick-login-pills text-center margin-t-md">
+        <div class="role-demo-btns three-roles">
+          <button class="demo-chip active" data-role="Patient"><i data-lucide="user"></i> Patient Portal</button>
+          <button class="demo-chip" data-role="Doctor"><i data-lucide="stethoscope"></i> Doctor Portal</button>
+          <button class="demo-chip" data-role="Admin"><i data-lucide="shield-check"></i> Admin Command</button>
+        </div>
+      </div>
+
+      <form id="loginForm" class="login-form margin-t-md">
+        <div class="form-group" id="loginEmailGroup">
+          <label>Account / Patient Email</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="mail"></i>
+            <input type="email" id="loginEmail" required class="glass-input" value="patient@hospitiq.org" />
+          </div>
+        </div>
+
+        <div class="form-group" id="loginTokenGroup">
+          <label>OR Enter Token # for Instant View</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="ticket"></i>
+            <input type="text" id="loginTokenNumber" placeholder="e.g. A-031" class="glass-input" value="A-031" />
+          </div>
+        </div>
+
+        <button type="submit" class="action-btn glow-btn width-full margin-t-md">
+          <i data-lucide="log-in"></i> Launch Selected Portal
+        </button>
+
+        <button type="button" class="text-btn small-text width-full margin-t-sm" onclick="closeLoginOverlay()">
+          <i data-lucide="arrow-left"></i> Return to Public Home Page
+        </button>
+      </form>
+
+      <div class="login-footer text-center">
+        <small class="sub-text">Support: myselfadmin123@gmail.com</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION SHELL -->
+  <div class="app-layout hidden" id="appShell">
+    
+    <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="glass-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="logo-cross-small">
+            <i data-lucide="activity"></i>
+          </div>
+          <div class="brand-text sidebar-brand-text">
+            <span class="logo-title">HOSPIT<span class="cyan-text">IQ</span></span>
+            <span class="logo-subtitle">Command Center</span>
+          </div>
+        </div>
+        <button class="sidebar-toggle-btn" id="sidebarCollapseBtn" title="Toggle Sidebar">
+          <i data-lucide="chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- ROLE 1: PATIENT PORTAL LINK -->
+        <div class="nav-section-label role-label-patient">PATIENT PORTAL</div>
+        <button class="side-link patient-role-link" data-view="patient-portal"><i data-lucide="ticket"></i> <span>My OPD Token Pass</span></button>
+
+        <!-- ROLE 2: DOCTOR PORTAL LINK -->
+        <div class="nav-section-label role-label-doctor">DOCTOR PORTAL</div>
+        <button class="side-link doctor-role-link" data-view="doctor-portal"><i data-lucide="stethoscope"></i> <span>Consultation Terminal</span></button>
+
+        <!-- ROLE 3: ADMIN & COMMAND CENTER LINKS -->
+        <div class="nav-section-label role-label-admin">CLINICAL COMMAND</div>
+        <button class="side-link active admin-role-link" data-view="dashboard"><i data-lucide="layout-dashboard"></i> <span>Overview Dashboard</span></button>
+        <button class="side-link admin-role-link" data-view="opd-queue"><i data-lucide="ticket"></i> <span>Live OPD Queue</span> <span class="badge-count red" id="sideQueueBadge">24</span></button>
+        <button class="side-link admin-role-link" data-view="patients"><i data-lucide="users"></i> <span>Patient Directory</span></button>
+        <button class="side-link admin-role-link" data-view="doctors"><i data-lucide="stethoscope"></i> <span>Doctor Roster & OPD Rooms</span></button>
+
+        <div class="nav-section-label role-label-admin">INPATIENT & BEDS</div>
+        <button class="side-link admin-role-link" data-view="bed-mgmt"><i data-lucide="bed"></i> <span>Bed Availability</span> <span class="badge-count green" id="sideBedBadge">32</span></button>
+        <button class="side-link admin-role-link" data-view="bed-map"><i data-lucide="grid"></i> <span>Ward Layout Matrix</span></button>
+        <button class="side-link admin-role-link" data-view="admissions"><i data-lucide="user-plus"></i> <span>Inpatient Admissions</span></button>
+
+        <div class="nav-section-label role-label-admin">ANALYTICS & ADMIN</div>
+        <button class="side-link admin-role-link" data-view="analytics"><i data-lucide="bar-chart-3"></i> <span>Analytics & Metrics</span></button>
+        <button class="side-link admin-role-link" data-view="alerts"><i data-lucide="bell"></i> <span>System Alerts & AI Insights</span></button>
+        <button class="side-link admin-role-link" data-view="reports"><i data-lucide="file-text"></i> <span>Hospital Reports</span></button>
+        <button class="side-link admin-only-link" data-view="admin-manage"><i data-lucide="shield"></i> <span>Doctor Profile Manager</span></button>
+        <button class="side-link admin-role-link" data-view="settings"><i data-lucide="settings"></i> <span>Portal Settings</span></button>
+      </nav>
+
+      <!-- SIDEBAR USER FOOTER (NEAT ROUND AVATAR WHEN COLLAPSED) -->
+      <div class="sidebar-user-footer">
+        <div class="user-avatar-circle" id="userAvatar" title="Logged User Profile">A</div>
+        <div class="user-info-text sidebar-user-info">
+          <span class="user-name" id="userNameLabel">Dr. Rajesh Sharma</span>
+          <span class="user-role-badge" id="userRoleBadge">Hospital Admin</span>
+        </div>
+        <button class="logout-icon-btn" id="logoutBtn" title="Sign Out"><i data-lucide="log-out"></i></button>
+      </div>
+    </aside>
+
+    <!-- MAIN RIGHT CONTENT WRAPPER -->
+    <div class="main-wrapper">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="glass-header">
+        <div class="header-left">
+          <button class="mobile-hamburger" id="mobileHamburger"><i data-lucide="menu"></i></button>
+          <div class="hospital-branch-selector desktop-only">
+            <i data-lucide="building-2"></i>
+            <select id="hospitalBranchSelect" class="glass-input-compact">
+              <option value="main">HOSPITIQ Central Hospital (Main Campus)</option>
+              <option value="north">HOSPITIQ City Annex (North Wing)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="header-center desktop-only">
+          <div class="global-search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="globalSearchInput" placeholder="Search Token #, Patient Name, Doctor, or Bed ID..." class="glass-input" />
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="action-btn danger-btn small-btn" id="triggerEmergencyModeBtn" title="Trigger Emergency Mode"><i data-lucide="siren"></i> 🚨 Emergency</button>
+          
+          <div class="live-clock-box desktop-only">
+            <i data-lucide="clock"></i>
+            <span id="liveTimeClock">10:42 AM</span>
+          </div>
+
+          <div class="header-dropdown-wrapper" style="position: relative;">
+            <button class="icon-round-btn" id="notifBellBtn" title="System Alerts">
+              <i data-lucide="bell"></i>
+              <span class="notif-count-badge" id="notifCount">2</span>
+            </button>
+            <div class="dropdown-card glass-card hidden" id="notifDropdown">
+              <div class="dropdown-title card-header-flex padding-a-md">
+                <strong>Hospital Alerts</strong>
+                <button class="text-btn small-text" id="clearNotifBtn">Clear</button>
+              </div>
+              <div class="notif-list-mini padding-a-md" id="notifMiniList"></div>
+            </div>
+          </div>
+
+          <button class="icon-round-btn" id="themeToggleBtn" title="Switch Light/Dark Theme">
+            <i data-lucide="sun" id="themeIcon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW PANELS CONTAINER -->
+      <main class="content-container">
+        
+        <!-- ROLE 1: PATIENT PORTAL VIEW -->
+        <section id="view-patient-portal" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Patient Token & Live Wait Status</h1>
+              <p>Real-time queue tracking, consultation room allocation, and QR code pass.</p>
+            </div>
+          </div>
+
+          <div class="glass-card patient-portal-card margin-b-lg">
+            <div class="patient-hero-header text-center">
+              <span class="badge-pill cyan-pill margin-b-xs"><i data-lucide="ticket"></i> Active OPD Pass</span>
+              <h1 class="patient-token-display font-mono gradient-text" id="ptTokenNum">--</h1>
+              <h2 id="ptName">Patient: --</h2>
+              <div class="patient-meta-row margin-t-xs">
+                <span><i data-lucide="stethoscope"></i> Department: <strong id="ptDept">--</strong></span> • 
+                <span><i data-lucide="user"></i> Doctor: <strong id="ptDoctor">--</strong></span> • 
+                <span><i data-lucide="door-open"></i> Room: <strong id="ptRoom">--</strong></span>
+              </div>
+            </div>
+
+            <div class="patient-wait-grid margin-t-md">
+              <div class="wait-box blue-border">
+                <span class="sub-text">Estimated Wait Time</span>
+                <div class="wait-val font-mono" id="ptWaitTime">-- <span class="unit">Mins</span></div>
+              </div>
+              <div class="wait-box orange-border">
+                <span class="sub-text">Patients Ahead of You</span>
+                <div class="wait-val font-mono" id="ptAheadCount">-- <span class="unit">Patients</span></div>
+              </div>
+              <div class="wait-box green-border">
+                <span class="sub-text">Token Status</span>
+                <div class="wait-val green-text" id="ptStatus">--</div>
+              </div>
+            </div>
+
+            <div class="alert-confirm-strip margin-t-md">
+              <i data-lucide="message-square"></i>
+              <span>Live updates sent to phone: <strong>+91 99000 11223</strong> via SMS & WhatsApp</span>
+              <span class="badge-pill green-pill margin-l-auto">Alerts Active</span>
+            </div>
+
+            <div class="qr-code-section text-center margin-t-lg">
+              <h4>Contactless Digital Token Pass</h4>
+              <p class="sub-text margin-b-sm">Show this QR code at the OPD entrance terminal or doctor consultation desk.</p>
+              <div class="qr-code-box" id="ptQrCodeContainer"></div>
+              <small class="sub-text display-block margin-t-xs">Scan link: <span class="font-mono cyan-text" id="ptDirectUrl">https://hospiti-q.vercel.app/?token=A-031</span></small>
+            </div>
+          </div>
+        </section>
+
+        <!-- ROLE 2: ENHANCED DOCTOR PORTAL VIEW -->
+        <section id="view-doctor-portal" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Doctor Consultation Terminal</h1>
+              <p>Room-specific patient roster categorized by emergency priority level and vital signs.</p>
+            </div>
+            <div class="action-row">
+              <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> + Register New Patient</button>
+            </div>
+          </div>
+
+          <div class="glass-card doctor-now-card margin-b-lg">
+            <div class="card-header-flex">
+              <div>
+                <h3><i data-lucide="stethoscope"></i> My OPD Room Terminal (#104 — Cardiology)</h3>
+                <span class="sub-text">Attending: Dr. Sunita Rao (Cardiology)</span>
+              </div>
+              <div class="action-row align-center">
+                <label class="sub-text">Doctor Status:</label>
+                <select id="doctorLiveStatusSelect" class="glass-input-compact" onchange="updateMyDoctorStatus(this.value)">
+                  <option value="Available">🟢 Available</option>
+                  <option value="Busy" selected>🟠 Busy (In Consult)</option>
+                  <option value="On Break">🔵 On Break</option>
+                  <option value="Offline">🔴 Emergency Call</option>
+                </select>
+              </div>
+            </div>
+            <div class="serving-hero-body text-center">
+              <div class="serving-label-sub">CURRENTLY CONSULTING PATIENT</div>
+              <div class="serving-big-token gradient-text" id="docCurrentToken">A-024</div>
+              <div class="serving-patient-name" id="docCurrentPatient">Ramesh Verma (Age: 44, Male)</div>
+              <div class="triage-vitals-pills margin-t-sm">
+                <span class="vitals-chip"><i data-lucide="heart"></i> Pulse: 78 bpm</span>
+                <span class="vitals-chip"><i data-lucide="activity"></i> BP: 120/80</span>
+                <span class="vitals-chip"><i data-lucide="thermometer"></i> Temp: 98.6°F</span>
+                <span class="badge-pill red-pill"><i data-lucide="alert-circle"></i> High Priority</span>
+              </div>
+            </div>
+            <div class="serving-action-bar">
+              <button class="action-btn glow-btn width-full" onclick="callPatientToken('doc-1')"><i data-lucide="skip-forward"></i> Call Next Patient</button>
+              <button class="glass-btn success-btn width-full" onclick="showToast('Consultation completed and recorded!', 'success')"><i data-lucide="check"></i> Complete Consultation</button>
+            </div>
+          </div>
+
+          <div class="glass-card table-card">
+            <div class="card-header-flex padding-a-md">
+              <h3><i data-lucide="users"></i> Room Queue by Patient Priority</h3>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Token #</th>
+                  <th>Patient Name</th>
+                  <th>Priority Category</th>
+                  <th>Vitals Chips</th>
+                  <th>Est Wait</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="doctorQueueBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ROLE 3: ADMIN COMMAND CENTER DASHBOARD -->
+        <section id="view-dashboard" class="view-panel active">
+          
+          <div class="view-header">
+            <div>
+              <h1 id="dashGreetingTitle">Good Morning, Admin</h1>
+              <p>Real-time Hospital Operations Overview & Patient-Flow Command Center.</p>
+            </div>
+            <div class="action-row">
+              <button class="glass-btn" onclick="openRecommendBedModal()"><i data-lucide="sparkles"></i> Bed Recommend</button>
+              <button class="action-btn glow-btn" onclick="switchView('opd-queue')"><i data-lucide="ticket"></i> OPD Queue Terminal</button>
+            </div>
+          </div>
+
+          <!-- HOSPITAL CAPACITY OVERVIEW BAR -->
+          <div class="glass-card capacity-overview-card margin-b-lg">
+            <div class="card-header-flex">
+              <h3><i data-lucide="activity"></i> Hospital Wide Capacity Status</h3>
+              <span class="badge-pill orange-pill" id="hospitalStatusPill">STATUS: HIGH LOAD</span>
+            </div>
+            <div class="capacity-gauges-grid margin-t-sm">
+              <div class="gauge-item">
+                <div class="gauge-label"><span>OPD Queue Load</span> <strong id="valOpdLoad">78%</strong></div>
+                <div class="progress-bar-bg"><div class="progress-fill-bar" id="barOpdLoad" style="width: 78%; background: var(--color-orange);"></div></div>
+              </div>
+              <div class="gauge-item">
+                <div class="gauge-label"><span>Bed Occupancy</span> <strong id="valBedOcc">82%</strong></div>
+                <div class="progress-bar-bg"><div class="progress-fill-bar" id="barBedOcc" style="width: 82%; background: var(--color-orange);"></div></div>
+              </div>
+              <div class="gauge-item">
+                <div class="gauge-label"><span>ICU Capacity</span> <strong id="valIcuOcc">90%</strong></div>
+                <div class="progress-bar-bg"><div class="progress-fill-bar" id="barIcuOcc" style="width: 90%; background: var(--color-red);"></div></div>
+              </div>
+              <div class="gauge-item">
+                <div class="gauge-label"><span>Emergency Bay</span> <strong id="valEmgOcc">65%</strong></div>
+                <div class="progress-bar-bg"><div class="progress-fill-bar" id="barEmgOcc" style="width: 65%; background: var(--color-green);"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOP METRICS STATS BAR (4 CARDS) -->
+          <div class="stats-grid margin-b-lg">
+            <div class="glass-card stat-card blue-border">
+              <div class="stat-top">
+                <div class="stat-icon-box blue-icon"><i data-lucide="users"></i></div>
+                <span class="trend-badge positive"><i data-lucide="trending-up"></i> +14%</span>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">OPD Patients Today</span>
+                <h2 class="stat-number" id="statOpdTotal">142</h2>
+                <div class="stat-sub-info">
+                  <span>Waiting: <strong id="statOpdWaiting">24</strong></span> • 
+                  <span>Served: <strong id="statOpdServed">118</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card stat-card orange-border">
+              <div class="stat-top">
+                <div class="stat-icon-box orange-icon"><i data-lucide="clock"></i></div>
+                <span class="trend-badge neutral"><i data-lucide="activity"></i> Avg 22m</span>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Active Queue Wait</span>
+                <h2 class="stat-number" id="statQueueTotal">24 <span class="stat-sub-unit">Waiting</span></h2>
+                <div class="stat-sub-info">
+                  <span>Avg: <strong id="statAvgWait">22 min</strong></span> • 
+                  <span>Max: <strong id="statLongestWait">48 min</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card stat-card green-border">
+              <div class="stat-top">
+                <div class="stat-icon-box green-icon"><i data-lucide="bed"></i></div>
+                <span class="trend-badge positive"><i data-lucide="check-circle2"></i> 76%</span>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Total Bed Availability</span>
+                <h2 class="stat-number" id="statBedsAvailable">32 <span class="stat-sub-unit">Free</span></h2>
+                <div class="stat-sub-info">
+                  <span>Total: <strong id="statBedsTotal">100</strong></span> • 
+                  <span>Occupied: <strong id="statBedsOccupied">68</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card stat-card red-border">
+              <div class="stat-top">
+                <div class="stat-icon-box red-icon"><i data-lucide="siren"></i></div>
+                <span class="trend-badge urgent"><i data-lucide="alert-triangle"></i> Urgent</span>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Emergency & ICU Status</span>
+                <h2 class="stat-number" id="statEmergPatients">08 <span class="stat-sub-unit">Emergency</span></h2>
+                <div class="stat-sub-info">
+                  <span>ICU Vacant: <strong id="statIcuBeds">02 Beds</strong></span> • 
+                  <span>Critical: <strong id="statCriticalAlerts">01 Alert</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MIDDLE ZONE -->
+          <div class="dashboard-grid-2">
+            
+            <!-- OPD LIVE CALL TERMINAL -->
+            <div class="glass-card now-serving-card">
+              <div class="card-header-flex">
+                <h3><i data-lucide="volume-2"></i> OPD Live Call Terminal</h3>
+                <span class="badge-pill cyan-pill"><i data-lucide="radio"></i> Live Sync</span>
+              </div>
+
+              <div class="serving-hero-body text-center">
+                <div class="serving-label-sub">CURRENTLY CALLING TOKEN</div>
+                <div class="serving-big-token gradient-text" id="dashCallingToken">A-024</div>
+                <div class="serving-patient-name" id="dashCallingPatient">Ramesh Verma (Age: 44, Male)</div>
+                <div class="serving-doc-meta" id="dashCallingDoctor">Cardiology OPD Room #104 — Dr. Sunita Rao</div>
+                
+                <div class="triage-vitals-pills margin-t-sm">
+                  <span class="vitals-chip"><i data-lucide="heart"></i> Pulse: 78 bpm</span>
+                  <span class="vitals-chip"><i data-lucide="activity"></i> BP: 120/80</span>
+                  <span class="vitals-chip"><i data-lucide="thermometer"></i> 98.6°F</span>
+                  <span class="badge-pill red-pill"><i data-lucide="alert-circle"></i> High Priority</span>
+                </div>
+              </div>
+
+              <div class="serving-action-bar">
+                <button class="action-btn glow-btn width-full" id="dashCallNextBtn"><i data-lucide="skip-forward"></i> Call Next Patient</button>
+                <button class="glass-btn success-btn width-full" id="dashCompleteBtn"><i data-lucide="check"></i> Completed</button>
+              </div>
+            </div>
+
+            <!-- WARD BED SNAPSHOT MATRIX -->
+            <div class="glass-card ward-snapshot-card">
+              <div class="card-header-flex">
+                <h3><i data-lucide="grid"></i> Ward Occupancy Matrix</h3>
+                <button class="text-btn small-text" onclick="switchView('bed-map')">Full Map <i data-lucide="arrow-right"></i></button>
+              </div>
+
+              <div class="ward-snapshot-grid" id="wardSnapshotContainer">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTTOM ZONE -->
+          <div class="dashboard-grid-2 margin-t-lg">
+            
+            <div class="glass-card dual-card">
+              <div class="card-header-flex">
+                <h3><i data-lucide="building"></i> Department Monitoring</h3>
+              </div>
+              <div class="dept-cards-grid" id="dashDeptGrid">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <div class="glass-card insights-card">
+              <div class="card-header-flex">
+                <h3><i data-lucide="sparkles"></i> HOSPITIQ INSIGHTS</h3>
+                <span class="badge-pill purple-pill"><i data-lucide="bot"></i> Operational AI</span>
+              </div>
+              <div class="insights-list" id="insightsListContainer">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- LIVE OPD QUEUE VIEW -->
+        <section id="view-opd-queue" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Live OPD Queue Management</h1>
+              <p>Real-time token dispatching, priority triage, and smart wait-time forecasting.</p>
+            </div>
+            <button class="action-btn glow-btn" id="openNewTokenModalBtn"><i data-lucide="plus-circle"></i> Generate Token</button>
+          </div>
+
+          <div class="glass-card filter-bar-card margin-b-md">
+            <div class="search-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="queueSearchInput" placeholder="Search Token #, Patient, Doctor..." class="glass-input" />
+            </div>
+            <div class="filter-controls">
+              <select id="queueDeptFilter" class="glass-input">
+                <option value="all">All Departments</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="Emergency">Emergency</option>
+              </select>
+
+              <select id="queueStatusFilter" class="glass-input">
+                <option value="all">All Statuses</option>
+                <option value="Waiting">Waiting</option>
+                <option value="In Consultation">In Consultation</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="glass-card table-card">
+            <table class="data-table" id="queueTable">
+              <thead>
+                <tr>
+                  <th>Token #</th>
+                  <th>Patient Name</th>
+                  <th>Department</th>
+                  <th>Assigned Doctor</th>
+                  <th>Est. Wait</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="queueTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- PATIENTS DIRECTORY -->
+        <section id="view-patients" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Patient Management Directory</h1>
+              <p>Registered patients, visit history, token records, and health profiles.</p>
+            </div>
+            <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="user-plus"></i> New Patient Registration</button>
+          </div>
+
+          <div class="glass-card table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Full Name</th>
+                  <th>Age / Gender</th>
+                  <th>Phone Number</th>
+                  <th>Department</th>
+                  <th>Token #</th>
+                  <th>Status</th>
+                  <th>Reg. Time</th>
+                </tr>
+              </thead>
+              <tbody id="patientsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- DOCTORS DIRECTORY -->
+        <section id="view-doctors" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Doctor Roster & OPD Rooms</h1>
+              <p>On-duty doctors, consultation room allocations, queue load, and availability.</p>
+            </div>
+            <button class="action-btn glow-btn admin-only-btn" id="openAddDoctorModalBtn"><i data-lucide="plus"></i> Add Doctor</button>
+          </div>
+
+          <div class="doctors-cards-grid" id="doctorsGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- BED MANAGEMENT DASHBOARD -->
+        <section id="view-bed-mgmt" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Hospital Bed Availability Dashboard</h1>
+              <p>Ward-wise capacity metrics, occupied bed ratios, and emergency bed admissions.</p>
+            </div>
+            <button class="action-btn glow-btn" id="openReserveBedModalBtn"><i data-lucide="plus"></i> Reserve Emergency Bed</button>
+          </div>
+
+          <div class="ward-progress-grid margin-b-lg" id="wardProgressGrid">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <div class="glass-card table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Bed ID</th>
+                  <th>Ward Category</th>
+                  <th>Status</th>
+                  <th>Patient Occupant</th>
+                  <th>Attending Doctor</th>
+                  <th>Admission Date</th>
+                  <th>Features</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bedMgmtTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- INTERACTIVE BED MAP -->
+        <section id="view-bed-map" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Interactive Hospital Bed Layout Map</h1>
+              <p>Visual map of individual bed cards. Click any bed card to inspect occupant details or execute patient discharge.</p>
+            </div>
+            <div class="bed-map-legend">
+              <span class="legend-item"><span class="dot available-dot"></span> Available</span>
+              <span class="legend-item"><span class="dot occupied-dot"></span> Occupied</span>
+              <span class="legend-item"><span class="dot reserved-dot"></span> Reserved</span>
+              <span class="legend-item"><span class="dot cleaning-dot"></span> Cleaning</span>
+            </div>
+          </div>
+
+          <div class="ward-filter-tabs margin-b-md" id="bedMapTabs">
+            <button class="ward-tab-btn active" data-ward="all">All Wards</button>
+            <button class="ward-tab-btn" data-ward="General Ward">General Ward</button>
+            <button class="ward-tab-btn" data-ward="ICU">ICU Ward</button>
+            <button class="ward-tab-btn" data-ward="Emergency">Emergency</button>
+            <button class="ward-tab-btn" data-ward="Private Ward">Private Ward</button>
+          </div>
+
+          <div class="bed-map-grid" id="bedMapGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- ADMISSIONS PAGE -->
+        <section id="view-admissions" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Hospital Inpatient Admissions Directory</h1>
+              <p>Active patient admissions, ward bed assignments, attending physicians, and discharge management.</p>
+            </div>
+            <div class="action-row">
+              <button class="action-btn glow-btn" onclick="openRecommendBedModal()"><i data-lucide="sparkles"></i> Bed Recommend Engine</button>
+              <button class="glass-btn" onclick="openAdmitPatientModal()"><i data-lucide="user-plus"></i> New Ward Admission</button>
+            </div>
+          </div>
+
+          <div class="glass-card table-card">
+            <div class="card-header-flex padding-a-md">
+              <h3><i data-lucide="user-plus"></i> Active Admitted Patients Roster</h3>
+              <span class="badge-pill green-pill">14 Active Admissions</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Admission ID</th>
+                  <th>Patient Name</th>
+                  <th>Ward Category</th>
+                  <th>Bed Number</th>
+                  <th>Attending Doctor</th>
+                  <th>Diagnosis / Reason</th>
+                  <th>Admission Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admissionsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section id="view-analytics" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Hospital Operations Analytics</h1>
+              <p>Hourly patient registration curves, department load share, and bed occupancy trends.</p>
+            </div>
+          </div>
+
+          <div class="analytics-charts-grid">
+            <div class="glass-card chart-card">
+              <h3><i data-lucide="bar-chart-2"></i> OPD Footfall Per Hour</h3>
+              <div class="chart-container"><canvas id="chartOpdHourly"></canvas></div>
+            </div>
+
+            <div class="glass-card chart-card">
+              <h3><i data-lucide="pie-chart"></i> Department Load Share</h3>
+              <div class="chart-container"><canvas id="chartDeptBreakdown"></canvas></div>
+            </div>
+
+            <div class="glass-card chart-card span-2">
+              <h3><i data-lucide="trending-up"></i> Weekly Bed Occupancy Rate Trend (%)</h3>
+              <div class="chart-container"><canvas id="chartBedTrend"></canvas></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ALERTS & SMART INSIGHTS -->
+        <section id="view-alerts" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>System Alerts & HOSPITIQ AI Advice</h1>
+              <p>Capacity warnings, high OPD queue notifications, and automated operational recommendations.</p>
+            </div>
+          </div>
+
+          <div class="alerts-layout-grid">
+            <div class="glass-card alerts-feed-card">
+              <h3><i data-lucide="bell"></i> System Alert Log</h3>
+              <div class="alerts-list" id="fullAlertsList"></div>
+            </div>
+
+            <div class="glass-card insights-full-card">
+              <h3><i data-lucide="sparkles"></i> AI Operational Guidance</h3>
+              <div class="insights-list" id="fullInsightsList"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REPORTS & PDF/CSV EXPORT -->
+        <section id="view-reports" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Executive Operational Reports</h1>
+              <p>Generate downloadable and printable OPD performance summaries and bed audit logs.</p>
+            </div>
+            <div class="action-row">
+              <button class="glass-btn" id="exportCsvBtn"><i data-lucide="file-spreadsheet"></i> Export CSV Data</button>
+              <button class="action-btn glow-btn" id="printReportBtn"><i data-lucide="download"></i> Export PDF Report</button>
+            </div>
+          </div>
+
+          <div class="glass-card report-preview-card" id="reportDocument">
+            <div class="report-header text-center border-bottom padding-b-md">
+              <h2 class="brand-title">HOSPIT<span class="cyan-text">IQ</span> CENTRAL HOSPITAL</h2>
+              <p class="sub-text">Executive Outpatient & Bed Availability Audit Report</p>
+              <div class="report-meta-row margin-t-sm" id="reportMetaRow"></div>
+            </div>
+
+            <div class="report-body margin-t-md">
+              <div class="report-section">
+                <h4>1. Outpatient Department Key Metrics</h4>
+                <table class="report-mini-table" id="reportOpdTable"></table>
+              </div>
+
+              <div class="report-section margin-t-md">
+                <h4>2. Ward Bed Occupancy Breakdown</h4>
+                <table class="report-mini-table" id="reportBedTable"></table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HOSPITAL ADMIN WINDOW -->
+        <section id="view-admin-manage" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Hospital Doctor & Resource Administration Window</h1>
+              <p>Configure hospital doctor rosters, assign OPD rooms, specializations, and contact records.</p>
+            </div>
+            <button class="action-btn glow-btn" id="adminAddDoctorBtn"><i data-lucide="plus"></i> Add Doctor & Generate Login</button>
+          </div>
+
+          <div class="glass-card table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Doctor ID</th>
+                  <th>Doctor Name</th>
+                  <th>Specialization</th>
+                  <th>Department</th>
+                  <th>OPD Room</th>
+                  <th>Login Email</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminDoctorsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- COMPREHENSIVE ADMIN SETTINGS VIEW -->
+        <section id="view-settings" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Hospital System & Integration Settings</h1>
+              <p>Manage MongoDB cloud parameters, hospital helpline contacts, SMS gateways, and queue refresh rates.</p>
+            </div>
+          </div>
+
+          <div class="settings-grid-2">
+            <div class="glass-card settings-card">
+              <h3><i data-lucide="database"></i> Database Connection (MongoDB Atlas)</h3>
+              <div class="form-group margin-t-sm">
+                <label>MongoDB Atlas URI</label>
+                <input type="text" class="glass-input width-full" value="mongodb+srv://tarunkumarn999_db_user:yQrv08IV1xbStmHo@cluster0.mongodb.net/hospitiq?retryWrites=true&w=majority" />
+              </div>
+              <div class="form-group">
+                <label>In-Memory Fallback Cache</label>
+                <select class="glass-input width-full">
+                  <option value="enabled" selected>Enabled (High Availability Mode)</option>
+                  <option value="disabled">Disabled</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="glass-card settings-card">
+              <h3><i data-lucide="message-square"></i> SMS & WhatsApp Notification Gateway</h3>
+              <div class="form-group margin-t-sm">
+                <label>Twilio / SMS Gateway Key</label>
+                <input type="password" class="glass-input width-full" value="AC_hospitiq_live_key_9981273" />
+              </div>
+              <div class="form-group">
+                <label>Emergency Patient Alert Phone</label>
+                <input type="text" class="glass-input width-full" value="+91 99000 11223" />
+              </div>
+            </div>
+
+            <div class="glass-card settings-card span-2">
+              <h3><i data-lucide="building-2"></i> Hospital Information & Support Email</h3>
+              <div class="form-row margin-t-sm">
+                <div class="form-group">
+                  <label>Hospital Main Campus Name</label>
+                  <input type="text" class="glass-input" value="HOSPITIQ Central Hospital" />
+                </div>
+                <div class="form-group">
+                  <label>Official Support Email</label>
+                  <input type="email" class="glass-input" value="myselfadmin123@gmail.com" />
+                </div>
+              </div>
+              <button class="action-btn glow-btn margin-t-md" onclick="showToast('Hospital configuration updated successfully!', 'success')"><i data-lucide="save"></i> Save All System Settings</button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL 1: SMART BED RECOMMENDATION ENGINE -->
+  <div class="modal-overlay" id="recommendBedModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="sparkles"></i> Smart Bed Recommendation Engine</h3>
+        <button class="close-btn" id="closeRecommendBedModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Select Target Ward Requirement</label>
+          <select id="recWardSelect" class="glass-input">
+            <option value="ICU">ICU Ward (Critical)</option>
+            <option value="General Ward">General Ward</option>
+            <option value="Emergency">Emergency Bay</option>
+            <option value="Private Ward">Private Ward</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="recVentilatorCheck" checked />
+            <span>Require Mechanical Ventilator Support</span>
+          </label>
+          <label class="checkbox-label margin-t-xs">
+            <input type="checkbox" id="recOxygenCheck" checked />
+            <span>Require High-Flow Oxygen Outlet</span>
+          </label>
+        </div>
+
+        <button class="glass-btn width-full margin-b-md" onclick="fetchRecommendedBeds()"><i data-lucide="cpu"></i> Calculate Best Matched Beds</button>
+
+        <div class="rec-results-list" id="recResultsContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: GENERATE TOKEN / PATIENT REGISTRATION -->
+  <div class="modal-overlay" id="newTokenModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="ticket"></i> Patient Registration & OPD Token Pass</h3>
+        <button class="close-btn" id="closeNewTokenModal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="newTokenForm">
+        <div class="form-group">
+          <label>Patient Full Name</label>
+          <input type="text" id="inputPatientName" required placeholder="e.g. Ramesh Verma" class="glass-input" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="inputPatientAge" min="1" max="120" required placeholder="42" class="glass-input" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="inputPatientGender" class="glass-input">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Phone Number for SMS & WhatsApp Alerts</label>
+          <input type="text" id="inputPatientPhone" placeholder="+91 98765 43210" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Select Doctor & OPD Room</label>
+          <select id="inputDoctorSelect" class="glass-input" required></select>
+        </div>
+        <div class="form-group">
+          <label>Triage Priority</label>
+          <select id="inputPriority" class="glass-input">
+            <option value="Normal">Normal OPD Patient</option>
+            <option value="High">High Priority</option>
+            <option value="Emergency">🚨 Emergency / Critical Priority</option>
+          </select>
+        </div>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check"></i> Confirm & Generate Token Pass</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: ADD DOCTOR & GENERATE LOGIN CREDENTIALS -->
+  <div class="modal-overlay" id="addDoctorModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="stethoscope"></i> Add Doctor & Create Login Account</h3>
+        <button class="close-btn" id="closeAddDoctorModal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="addDoctorForm">
+        <div class="form-group">
+          <label>Doctor Full Name</label>
+          <input type="text" id="docNameInput" required placeholder="Dr. Sunita Rao" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Doctor Login Email</label>
+          <input type="email" id="docEmailInput" required placeholder="sunita@hospitiq.org" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Specialization</label>
+          <input type="text" id="docSpecInput" required placeholder="Interventional Cardiology" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <select id="docDeptInput" class="glass-input">
+            <option value="Cardiology">Cardiology</option>
+            <option value="General Medicine">General Medicine</option>
+            <option value="Orthopedics">Orthopedics</option>
+            <option value="Pediatrics">Pediatrics</option>
+            <option value="Dermatology">Dermatology</option>
+            <option value="Neurology">Neurology</option>
+            <option value="ENT">ENT</option>
+            <option value="Emergency">Emergency</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>OPD Room</label>
+          <input type="text" id="docRoomInput" required placeholder="OPD Room #109" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Contact Phone</label>
+          <input type="text" id="docPhoneInput" placeholder="+91 98765 00000" class="glass-input" />
+        </div>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="plus"></i> Add Doctor & Generate Portal Login</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3B: EDIT DOCTOR PROFILE -->
+  <div class="modal-overlay" id="editDoctorModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="user-cog"></i> Edit Doctor Profile</h3>
+        <button class="close-btn" id="closeEditDoctorModal" onclick="closeModal('editDoctorModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="editDoctorForm" onsubmit="handleEditDoctorSubmit(event)">
+        <input type="hidden" id="editDocId" />
+        <div class="form-group">
+          <label>Doctor Full Name</label>
+          <input type="text" id="editDocName" required class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Doctor Email</label>
+          <input type="email" id="editDocEmail" required class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Specialization</label>
+          <input type="text" id="editDocSpec" required class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <select id="editDocDept" class="glass-input">
+            <option value="Cardiology">Cardiology</option>
+            <option value="General Medicine">General Medicine</option>
+            <option value="Orthopedics">Orthopedics</option>
+            <option value="Pediatrics">Pediatrics</option>
+            <option value="Dermatology">Dermatology</option>
+            <option value="Neurology">Neurology</option>
+            <option value="ENT">ENT</option>
+            <option value="Emergency">Emergency</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>OPD Room</label>
+          <input type="text" id="editDocRoom" required class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Contact Phone</label>
+          <input type="text" id="editDocPhone" class="glass-input" />
+        </div>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="save"></i> Update Doctor Profile</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: BED DETAILS & DISCHARGE ACTION -->
+  <div class="modal-overlay" id="bedDetailsModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="bed"></i> Bed Record & Patient Details</h3>
+        <button class="close-btn" id="closeBedDetailsModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="bed-modal-body" id="bedModalContent"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: ADMIT PATIENT TO WARD -->
+  <div class="modal-overlay" id="admitPatientModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="hospital"></i> Admit Patient to Ward</h3>
+        <button class="close-btn" id="closeAdmitPatientModal" onclick="closeModal('admitPatientModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="admitPatientForm">
+        <div class="form-group">
+          <label>Patient Full Name</label>
+          <input type="text" id="admitPatientName" required placeholder="e.g. Kiran Sharma" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Target Hospital Ward</label>
+          <select id="admitWardSelect" class="glass-input" onchange="populateAvailableBedsForWard()">
+            <option value="ICU">ICU Ward (Critical Care)</option>
+            <option value="Emergency">Emergency Bay</option>
+            <option value="General Ward" selected>General Ward</option>
+            <option value="Private Ward">Private Ward</option>
+            <option value="Semi-Private">Semi-Private Ward</option>
+            <option value="Pediatric">Pediatric Ward</option>
+            <option value="Maternity">Maternity Ward</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Select Available Bed</label>
+          <select id="admitBedSelect" class="glass-input" required>
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Attending Doctor</label>
+          <select id="admitDoctorSelect" class="glass-input">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Diagnosis / Reason for Admission</label>
+          <input type="text" id="admitDiagnosisInput" required placeholder="e.g. Post-operative Monitoring, Acute Observation" class="glass-input" />
+        </div>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check-circle"></i> Confirm Ward Admission</button>
+      </form>
+    </div>
+  </div>
+
+
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
