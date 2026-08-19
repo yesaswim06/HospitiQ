@@ -3,11 +3,14 @@
    ========================================================================== */
 
 const DEFAULT_DOCTORS = [
-  { id: 'doc-1', name: 'Dr. Sunita Rao', department: 'Cardiology', specialization: 'Interventional Cardiology', room: 'OPD Room #104', status: 'Available', patientsWaiting: 3, roomStatus: 'Available', phone: '+91 98765 11223' },
-  { id: 'doc-2', name: 'Dr. Rajesh Sharma', department: 'General Medicine', specialization: 'Internal Medicine', room: 'OPD Room #102', status: 'Available', patientsWaiting: 5, roomStatus: 'Available', phone: '+91 98765 22334' },
-  { id: 'doc-3', name: 'Dr. Priya Patel', department: 'Orthopedics', specialization: 'Joint Replacement & Trauma', room: 'OPD Room #108', status: 'Available', patientsWaiting: 2, roomStatus: 'Available', phone: '+91 98765 33445' },
-  { id: 'doc-4', name: 'Dr. Ananya Sen', department: 'Pediatrics', specialization: 'Neonatology & Child Health', room: 'OPD Room #112', status: 'Available', patientsWaiting: 1, roomStatus: 'Available', phone: '+91 98765 44556' },
-  { id: 'doc-5', name: 'Dr. Vikram Malhotra', department: 'Emergency', specialization: 'Trauma & Acute Care', room: 'Emergency Bay #1', status: 'Available', patientsWaiting: 0, roomStatus: 'Available', phone: '+91 98765 55667' }
+  { id: 'doc-1', name: 'Dr. Sunita Rao', department: 'Cardiology', specialization: 'Interventional Cardiology', room: 'OPD Room #104', status: 'Busy', patientsWaiting: 2, currentPatient: 'A-024 (Ramesh Verma)', phone: '+91 98111 22233', email: 'doctor@hospitiq.org' },
+  { id: 'doc-2', name: 'Dr. Vikram Malhotra', department: 'General Medicine', specialization: 'Internal Medicine', room: 'OPD Room #108', status: 'Available', patientsWaiting: 2, currentPatient: 'EM-501 (Sanjay Dutt)', phone: '+91 98222 33344', email: 'vikram@hospitiq.org' },
+  { id: 'doc-3', name: 'Dr. Ananya Reddy', department: 'Orthopedics', specialization: 'Orthopedic Surgery', room: 'OPD Room #201', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98333 44455', email: 'ananya@hospitiq.org' },
+  { id: 'doc-4', name: 'Dr. Hrishikesh Deshmukh', department: 'Pediatrics', specialization: 'Pediatric Care & Child Health', room: 'OPD Room #105', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98444 55566', email: 'hrishi@hospitiq.org' },
+  { id: 'doc-5', name: 'Dr. Priya Patel', department: 'Neurology', specialization: 'Neurology & Stroke Triage', room: 'OPD Room #304', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98555 66677', email: 'priya@hospitiq.org' },
+  { id: 'doc-6', name: 'Dr. Suresh Menon', department: 'Dermatology', specialization: 'Clinical Dermatology', room: 'OPD Room #110', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98666 77788', email: 'suresh@hospitiq.org' },
+  { id: 'doc-7', name: 'Dr. Meera Nambiar', department: 'ENT', specialization: 'Otolaryngology (ENT)', room: 'OPD Room #115', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98777 88899', email: 'meera@hospitiq.org' },
+  { id: 'doc-8', name: 'Dr. Rajesh Sharma', department: 'Cardiology', specialization: 'Cardiac Electrophysiology', room: 'OPD Room #102', status: 'Available', patientsWaiting: 0, currentPatient: 'None', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
 ];
 
 const appState = {
