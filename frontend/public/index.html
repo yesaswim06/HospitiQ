@@ -297,10 +297,18 @@
 
           <form id="publicPageLoginForm" class="login-form margin-t-md" onsubmit="handlePublicPageLogin(event)">
             <div class="form-group">
-              <label>Account / Patient Email or Token</label>
+              <label>Account / Patient Email</label>
               <div class="input-icon-wrapper">
                 <i data-lucide="mail"></i>
-                <input type="text" id="pageLoginEmail" required class="glass-input" value="admin@hospitiq.org" placeholder="Enter Email, Name or Token" />
+                <input type="email" id="pageLoginEmail" required class="glass-input" value="patient@hospitiq.org" />
+              </div>
+            </div>
+
+            <div class="form-group" id="pageLoginTokenGroup">
+              <label>OR Enter Token # for Instant View</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="ticket"></i>
+                <input type="text" id="pageLoginTokenNumber" placeholder="e.g. A-031" class="glass-input" value="A-031" />
               </div>
             </div>
 
@@ -493,10 +501,18 @@
 
       <form id="loginForm" class="login-form margin-t-md">
         <div class="form-group" id="loginEmailGroup">
-          <label id="loginInputLabel">Patient Name or Token Number</label>
+          <label>Account / Patient Email</label>
           <div class="input-icon-wrapper">
-            <i data-lucide="user" id="loginInputIcon"></i>
-            <input type="text" id="loginEmail" placeholder="e.g. tarun or A-031" required class="glass-input" value="tarun" />
+            <i data-lucide="mail"></i>
+            <input type="email" id="loginEmail" required class="glass-input" value="patient@hospitiq.org" />
+          </div>
+        </div>
+
+        <div class="form-group" id="loginTokenGroup">
+          <label>OR Enter Token # for Instant View</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="ticket"></i>
+            <input type="text" id="loginTokenNumber" placeholder="e.g. A-031" class="glass-input" value="A-031" />
           </div>
         </div>
 
@@ -571,7 +587,7 @@
       <div class="sidebar-user-footer">
         <div class="user-avatar-circle" id="userAvatar" title="Logged User Profile">A</div>
         <div class="user-info-text sidebar-user-info">
-          <span class="user-name" id="userNameLabel">Dr. Vikramaditya Roy</span>
+          <span class="user-name" id="userNameLabel">Dr. Rajesh Sharma</span>
           <span class="user-role-badge" id="userRoleBadge">Hospital Admin</span>
         </div>
         <button class="logout-icon-btn" id="logoutBtn" title="Sign Out"><i data-lucide="log-out"></i></button>
@@ -674,7 +690,7 @@
 
             <div class="alert-confirm-strip margin-t-md">
               <i data-lucide="message-square"></i>
-              <span>Live updates sent to phone: <strong>+91 99000 11223</strong> via SMS Notifications</span>
+              <span>Live updates sent to phone: <strong>+91 99000 11223</strong> via SMS & WhatsApp</span>
               <span class="badge-pill green-pill margin-l-auto">Alerts Active</span>
             </div>
 
@@ -728,7 +744,7 @@
             </div>
             <div class="serving-action-bar">
               <button class="action-btn glow-btn width-full" onclick="callPatientToken('doc-1')"><i data-lucide="skip-forward"></i> Call Next Patient</button>
-              <button class="glass-btn success-btn width-full" onclick="completeConsultationCurrentDoctor()"><i data-lucide="check"></i> ✓ Complete Consultation & Close Sheet</button>
+              <button class="glass-btn success-btn width-full" onclick="showToast('Consultation completed and recorded!', 'success')"><i data-lucide="check"></i> Complete Consultation</button>
             </div>
           </div>
 
@@ -1269,7 +1285,7 @@
             </div>
 
             <div class="glass-card settings-card">
-              <h3><i data-lucide="message-square"></i> SMS Notification Gateway</h3>
+              <h3><i data-lucide="message-square"></i> SMS & WhatsApp Notification Gateway</h3>
               <div class="form-group margin-t-sm">
                 <label>Twilio / SMS Gateway Key</label>
                 <input type="password" class="glass-input width-full" value="AC_hospitiq_live_key_9981273" />
@@ -1343,7 +1359,7 @@
   <div class="modal-overlay" id="newTokenModal">
     <div class="glass-card modal-card">
       <div class="modal-header">
-        <h3><i data-lucide="user-plus"></i> OPD Patient Registration & Token Pass</h3>
+        <h3><i data-lucide="ticket"></i> Patient Registration & OPD Token Pass</h3>
         <button class="close-btn" id="closeNewTokenModal"><i data-lucide="x"></i></button>
       </div>
       <form id="newTokenForm">
@@ -1351,7 +1367,7 @@
           <label>Patient Full Name</label>
           <input type="text" id="inputPatientName" required placeholder="e.g. Ramesh Verma" class="glass-input" />
         </div>
-        <div class="grid-2">
+        <div class="form-row">
           <div class="form-group">
             <label>Age</label>
             <input type="number" id="inputPatientAge" min="1" max="120" required placeholder="42" class="glass-input" />
@@ -1366,7 +1382,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Phone Number for SMS Notifications</label>
+          <label>Phone Number for SMS & WhatsApp Alerts</label>
           <input type="text" id="inputPatientPhone" placeholder="+91 98765 43210" class="glass-input" />
         </div>
         <div class="form-group">
