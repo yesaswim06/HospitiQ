@@ -441,11 +441,14 @@ const startServer = (portToTry) => {
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.warn(`⚠️  Port ${currentPort} is currently in use. Trying port ${currentPort + 1}...`);
+      console.warn(`⚠️ Port ${currentPort} is currently in use. Trying port ${currentPort + 1}...`);
       startServer(currentPort + 1);
     } else {
       console.error('Server error:', err);
     }
+  });
+};
+
 module.exports = app;
 
 if (!process.env.VERCEL && require.main === module) {
