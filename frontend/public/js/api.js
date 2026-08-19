@@ -2,7 +2,7 @@
    HOSPITIQ — REST API CLIENT SERVICE
    ========================================================================== */
 
-const API_BASE = '/api';
+const API_BASE = window.HOSPITIQ_API_URL || '/api';
 
 const api = {
   async login(credentials) {

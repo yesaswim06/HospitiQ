@@ -1,0 +1,8 @@
+{
+  "name": "hospitiq-frontend",
+  "version": "1.0.0",
+  "description": "HOSPITIQ Healthcare Command Center Web UI",
+  "scripts": {
+    "start": "npx serve public"
+  }
+}
