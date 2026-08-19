@@ -187,9 +187,27 @@ async function checkDirectUrlAccess() {
   const roleParam = urlParams.get('role');
 
   if (tokenParam) {
-    const user = { id: 'usr-pt', name: 'Ramesh Verma', role: 'Patient', tokenNumber: tokenParam };
-    launchPortal(user, 'patient-portal');
-    await loadPatientTokenData(tokenParam);
+    const tokenNum = tokenParam.toUpperCase();
+    let pt = appState.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+
+    if (!pt) {
+      const customTokens = getCustomTokensLocally();
+      pt = customTokens.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+    }
+
+    if (!pt) {
+      try {
+        const res = await api.getPatientToken(tokenNum);
+        if (res.success && res.patientToken) {
+          pt = res.patientToken;
+        }
+      } catch (e) {}
+    }
+
+    const patientName = pt ? pt.patientName : 'OPD Patient';
+    const user = { id: `usr-${tokenNum}`, name: patientName, role: 'Patient', tokenNumber: tokenNum };
+    await launchPortal(user, 'patient-portal');
+    await loadPatientTokenData(tokenNum);
   } else if (roleParam) {
     const roleName = roleParam.charAt(0).toUpperCase() + roleParam.slice(1);
     const defaultView = roleName === 'Patient' ? 'patient-portal' : (roleName === 'Doctor' ? 'doctor-portal' : 'dashboard');

@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-const { connectDB, getStore } = require('./db');
+const { connectDB, getStore, saveDoctorToDB, saveTokenToDB, findTokenFromDB } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,9 +50,13 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // --- 2. PUBLIC PATIENT TOKEN LOOKUP ---
-app.get('/api/patient/:tokenNumber', (req, res) => {
+app.get('/api/patient/:tokenNumber', async (req, res) => {
   const tokenNum = req.params.tokenNumber.toUpperCase();
-  const tokenItem = store.queue.find(q => q.tokenNumber.toUpperCase() === tokenNum);
+  let tokenItem = store.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+
+  if (!tokenItem) {
+    tokenItem = await findTokenFromDB(tokenNum);
+  }
   
   if (tokenItem) {
     res.json({ success: true, patientToken: tokenItem });
@@ -131,7 +135,7 @@ app.get('/api/queue', (req, res) => {
   res.json({ success: true, queue: store.queue });
 });
 
-app.post('/api/queue', (req, res) => {
+app.post('/api/queue', async (req, res) => {
   const { patientName, age, gender, phone, department, doctorId, priority } = req.body;
   const doc = store.doctors.find(d => d.id === doctorId || d.name === doctorId) || store.doctors[0];
   const prefix = department ? department.substring(0, 1).toUpperCase() : 'A';
@@ -162,6 +166,8 @@ app.post('/api/queue', (req, res) => {
 
   doc.patientsWaiting += 1;
   store.queue.unshift(newToken);
+
+  await saveTokenToDB(newToken);
 
   res.json({ success: true, message: `Token ${tokenNum} generated! SMS & WhatsApp alerts sent. Estimated wait: ${estWaitMins} mins.`, token: newToken });
 });
