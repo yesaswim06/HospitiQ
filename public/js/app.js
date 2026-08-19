@@ -598,25 +598,45 @@ function renderAllViews() {
 
 // --- Patient Portal Render & QR Code Generator ---
 async function loadPatientTokenData(tokenNumber) {
-  try {
-    const res = await api.getPatientToken(tokenNumber);
-    if (res.success) {
-      const pt = res.patientToken;
-      document.getElementById('ptTokenNum').textContent = pt.tokenNumber;
-      document.getElementById('ptName').textContent = `Patient: ${pt.patientName} (Age: ${pt.age}, ${pt.gender})`;
-      document.getElementById('ptDept').textContent = pt.department;
-      document.getElementById('ptDoctor').textContent = pt.doctor;
-      document.getElementById('ptRoom').textContent = pt.room || 'OPD Room #104';
-      document.getElementById('ptWaitTime').innerHTML = `${pt.waitTime} <span class="unit">Mins</span>`;
-      document.getElementById('ptAheadCount').innerHTML = `0${pt.patientsAhead || 3} <span class="unit">Patients</span>`;
-      document.getElementById('ptStatus').textContent = pt.status;
+  if (!tokenNumber) return;
+  const tokenNum = String(tokenNumber).toUpperCase();
 
-      const directUrl = `${window.location.origin}/?token=${pt.tokenNumber}`;
-      document.getElementById('ptDirectUrl').textContent = directUrl;
+  let pt = appState.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
 
-      const qrContainer = document.getElementById('ptQrCodeContainer');
-      if (qrContainer) {
-        qrContainer.innerHTML = '';
+  if (!pt) {
+    const customTokens = getCustomTokensLocally();
+    pt = customTokens.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
+  }
+
+  if (!pt) {
+    try {
+      const res = await api.getPatientToken(tokenNumber);
+      if (res.success && res.patientToken) {
+        pt = res.patientToken;
+      }
+    } catch (err) {
+      console.error('Error loading patient token:', err);
+    }
+  }
+
+  if (pt) {
+    document.getElementById('ptTokenNum').textContent = pt.tokenNumber;
+    document.getElementById('ptName').textContent = `Patient: ${pt.patientName} (Age: ${pt.age}, ${pt.gender})`;
+    document.getElementById('ptDept').textContent = pt.department || 'General Medicine';
+    document.getElementById('ptDoctor').textContent = pt.doctor || 'Dr. Sunita Rao';
+    document.getElementById('ptRoom').textContent = pt.room || 'OPD Room #104';
+    document.getElementById('ptWaitTime').innerHTML = `${pt.waitTime !== undefined ? pt.waitTime : 15} <span class="unit">Mins</span>`;
+    document.getElementById('ptAheadCount').innerHTML = `${String(pt.patientsAhead || 0).padStart(2, '0')} <span class="unit">Patients</span>`;
+    document.getElementById('ptStatus').textContent = pt.status || 'Waiting';
+
+    const directUrl = `${window.location.origin}/?token=${pt.tokenNumber}`;
+    const directUrlEl = document.getElementById('ptDirectUrl');
+    if (directUrlEl) directUrlEl.textContent = directUrl;
+
+    const qrContainer = document.getElementById('ptQrCodeContainer');
+    if (qrContainer) {
+      qrContainer.innerHTML = '';
+      try {
         new QRCode(qrContainer, {
           text: directUrl,
           width: 140,
@@ -625,10 +645,10 @@ async function loadPatientTokenData(tokenNumber) {
           colorLight: '#ffffff',
           correctLevel: QRCode.CorrectLevel.H
         });
+      } catch (e) {
+        console.warn('QR Code generation warning:', e);
       }
     }
-  } catch (err) {
-    console.error('Error loading patient token:', err);
   }
 }
 
