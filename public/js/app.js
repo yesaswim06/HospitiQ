@@ -1416,6 +1416,43 @@ function closeModal(modalId) {
 }
 
 // --- Modals ---
+function populateAvailableBedsForWard() {
+  const wardSelect = document.getElementById('admitWardSelect');
+  const bedSelect = document.getElementById('admitBedSelect');
+  if (!wardSelect || !bedSelect) return;
+
+  const selectedWard = wardSelect.value;
+  const availBeds = appState.beds.filter(b => b.ward === selectedWard && b.status === 'Available');
+
+  bedSelect.innerHTML = '';
+  if (availBeds.length === 0) {
+    bedSelect.innerHTML = `<option value="">No available beds in ${selectedWard} (100% Occupied)</option>`;
+  } else {
+    availBeds.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      const featText = b.features && b.features.length > 0 ? ` (${b.features.join(', ')})` : '';
+      opt.textContent = `${b.bedNumber} — ${b.ward}${featText}`;
+      bedSelect.appendChild(opt);
+    });
+  }
+}
+
+function openAdmitPatientModal() {
+  const docSelect = document.getElementById('admitDoctorSelect');
+  if (docSelect) {
+    docSelect.innerHTML = '';
+    appState.doctors.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.name;
+      opt.textContent = `${d.name} (${d.department})`;
+      docSelect.appendChild(opt);
+    });
+  }
+  populateAvailableBedsForWard();
+  openModal('admitPatientModal');
+}
+
 function initModals() {
   document.getElementById('openNewTokenModalBtn')?.addEventListener('click', () => openNewTokenModal());
   document.getElementById('openAddDoctorModalBtn')?.addEventListener('click', () => openModal('addDoctorModal'));
@@ -1426,6 +1463,7 @@ function initModals() {
   document.getElementById('closeBedDetailsModal')?.addEventListener('click', () => closeModal('bedDetailsModal'));
   document.getElementById('closeRecommendBedModal')?.addEventListener('click', () => closeModal('recommendBedModal'));
   document.getElementById('closeEditDoctorModal')?.addEventListener('click', () => closeModal('editDoctorModal'));
+  document.getElementById('closeAdmitPatientModal')?.addEventListener('click', () => closeModal('admitPatientModal'));
 
   // Close modals on overlay backdrop click
   document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -1434,6 +1472,53 @@ function initModals() {
         closeModal(modal.id);
       }
     });
+  });
+
+  document.getElementById('admitPatientForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const patientName = document.getElementById('admitPatientName').value;
+    const ward = document.getElementById('admitWardSelect').value;
+    const bedId = document.getElementById('admitBedSelect').value;
+    const doctor = document.getElementById('admitDoctorSelect').value;
+    const diagnosis = document.getElementById('admitDiagnosisInput').value;
+
+    if (!bedId) {
+      showToast(`No available bed selected in ${ward}!`, 'warning');
+      return;
+    }
+
+    const targetBed = appState.beds.find(b => b.id === bedId);
+    if (targetBed) {
+      targetBed.status = 'Occupied';
+      targetBed.patient = patientName;
+      targetBed.doctor = doctor;
+      targetBed.admissionDate = new Date().toISOString().split('T')[0];
+    }
+
+    const newAdmission = {
+      id: `adm-${Date.now()}`,
+      patientName,
+      ward,
+      bedNumber: targetBed ? targetBed.bedNumber : `${ward.substring(0, 3).toUpperCase()}-001`,
+      doctor,
+      diagnosis,
+      admissionDate: new Date().toISOString().split('T')[0],
+      status: 'Admitted'
+    };
+
+    appState.admissions.unshift(newAdmission);
+
+    closeModal('admitPatientModal');
+    e.target.reset();
+
+    showToast(`Patient ${patientName} admitted to ${ward} (${targetBed ? targetBed.bedNumber : 'Ward Bed'}) under ${doctor}!`, 'success');
+
+    renderCapacityOverview();
+    renderDashboardStats();
+    renderWardSnapshot();
+    renderBedManagement();
+    renderBedMap();
+    renderAdmissionsTable();
   });
 
   document.getElementById('newTokenForm')?.addEventListener('submit', async (e) => {
