@@ -439,7 +439,8 @@ const startServer = (portToTry) => {
     } else {
       console.error('Server error:', err);
     }
-  });
-};
+module.exports = app;
 
-startServer(PORT);
+if (!process.env.VERCEL && require.main === module) {
+  startServer(PORT);
+}

@@ -2,6 +2,14 @@
    HOSPITIQ — HEALTHCARE COMMAND CENTER APPLICATION LOGIC (SIH 2026)
    ========================================================================== */
 
+const DEFAULT_DOCTORS = [
+  { id: 'doc-1', name: 'Dr. Sunita Rao', department: 'Cardiology', specialization: 'Interventional Cardiology', room: 'OPD Room #104', status: 'Available', patientsWaiting: 3, roomStatus: 'Available', phone: '+91 98765 11223' },
+  { id: 'doc-2', name: 'Dr. Rajesh Sharma', department: 'General Medicine', specialization: 'Internal Medicine', room: 'OPD Room #102', status: 'Available', patientsWaiting: 5, roomStatus: 'Available', phone: '+91 98765 22334' },
+  { id: 'doc-3', name: 'Dr. Priya Patel', department: 'Orthopedics', specialization: 'Joint Replacement & Trauma', room: 'OPD Room #108', status: 'Available', patientsWaiting: 2, roomStatus: 'Available', phone: '+91 98765 33445' },
+  { id: 'doc-4', name: 'Dr. Ananya Sen', department: 'Pediatrics', specialization: 'Neonatology & Child Health', room: 'OPD Room #112', status: 'Available', patientsWaiting: 1, roomStatus: 'Available', phone: '+91 98765 44556' },
+  { id: 'doc-5', name: 'Dr. Vikram Malhotra', department: 'Emergency', specialization: 'Trauma & Acute Care', room: 'Emergency Bay #1', status: 'Available', patientsWaiting: 0, roomStatus: 'Available', phone: '+91 98765 55667' }
+];
+
 const appState = {
   currentUser: null,
   activeView: 'dashboard',
@@ -12,7 +20,7 @@ const appState = {
   stats: null,
   capacity: null,
   queue: [],
-  doctors: [],
+  doctors: [...DEFAULT_DOCTORS],
   beds: [],
   departments: [],
   patients: [],
@@ -454,7 +462,11 @@ async function loadAppData() {
     if (statsRes.success) appState.stats = statsRes;
     if (capacityRes.success) appState.capacity = capacityRes;
     if (queueRes.success) appState.queue = queueRes.queue;
-    if (docsRes.success) appState.doctors = docsRes.doctors;
+    if (docsRes.success && Array.isArray(docsRes.doctors) && docsRes.doctors.length > 0) {
+      appState.doctors = docsRes.doctors;
+    } else if (!appState.doctors || appState.doctors.length === 0) {
+      appState.doctors = [...DEFAULT_DOCTORS];
+    }
     if (bedsRes.success) appState.beds = bedsRes.beds;
     if (deptsRes.success) appState.departments = deptsRes.departments;
     if (patientsRes.success) appState.patients = patientsRes.patients;
