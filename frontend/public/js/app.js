@@ -1339,24 +1339,47 @@ function initExportHandlers() {
   document.getElementById('printReportBtn')?.addEventListener('click', () => window.print());
 }
 
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+
 // --- Modals ---
 function initModals() {
-  const newTokenModal = document.getElementById('newTokenModal');
-  const addDoctorModal = document.getElementById('addDoctorModal');
-
   document.getElementById('openNewTokenModalBtn')?.addEventListener('click', () => openNewTokenModal());
-  document.getElementById('openAddDoctorModalBtn')?.addEventListener('click', () => addDoctorModal.classList.add('active'));
-  document.getElementById('adminAddDoctorBtn')?.addEventListener('click', () => addDoctorModal.classList.add('active'));
+  document.getElementById('openAddDoctorModalBtn')?.addEventListener('click', () => openModal('addDoctorModal'));
+  document.getElementById('adminAddDoctorBtn')?.addEventListener('click', () => openModal('addDoctorModal'));
 
-  document.getElementById('closeNewTokenModal')?.addEventListener('click', () => newTokenModal.classList.remove('active'));
-  document.getElementById('closeAddDoctorModal')?.addEventListener('click', () => addDoctorModal.classList.remove('active'));
-  document.getElementById('closeBedDetailsModal')?.addEventListener('click', () => document.getElementById('bedDetailsModal').classList.remove('active'));
-  document.getElementById('closeRecommendBedModal')?.addEventListener('click', () => document.getElementById('recommendBedModal').classList.remove('active'));
+  document.getElementById('closeNewTokenModal')?.addEventListener('click', () => closeModal('newTokenModal'));
+  document.getElementById('closeAddDoctorModal')?.addEventListener('click', () => closeModal('addDoctorModal'));
+  document.getElementById('closeBedDetailsModal')?.addEventListener('click', () => closeModal('bedDetailsModal'));
+  document.getElementById('closeRecommendBedModal')?.addEventListener('click', () => closeModal('recommendBedModal'));
+  document.getElementById('closeEditDoctorModal')?.addEventListener('click', () => closeModal('editDoctorModal'));
+
+  // Close modals on overlay backdrop click
+  document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal(modal.id);
+      }
+    });
+  });
 
   document.getElementById('newTokenForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const doctorId = document.getElementById('inputDoctorSelect').value;
-    const selectedDoc = appState.doctors.find(d => d.id === doctorId);
+    const selectedDoc = appState.doctors.find(d => d.id === doctorId) || appState.doctors[0];
 
     const tokenData = {
       patientName: document.getElementById('inputPatientName').value,
@@ -1402,9 +1425,10 @@ function initModals() {
       appState.queue.unshift(newToken);
     }
 
-    showToast(`Patient ${newToken.patientName} (${newToken.tokenNumber}) registered successfully!`, 'success');
-    newTokenModal.classList.remove('active');
+    closeModal('newTokenModal');
     e.target.reset();
+
+    showToast(`Patient ${newToken.patientName} (Token ${newToken.tokenNumber}) registered successfully!`, 'success');
 
     if (appState.currentUser && (appState.currentUser.role === 'Doctor' || appState.currentUser.role === 'Admin')) {
       renderDoctorQueueRoster();
@@ -1456,9 +1480,10 @@ function initModals() {
       appState.doctors.unshift(newDoc);
     }
 
-    showToast(`Doctor ${newDoc.name} registered & added to roster! Login created for ${newDoc.email}`, 'success');
-    addDoctorModal.classList.remove('active');
+    closeModal('addDoctorModal');
     e.target.reset();
+
+    showToast(`Doctor ${newDoc.name} registered & added to roster! Login created for ${newDoc.email}`, 'success');
 
     populateDoctorOptions();
     renderDoctorsGrid();
@@ -1490,8 +1515,7 @@ function openNewTokenModal(preselectDoctorId = null) {
     }
   }
 
-  const modal = document.getElementById('newTokenModal');
-  if (modal) modal.classList.add('active');
+  openModal('newTokenModal');
 }
 
 function populateDoctorOptions() {
