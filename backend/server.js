@@ -143,8 +143,7 @@ app.post('/api/queue', async (req, res) => {
     priority: priority || 'Normal',
     status: 'Waiting',
     registrationTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    smsSent: true,
-    whatsappSent: true
+    smsSent: true
   };
 
   doc.patientsWaiting += 1;
@@ -174,7 +173,14 @@ app.put('/api/queue/:id/status', (req, res) => {
   const tokenItem = store.queue.find(q => q.id === req.params.id || q.tokenNumber === req.params.id);
   if (tokenItem) {
     tokenItem.status = status;
-    res.json({ success: true, token: tokenItem });
+    if (status === 'Completed') {
+      const doc = store.doctors.find(d => d.name === tokenItem.doctor || d.id === tokenItem.doctorId);
+      if (doc) {
+        doc.status = 'Available';
+        doc.currentPatient = 'None';
+      }
+    }
+    res.json({ success: true, message: `Token ${tokenItem.tokenNumber} status updated to ${status}`, token: tokenItem });
   } else {
     res.status(404).json({ success: false, message: 'Token item not found' });
   }
@@ -350,8 +356,7 @@ app.post('/api/emergency/create', (req, res) => {
     priority: 'Emergency',
     status: 'In Consultation',
     registrationTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    smsSent: true,
-    whatsappSent: true
+    smsSent: true
   };
 
   store.queue.unshift(emergItem);

@@ -884,14 +884,44 @@ function renderDashboardStats() {
 }
 
 function renderNowServing() {
-  const inConsult = appState.queue.find(q => q.status === 'In Consultation') || appState.queue[0];
-  if (!inConsult) return;
+  const inConsult = appState.queue.find(q => q.status === 'In Consultation');
 
   const dashCallingToken = document.getElementById('dashCallingToken');
   if (dashCallingToken) {
-    dashCallingToken.textContent = inConsult.tokenNumber;
-    document.getElementById('dashCallingPatient').textContent = `${inConsult.patientName} (Age: ${inConsult.age}, ${inConsult.gender})`;
-    document.getElementById('dashCallingDoctor').textContent = `${inConsult.department} OPD Room #104 — ${inConsult.doctor}`;
+    if (inConsult) {
+      dashCallingToken.textContent = inConsult.tokenNumber;
+      document.getElementById('dashCallingPatient').textContent = `${inConsult.patientName} (Age: ${inConsult.age}, ${inConsult.gender})`;
+      document.getElementById('dashCallingDoctor').textContent = `${inConsult.department} ${inConsult.room || 'OPD Room #104'} — ${inConsult.doctor}`;
+    } else {
+      dashCallingToken.textContent = 'NONE';
+      document.getElementById('dashCallingPatient').textContent = 'No Patient Currently in Consultation';
+      document.getElementById('dashCallingDoctor').textContent = 'Consultation Desk Ready';
+    }
+  }
+
+  const docCurrentToken = document.getElementById('docCurrentToken');
+  const docCurrentPatient = document.getElementById('docCurrentPatient');
+  if (docCurrentToken && docCurrentPatient) {
+    if (inConsult) {
+      docCurrentToken.textContent = inConsult.tokenNumber;
+      docCurrentPatient.textContent = `${inConsult.patientName} (Age: ${inConsult.age}, ${inConsult.gender})`;
+    } else {
+      docCurrentToken.textContent = 'NONE';
+      docCurrentPatient.textContent = 'No Patient Currently in Consultation';
+    }
+  }
+}
+
+async function completeConsultationCurrentDoctor() {
+  const activePt = appState.queue.find(q => q.status === 'In Consultation');
+  if (activePt) {
+    const res = await api.updateQueueStatus(activePt.id, 'Completed');
+    if (res.success) {
+      showToast(`Consultation completed for ${activePt.patientName} (${activePt.tokenNumber})! Sheet closed.`, 'success');
+      await loadAppData();
+    }
+  } else {
+    showToast('No patient currently in consultation.', 'info');
   }
 }
 
@@ -1764,13 +1794,23 @@ function populateDoctorOptions() {
   select.innerHTML = `<option value="" disabled>-- Select Attending Doctor & Room --</option>` + optionsHtml;
 
   if (currentVal && Array.from(select.options).some(opt => opt.value === currentVal)) {
-    select.value = currentVal;
-  }
 }
 
 function initSearchAndFilters() {
-  const queueSearch = document.getElementById('queueSearchInput');
   const globalSearch = document.getElementById('globalSearchInput');
+  if (globalSearch) {
+    globalSearch.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        const val = globalSearch.value.trim();
+        if (val) {
+          switchView('patient-portal');
+          loadPatientTokenData(val);
+        }
+      }
+    });
+  }
+
+  const queueSearch = document.getElementById('queueSearchInput');
   const queueDept = document.getElementById('queueDeptFilter');
   const queueStatus = document.getElementById('queueStatusFilter');
 
