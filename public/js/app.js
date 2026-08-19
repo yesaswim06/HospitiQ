@@ -272,7 +272,7 @@ function closeLoginOverlay() {
 }
 
 function openPublicTokenModal() {
-  document.getElementById('newTokenModal')?.classList.add('active');
+  openNewTokenModal();
 }
 
 // --- Notification Dropdown Toggle ---
@@ -1272,7 +1272,7 @@ function initModals() {
   const newTokenModal = document.getElementById('newTokenModal');
   const addDoctorModal = document.getElementById('addDoctorModal');
 
-  document.getElementById('openNewTokenModalBtn')?.addEventListener('click', () => newTokenModal.classList.add('active'));
+  document.getElementById('openNewTokenModalBtn')?.addEventListener('click', () => openNewTokenModal());
   document.getElementById('openAddDoctorModalBtn')?.addEventListener('click', () => addDoctorModal.classList.add('active'));
   document.getElementById('adminAddDoctorBtn')?.addEventListener('click', () => addDoctorModal.classList.add('active'));
 
@@ -1283,12 +1283,16 @@ function initModals() {
 
   document.getElementById('newTokenForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const doctorId = document.getElementById('inputDoctorSelect').value;
+    const selectedDoc = appState.doctors.find(d => d.id === doctorId);
+
     const tokenData = {
       patientName: document.getElementById('inputPatientName').value,
       age: document.getElementById('inputPatientAge').value,
       gender: document.getElementById('inputPatientGender').value,
       phone: document.getElementById('inputPatientPhone').value,
-      doctorId: document.getElementById('inputDoctorSelect').value,
+      doctorId: doctorId,
+      department: selectedDoc ? selectedDoc.department : '',
       priority: document.getElementById('inputPriority').value
     };
 
@@ -1329,10 +1333,53 @@ function initModals() {
   });
 }
 
+function openNewTokenModal(preselectDoctorId = null) {
+  populateDoctorOptions();
+  const select = document.getElementById('inputDoctorSelect');
+
+  if (select && select.options.length > 0) {
+    if (preselectDoctorId) {
+      select.value = preselectDoctorId;
+    } else if (appState.currentUser && appState.currentUser.role === 'Doctor') {
+      const loggedDoc = appState.doctors.find(d => 
+        (d.email && appState.currentUser.email && d.email === appState.currentUser.email) ||
+        d.name.toLowerCase().includes('sunita') ||
+        d.name.toLowerCase().includes(appState.currentUser.name.toLowerCase()) ||
+        appState.currentUser.name.toLowerCase().includes(d.name.toLowerCase())
+      );
+      if (loggedDoc) {
+        select.value = loggedDoc.id;
+      } else if (select.options.length > 1) {
+        select.selectedIndex = 1;
+      }
+    } else if (select.options.length > 1 && (!select.value || select.selectedIndex <= 0)) {
+      select.selectedIndex = 1;
+    }
+  }
+
+  const modal = document.getElementById('newTokenModal');
+  if (modal) modal.classList.add('active');
+}
+
 function populateDoctorOptions() {
   const select = document.getElementById('inputDoctorSelect');
   if (!select) return;
-  select.innerHTML = appState.doctors.map(d => `<option value="${d.id}">${d.name} (${d.department} — ${d.room})</option>`).join('');
+
+  if (!appState.doctors || appState.doctors.length === 0) {
+    select.innerHTML = '<option value="" disabled selected>No Doctors Available</option>';
+    return;
+  }
+
+  const currentVal = select.value;
+  const optionsHtml = appState.doctors.map(d => 
+    `<option value="${d.id}">${d.name} (${d.department} — ${d.room || 'OPD Room'})</option>`
+  ).join('');
+
+  select.innerHTML = `<option value="" disabled>-- Select Attending Doctor & Room --</option>` + optionsHtml;
+
+  if (currentVal && Array.from(select.options).some(opt => opt.value === currentVal)) {
+    select.value = currentVal;
+  }
 }
 
 function initSearchAndFilters() {
