@@ -19,7 +19,6 @@
   <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-v4.19-lightgrey.svg" alt="Express" /></a>
   <a href="https://mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-Atlas-brightgreen.svg" alt="MongoDB" /></a>
   <a href="https://hospiti-q.vercel.app/"><img src="https://img.shields.io/badge/Deployment-Vercel-orange.svg" alt="Deployment" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-purple.svg" alt="License" /></a>
 </p>
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
@@ -63,7 +62,7 @@ In traditional healthcare systems across India, patients spend up to **3.5 hours
 - **1-Click Hospital Siren**: Triggers hospital-wide emergency alert protocols across all connected terminals.
 - **Theme-Reactive UI**: Supports sleek dark mode and high-contrast light mode.
 
-<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
+---
 
 ## 📁 Repository & Project Architecture
 
@@ -145,4 +144,3 @@ Open your browser and navigate to:
 - **Customer Care & Support**: `myselfadmin123@gmail.com`
 - **Official Live Application**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
 - **Edition**: Smart India Hackathon 2026 (SIH 2026)
-- **License**: MIT License
