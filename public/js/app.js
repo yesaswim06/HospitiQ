@@ -946,11 +946,17 @@ function renderPatientsTable() {
 
 // --- Doctor Roster Grid Render ---
 function renderDoctorsGrid() {
-  const container = document.getElementById('doctorsGridContainer');
+  const container = document.getElementById('doctorsGrid') || document.getElementById('doctorsGridContainer');
   if (!container) return;
+
+  if (appState.doctors.length === 0) {
+    container.innerHTML = `<div class="sub-text text-center padding-lg width-full">No active doctor rosters found in database.</div>`;
+    return;
+  }
 
   container.innerHTML = appState.doctors.map(d => {
     let statusClass = d.status === 'AVAILABLE' ? 'green-pill' : (d.status === 'CONSULTING' ? 'orange-pill' : 'red-pill');
+    const isAdmin = appState.currentUser?.role === 'Admin';
 
     return `
       <div class="glass-card doctor-card">
@@ -966,9 +972,16 @@ function renderDoctorsGrid() {
           <div class="doc-info-row"><span>OPD Room:</span> <strong>${d.room || 'OPD Room'}</strong></div>
           <div class="doc-info-row"><span>Currently Consulting:</span> <strong class="cyan-text">${d.currentPatient || 'None'}</strong></div>
           <div class="doc-info-row"><span>Patients Waiting:</span> <strong>${d.patientsWaiting || 0} In Line</strong></div>
+          <div class="doc-info-row"><span>Login / Email:</span> <strong class="small-text font-mono">${d.email || '-'}</strong></div>
         </div>
         <div class="doctor-card-footer margin-t-md">
-          <button class="action-btn glow-btn small-btn width-full" onclick="callPatientToken('${d.id}')"><i data-lucide="skip-forward"></i> Call Next Patient</button>
+          <div class="action-row width-full">
+            <button class="action-btn glow-btn small-btn width-full" onclick="callPatientToken('${d.docId || d.id}')"><i data-lucide="skip-forward"></i> Call Next</button>
+            ${isAdmin ? `
+              <button class="glass-btn small-btn" onclick="openEditDoctorModal('${d.docId || d.id}')" title="Edit Doctor Profile"><i data-lucide="edit-3"></i></button>
+              <button class="glass-btn small-btn red-text" onclick="deleteDoctorProfile('${d.docId || d.id}')" title="Delete Doctor"><i data-lucide="trash-2"></i></button>
+            ` : ''}
+          </div>
         </div>
       </div>
     `;
