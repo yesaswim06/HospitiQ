@@ -78,7 +78,12 @@ function initTheme() {
   document.documentElement.setAttribute('data-theme', appState.theme);
   updateThemeIcons();
 
-  const toggleBtns = [document.getElementById('landingThemeBtn'), document.getElementById('headerThemeBtn')];
+  const toggleBtns = [
+    document.getElementById('landingThemeBtn'),
+    document.getElementById('headerThemeBtn'),
+    document.getElementById('themeToggleBtn')
+  ];
+
   toggleBtns.forEach(btn => {
     btn?.addEventListener('click', () => {
       appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
@@ -91,10 +96,16 @@ function initTheme() {
 
 function updateThemeIcons() {
   const isDark = appState.theme === 'dark';
-  const landingIcon = document.getElementById('landingThemeIcon');
-  const headerIcon = document.getElementById('headerThemeIcon');
-  if (landingIcon) landingIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-  if (headerIcon) headerIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+  const icons = [
+    document.getElementById('landingThemeIcon'),
+    document.getElementById('headerThemeIcon'),
+    document.getElementById('themeIcon')
+  ];
+
+  icons.forEach(icon => {
+    if (icon) icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+  });
+
   lucide.createIcons();
 }
 
