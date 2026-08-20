@@ -171,7 +171,7 @@ If you find this project helpful, please consider giving it a ⭐ on GitHub! You
 
 ## 📧 Support & Contact
 
-- **Customer Care & Support**: `myselfadmin123@gmail.com`
+- **Customer Care & Support**: `support@hospitiq.org`
 - **Official Live Application (Vercel)**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
 - **Official Live REST API (Render)**: [https://hospitiq.onrender.com/api/queue](https://hospitiq.onrender.com/api/queue)
 - **Edition**: Smart India Hackathon 2026 (SIH 2026)

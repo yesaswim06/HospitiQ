@@ -1,13 +1,20 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
-// Secrets loaded strictly from environment variables
+// Models
+const Token = require('./models/Token');
+const Patient = require('./models/Patient');
+const Doctor = require('./models/Doctor');
+const Bed = require('./models/Bed');
+const Admission = require('./models/Admission');
+const User = require('./models/User');
+const Alert = require('./models/Alert');
+
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
-// Helper to generate a random 16-character secure token
 const generateSecureTokenKey = () => crypto.randomBytes(8).toString('hex');
 
-// HOSPITIQ High Performance In-Memory & MongoDB Integrated Store
+// In-Memory Fallback Cache Store
 const memoryStore = {
   users: [
     { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', email: 'admin@hospitiq.org', department: 'Administration' },
@@ -33,14 +40,14 @@ const memoryStore = {
     { id: 'q-110', secToken: 'sec_8f4a00d7', tokenNumber: 'B-018', patientName: 'Sneha Roy', age: 35, gender: 'Female', phone: '+91 98765 66677', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 24, patientsAhead: 2, room: 'OPD Room #108', priority: 'Normal', status: 'WAITING', registrationTime: '11:00 AM', timestamp: Date.now() - 60000, smsSent: true }
   ],
   doctors: [
-    { id: 'doc-1', name: 'Dr. Sunita Rao', specialization: 'Interventional Cardiology', department: 'Cardiology', status: 'CONSULTING', patientsWaiting: 1, currentPatient: 'A-024 (Ramesh Verma)', room: 'OPD Room #104', phone: '+91 98111 22233', email: 'doctor@hospitiq.org' },
-    { id: 'doc-2', name: 'Dr. Vikram Malhotra', specialization: 'Internal Medicine', department: 'General Medicine', status: 'AVAILABLE', patientsWaiting: 2, currentPatient: 'None', room: 'OPD Room #108', phone: '+91 98222 33344', email: 'vikram@hospitiq.org' },
-    { id: 'doc-3', name: 'Dr. Ananya Reddy', specialization: 'Orthopedic Surgery', department: 'Orthopedics', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #201', phone: '+91 98333 44455', email: 'ananya@hospitiq.org' },
-    { id: 'doc-4', name: 'Dr. Hrishikesh Deshmukh', specialization: 'Pediatric Care & Child Health', department: 'Pediatrics', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #105', phone: '+91 98444 55566', email: 'hrishi@hospitiq.org' },
-    { id: 'doc-5', name: 'Dr. Priya Patel', specialization: 'Neurology & Stroke Triage', department: 'Neurology', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #304', phone: '+91 98555 66677', email: 'priya@hospitiq.org' },
-    { id: 'doc-6', name: 'Dr. Suresh Menon', specialization: 'Clinical Dermatology', department: 'Dermatology', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #110', phone: '+91 98666 77788', email: 'suresh@hospitiq.org' },
-    { id: 'doc-7', name: 'Dr. Meera Nambiar', specialization: 'Otolaryngology (ENT)', department: 'ENT', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #115', phone: '+91 98777 88899', email: 'meera@hospitiq.org' },
-    { id: 'doc-8', name: 'Dr. Vikramaditya Roy', specialization: 'Cardiac Electrophysiology', department: 'Cardiology', status: 'AVAILABLE', patientsWaiting: 0, currentPatient: 'None', room: 'OPD Room #102', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
+    { docId: 'doc-1', id: 'doc-1', name: 'Dr. Sunita Rao', specialization: 'Interventional Cardiology', department: 'Cardiology', status: 'CONSULTING', patientsWaiting: 1, currentPatient: 'A-024 (Ramesh Verma)', room: 'OPD Room #104', phone: '+91 98111 22233', email: 'doctor@hospitiq.org' },
+    { docId: 'doc-2', id: 'doc-2', name: 'Dr. Vikram Malhotra', specialization: 'Internal Medicine', department: 'General Medicine', status: 'AVAILABLE', patientsWaiting: 2, currentPatient: 'None', room: 'OPD Room #108', phone: '+91 98222 33344', email: 'vikram@hospitiq.org' },
+    { docId: 'doc-3', id: 'doc-3', name: 'Dr. Ananya Reddy', specialization: 'Orthopedic Surgery', department: 'Orthopedics', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #201', phone: '+91 98333 44455', email: 'ananya@hospitiq.org' },
+    { docId: 'doc-4', id: 'doc-4', name: 'Dr. Hrishikesh Deshmukh', specialization: 'Pediatric Care & Child Health', department: 'Pediatrics', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #105', phone: '+91 98444 55566', email: 'hrishi@hospitiq.org' },
+    { docId: 'doc-5', id: 'doc-5', name: 'Dr. Priya Patel', specialization: 'Neurology & Stroke Triage', department: 'Neurology', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #304', phone: '+91 98555 66677', email: 'priya@hospitiq.org' },
+    { docId: 'doc-6', id: 'doc-6', name: 'Dr. Suresh Menon', specialization: 'Clinical Dermatology', department: 'Dermatology', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #110', phone: '+91 98666 77788', email: 'suresh@hospitiq.org' },
+    { docId: 'doc-7', id: 'doc-7', name: 'Dr. Meera Nambiar', specialization: 'Otolaryngology (ENT)', department: 'ENT', status: 'AVAILABLE', patientsWaiting: 1, currentPatient: 'None', room: 'OPD Room #115', phone: '+91 98777 88899', email: 'meera@hospitiq.org' },
+    { docId: 'doc-8', id: 'doc-8', name: 'Dr. Vikramaditya Roy', specialization: 'Cardiac Electrophysiology', department: 'Cardiology', status: 'AVAILABLE', patientsWaiting: 0, currentPatient: 'None', room: 'OPD Room #102', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
   ],
   beds: Array.from({ length: 100 }, (_, i) => {
     const bedId = i + 1;
@@ -53,7 +60,6 @@ const memoryStore = {
     else if (bedId <= 93) ward = 'Pediatric';
     else ward = 'Maternity';
 
-    // Establish deterministic initial statuses (68 Occupied, 28 Available, 4 Maintenance/Reserved)
     let status = 'AVAILABLE';
     if (bedId === 12 || bedId === 44) {
       status = 'MAINTENANCE';
@@ -67,6 +73,7 @@ const memoryStore = {
 
     return {
       id: `bed-${bedId}`,
+      bedId: `bed-${bedId}`,
       bedNumber: `BED-${String(bedId).padStart(3, '0')}`,
       ward,
       status,
@@ -89,31 +96,66 @@ const memoryStore = {
     { id: 'dept-8', name: 'ENT', currentQueue: 1, avgWaitMins: 18, doctorsAvailable: 1, status: 'Normal' }
   ],
   admissions: [
-    { id: 'adm-101', patient: 'Ramesh Verma', ward: 'ICU', bedNumber: 'BED-001', doctor: 'Dr. Sunita Rao', diagnosis: 'Acute Coronary Syndrome', admissionDate: '2026-08-19', status: 'Admitted' },
-    { id: 'adm-102', patient: 'Kiran Sharma', ward: 'Emergency', bedNumber: 'BED-016', doctor: 'Dr. Vikram Malhotra', diagnosis: 'High Fever & Trauma Triage', admissionDate: '2026-08-19', status: 'Admitted' },
-    { id: 'adm-103', patient: 'Deepak Nair', ward: 'General Ward', bedNumber: 'BED-031', doctor: 'Dr. Ananya Reddy', diagnosis: 'Orthopedic Fracture Stabilization', admissionDate: '2026-08-18', status: 'Admitted' },
-    { id: 'adm-104', patient: 'Sunil Gavaskar', ward: 'Private Ward', bedNumber: 'BED-061', doctor: 'Dr. Priya Patel', diagnosis: 'Neurological Observation', admissionDate: '2026-08-18', status: 'Admitted' }
+    { admNumber: 'ADM-101', patient: 'Ramesh Verma', ward: 'ICU', bedNumber: 'BED-001', doctor: 'Dr. Sunita Rao', diagnosis: 'Acute Coronary Syndrome', admissionDate: '2026-08-19', status: 'Admitted' },
+    { admNumber: 'ADM-102', patient: 'Kiran Sharma', ward: 'Emergency', bedNumber: 'BED-016', doctor: 'Dr. Vikram Malhotra', diagnosis: 'High Fever & Trauma Triage', admissionDate: '2026-08-19', status: 'Admitted' },
+    { admNumber: 'ADM-103', patient: 'Deepak Nair', ward: 'General Ward', bedNumber: 'BED-031', doctor: 'Dr. Ananya Reddy', diagnosis: 'Orthopedic Fracture Stabilization', admissionDate: '2026-08-18', status: 'Admitted' },
+    { admNumber: 'ADM-104', patient: 'Sunil Gavaskar', ward: 'Private Ward', bedNumber: 'BED-061', doctor: 'Dr. Priya Patel', diagnosis: 'Neurological Observation', admissionDate: '2026-08-18', status: 'Admitted' }
   ],
   insights: [],
   alerts: []
 };
 
+let isConnected = false;
+
 const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) return;
+  if (mongoose.connection.readyState >= 1) {
+    isConnected = true;
+    return;
+  }
   if (!MONGODB_URI) {
     console.info('ℹ️  Running in high-performance in-memory dataset mode.');
     return;
   }
   try {
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 4000
+      serverSelectionTimeoutMS: 5000
     });
-    console.log('✅ MongoDB connected successfully for HOSPITIQ');
+    isConnected = true;
+    console.log('✅ MongoDB Atlas connected successfully for HOSPITIQ.');
+
+    // Auto-seed if collections are empty
+    const tokenCount = await Token.countDocuments();
+    if (tokenCount === 0) {
+      console.log('ℹ️  Auto-initializing MongoDB Atlas collections with seed data...');
+      await Doctor.insertMany(memoryStore.doctors.map(d => ({ ...d, docId: d.id })));
+      await User.insertMany(memoryStore.users);
+      await Bed.insertMany(memoryStore.beds);
+      await Admission.insertMany(memoryStore.admissions);
+      await Token.insertMany(memoryStore.queue);
+      console.log('✅ MongoDB Atlas collections initialized.');
+    }
   } catch (err) {
-    console.warn('ℹ️  MongoDB connection deferred. Running in-memory dataset mode.');
+    isConnected = false;
+    console.warn('ℹ️  MongoDB Atlas connection deferred. Running in-memory store mode.');
   }
 };
 
+const isDBConnected = () => isConnected && mongoose.connection.readyState === 1;
+
 const getStore = () => memoryStore;
 
-module.exports = { connectDB, getStore, generateSecureTokenKey };
+module.exports = {
+  connectDB,
+  isDBConnected,
+  getStore,
+  generateSecureTokenKey,
+  models: {
+    Token,
+    Patient,
+    Doctor,
+    Bed,
+    Admission,
+    User,
+    Alert
+  }
+};
