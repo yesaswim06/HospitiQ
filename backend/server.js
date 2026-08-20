@@ -669,6 +669,104 @@ app.get('/api/doctors', async (req, res) => {
   }
 });
 
+app.post('/api/doctors', requireRoles(['Admin']), async (req, res) => {
+  const { name, email, specialization, department, room, phone } = req.body;
+
+  if (!name || !name.trim() || !email || !email.trim()) {
+    return res.status(400).json({ success: false, error: 'BAD_REQUEST', message: 'Doctor Name and Email are required.' });
+  }
+
+  try {
+    const docCount = isDBConnected() ? await Doctor.countDocuments() : store.doctors.length;
+    const docId = `doc-${docCount + 1}`;
+
+    const newDocData = {
+      docId,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      specialization: specialization || 'General Physician',
+      department: department || 'General Medicine',
+      room: room || 'OPD Room #105',
+      phone: phone || '+91 98765 00000',
+      status: 'AVAILABLE',
+      patientsWaiting: 0,
+      currentPatient: 'None'
+    };
+
+    let savedDoc = null;
+
+    if (isDBConnected()) {
+      const docModel = new Doctor(newDocData);
+      savedDoc = await docModel.save();
+
+      const userModel = new User({
+        name: newDocData.name,
+        role: 'Doctor',
+        email: newDocData.email,
+        department: newDocData.department
+      });
+      await userModel.save();
+    }
+
+    const memDoc = { id: docId, ...newDocData };
+    store.doctors.push(memDoc);
+    store.users.push({ id: `usr-${docId}`, name: memDoc.name, role: 'Doctor', email: memDoc.email, department: memDoc.department });
+
+    res.status(201).json({
+      success: true,
+      message: `Doctor ${newDocData.name} registered and login created.`,
+      doctor: savedDoc ? savedDoc.toObject() : memDoc
+    });
+  } catch (err) {
+    console.error('Add doctor error:', err);
+    res.status(500).json({ success: false, error: 'SERVER_ERROR', message: 'Error adding doctor.' });
+  }
+});
+
+app.put('/api/doctors/:id', requireRoles(['Admin']), async (req, res) => {
+  const { name, email, specialization, department, room, phone } = req.body;
+
+  try {
+    if (isDBConnected()) {
+      await Doctor.updateOne(
+        { $or: [{ docId: req.params.id }, { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null }] },
+        { name, email, specialization, department, room, phone }
+      );
+    }
+
+    const memDoc = store.doctors.find(d => d.id === req.params.id || d.docId === req.params.id);
+    if (memDoc) {
+      if (name) memDoc.name = name;
+      if (email) memDoc.email = email;
+      if (specialization) memDoc.specialization = specialization;
+      if (department) memDoc.department = department;
+      if (room) memDoc.room = room;
+      if (phone) memDoc.phone = phone;
+    }
+
+    res.json({ success: true, message: 'Doctor profile updated.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error updating doctor.' });
+  }
+});
+
+app.delete('/api/doctors/:id', requireRoles(['Admin']), async (req, res) => {
+  try {
+    if (isDBConnected()) {
+      await Doctor.deleteOne({ $or: [{ docId: req.params.id }, { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null }] });
+    }
+
+    const idx = store.doctors.findIndex(d => d.id === req.params.id || d.docId === req.params.id);
+    if (idx !== -1) {
+      store.doctors.splice(idx, 1);
+    }
+
+    res.json({ success: true, message: 'Doctor removed from roster.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error deleting doctor.' });
+  }
+});
+
 app.put('/api/doctors/:id/status', requireRoles(['Doctor', 'Admin']), async (req, res) => {
   const { status } = req.body;
   const validDocStatuses = ['AVAILABLE', 'CONSULTING', 'ON_BREAK', 'OFFLINE'];

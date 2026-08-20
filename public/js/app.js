@@ -688,7 +688,13 @@ function renderDashboardStats() {
 }
 
 function renderNowServing() {
-  const inConsult = appState.queue.find(q => q.status === 'IN_CONSULTATION' || q.status === 'In Consultation');
+  const currentDocUser = appState.currentUser && appState.currentUser.role === 'Doctor' ? appState.currentUser : null;
+  const inConsult = appState.queue.find(q => {
+    if (currentDocUser) {
+      return (q.status === 'IN_CONSULTATION' || q.status === 'In Consultation') && (q.doctor === currentDocUser.name || q.doctorId === currentDocUser.id || q.doctorId === currentDocUser.docId);
+    }
+    return q.status === 'IN_CONSULTATION' || q.status === 'In Consultation';
+  }) || appState.queue.find(q => q.status === 'IN_CONSULTATION' || q.status === 'In Consultation');
 
   const dashCallingToken = document.getElementById('dashCallingToken');
   if (dashCallingToken) {
@@ -714,12 +720,22 @@ function renderNowServing() {
       docCurrentPatient.textContent = 'No Patient Currently in Consultation';
     }
   }
+
+  // Update Doctor Live Status Select
+  if (currentDocUser) {
+    const docObj = appState.doctors.find(d => d.name === currentDocUser.name || d.id === currentDocUser.id || d.docId === currentDocUser.id);
+    const selectEl = document.getElementById('doctorLiveStatusSelect');
+    if (selectEl && docObj) {
+      selectEl.value = docObj.status || 'AVAILABLE';
+    }
+  }
 }
 
 // --- Live OPD Queue Workflow & Calling Engine ---
 async function callPatientToken(doctorId) {
   try {
-    const res = await api.callNextToken(doctorId || 'doc-1');
+    const activeDocId = doctorId || (appState.currentUser && appState.currentUser.role === 'Doctor' ? (appState.currentUser.docId || appState.currentUser.id) : 'doc-1');
+    const res = await api.callNextToken(activeDocId);
     if (res.success) {
       showToast(res.message || 'Calling next patient!', 'success');
       await loadAppData();
@@ -1135,17 +1151,25 @@ function renderAdminTable() {
   const tbody = document.getElementById('adminDoctorsTableBody');
   if (!tbody) return;
 
+  if (appState.doctors.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center sub-text padding-md">No doctors registered in roster.</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = appState.doctors.map(d => `
     <tr>
-      <td><span class="font-mono">${d.id}</span></td>
+      <td><span class="font-mono cyan-text">${d.docId || d.id}</span></td>
       <td><strong>${d.name}</strong></td>
       <td>${d.specialization}</td>
       <td>${d.department}</td>
-      <td>${d.room || 'OPD Room'}</td>
-      <td>${d.email}</td>
-      <td><span class="badge-pill ${d.status === 'AVAILABLE' ? 'green-pill' : 'orange-pill'}">${d.status}</span></td>
+      <td><span class="badge-pill blue-pill">${d.room || 'OPD Room'}</span></td>
+      <td><span class="font-mono small-text">${d.email}</span></td>
+      <td><span class="badge-pill ${d.status === 'AVAILABLE' ? 'green-pill' : (d.status === 'CONSULTING' ? 'orange-pill' : 'red-pill')}">${d.status}</span></td>
       <td>
-        <button class="glass-btn small-btn red-text" onclick="deleteDoctorProfile('${d.id}')"><i data-lucide="trash-2"></i></button>
+        <div class="action-row">
+          <button class="action-btn glow-btn small-btn" onclick="openEditDoctorModal('${d.docId || d.id}')" title="Edit Doctor Profile"><i data-lucide="edit-3"></i> Edit</button>
+          <button class="glass-btn small-btn red-text" onclick="deleteDoctorProfile('${d.docId || d.id}')" title="Remove Doctor"><i data-lucide="trash-2"></i></button>
+        </div>
       </td>
     </tr>
   `).join('');
@@ -1153,17 +1177,89 @@ function renderAdminTable() {
   lucide.createIcons();
 }
 
+function openEditDoctorModal(docId) {
+  const doc = appState.doctors.find(d => d.id === docId || d.docId === docId);
+  if (!doc) return;
+
+  const idEl = document.getElementById('editDocId');
+  const nameEl = document.getElementById('editDocName');
+  const emailEl = document.getElementById('editDocEmail');
+  const specEl = document.getElementById('editDocSpec');
+  const deptEl = document.getElementById('editDocDept');
+  const roomEl = document.getElementById('editDocRoom');
+  const phoneEl = document.getElementById('editDocPhone');
+
+  if (idEl) idEl.value = doc.docId || doc.id;
+  if (nameEl) nameEl.value = doc.name;
+  if (emailEl) emailEl.value = doc.email;
+  if (specEl) specEl.value = doc.specialization;
+  if (deptEl) deptEl.value = doc.department;
+  if (roomEl) roomEl.value = doc.room || 'OPD Room #104';
+  if (phoneEl) phoneEl.value = doc.phone || '+91 98111 22233';
+
+  openModal('editDoctorModal');
+}
+
+async function handleEditDoctorSubmit(e) {
+  e.preventDefault();
+  const docId = document.getElementById('editDocId')?.value;
+  const docData = {
+    name: document.getElementById('editDocName')?.value,
+    email: document.getElementById('editDocEmail')?.value,
+    specialization: document.getElementById('editDocSpec')?.value,
+    department: document.getElementById('editDocDept')?.value,
+    room: document.getElementById('editDocRoom')?.value,
+    phone: document.getElementById('editDocPhone')?.value
+  };
+
+  try {
+    const res = await api.updateDoctor(docId, docData);
+    if (res.success) {
+      closeModal('editDoctorModal');
+      showToast(res.message || 'Doctor profile updated!', 'success');
+      await loadAppData();
+    } else {
+      showToast(res.message || 'Error updating doctor.', 'danger');
+    }
+  } catch (err) {
+    showToast('Error updating doctor profile.', 'danger');
+  }
+}
+
 async function deleteDoctorProfile(docId) {
-  if (confirm('Are you sure you want to remove this doctor from the roster?')) {
+  if (confirm('Are you sure you want to remove this doctor from the roster and database?')) {
     try {
       const res = await api.deleteDoctor(docId);
       if (res.success) {
-        showToast(res.message, 'success');
+        showToast(res.message || 'Doctor removed from database.', 'success');
         await loadAppData();
+      } else {
+        showToast(res.message || 'Error deleting doctor.', 'danger');
       }
     } catch (err) {
       showToast('Error removing doctor.', 'danger');
     }
+  }
+}
+
+function populateAvailableBedsForWard() {
+  const wardSelect = document.getElementById('admitWardSelect');
+  const bedSelect = document.getElementById('admitBedSelect');
+  const docSelect = document.getElementById('admitDoctorSelect');
+
+  if (!wardSelect || !bedSelect) return;
+
+  const targetWard = wardSelect.value;
+  const availableBeds = appState.beds.filter(b => b.ward.toLowerCase() === targetWard.toLowerCase() && b.status === 'AVAILABLE');
+
+  if (availableBeds.length === 0) {
+    bedSelect.innerHTML = `<option value="" disabled selected>No vacant beds in ${targetWard}</option>`;
+  } else {
+    bedSelect.innerHTML = availableBeds.map(b => `<option value="${b.id || b.bedId}">${b.bedNumber} (${b.hasVentilator ? 'Ventilator • ' : ''}${b.hasOxygen ? 'Oxygen Ready' : 'Standard'})</option>`).join('');
+  }
+
+  if (docSelect) {
+    docSelect.innerHTML = appState.doctors.map(d => `<option value="${d.name}">${d.name} (${d.department})</option>`).join('');
   }
 }
 
@@ -1213,7 +1309,7 @@ function populateDoctorOptions() {
 
   const currentVal = select.value;
   select.innerHTML = `<option value="" disabled>-- Select Attending Doctor & Room --</option>` + 
-    appState.doctors.map(d => `<option value="${d.id}">${d.name} (${d.department} — ${d.room || 'OPD Room'})</option>`).join('');
+    appState.doctors.map(d => `<option value="${d.docId || d.id}">${d.name} (${d.department} — ${d.room || 'OPD Room'})</option>`).join('');
 
   if (currentVal && Array.from(select.options).some(opt => opt.value === currentVal)) {
     select.value = currentVal;
@@ -1231,6 +1327,38 @@ function initModals() {
         modal.style.display = 'none';
       }
     });
+  });
+
+  // Admin Add Doctor Button Listener
+  document.getElementById('adminAddDoctorBtn')?.addEventListener('click', () => {
+    openModal('addDoctorModal');
+  });
+
+  // Admin Add Doctor Form Submission
+  document.getElementById('addDoctorForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const docData = {
+      name: document.getElementById('docNameInput')?.value,
+      email: document.getElementById('docEmailInput')?.value,
+      specialization: document.getElementById('docSpecInput')?.value,
+      department: document.getElementById('docDeptInput')?.value,
+      room: document.getElementById('docRoomInput')?.value,
+      phone: document.getElementById('docPhoneInput')?.value
+    };
+
+    try {
+      const res = await api.addDoctor(docData);
+      if (res.success && res.doctor) {
+        closeModal('addDoctorModal');
+        e.target.reset();
+        showToast(`Doctor ${res.doctor.name} registered and login credentials created!`, 'success');
+        await loadAppData();
+      } else {
+        showToast(res.message || 'Error adding doctor.', 'danger');
+      }
+    } catch (err) {
+      showToast('Error registering doctor.', 'danger');
+    }
   });
 
   // Token Form Submission
@@ -1261,6 +1389,34 @@ function initModals() {
       }
     } catch (err) {
       showToast('Error registering patient.', 'danger');
+    }
+  });
+
+  // Inpatient Admission Form Submission
+  document.getElementById('admitPatientForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const bedId = document.getElementById('admitBedSelect')?.value;
+    const patientName = document.getElementById('admitPatientName')?.value;
+    const ward = document.getElementById('admitWardSelect')?.value;
+    const doctor = document.getElementById('admitDoctorSelect')?.value;
+    const diagnosis = document.getElementById('admitDiagnosisInput')?.value;
+
+    if (!bedId) {
+      return showToast('Please select an available bed.', 'warning');
+    }
+
+    try {
+      const res = await api.admitPatientToBed(bedId, { patientName, ward, doctor, diagnosis });
+      if (res.success) {
+        closeModal('admitPatientModal');
+        e.target.reset();
+        showToast(res.message || 'Patient admitted to bed successfully!', 'success');
+        await loadAppData();
+      } else {
+        showToast(res.message || 'Error admitting patient.', 'danger');
+      }
+    } catch (err) {
+      showToast('Error admitting patient.', 'danger');
     }
   });
 }

@@ -116,6 +116,13 @@ const api = {
     });
   },
 
+  async updateDoctor(doctorId, doctorData) {
+    return request(`/doctors/${encodeURIComponent(doctorId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(doctorData)
+    });
+  },
+
   async deleteDoctor(doctorId) {
     return request(`/doctors/${encodeURIComponent(doctorId)}`, {
       method: 'DELETE'
