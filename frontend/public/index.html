@@ -726,6 +726,9 @@
               <p class="sub-text margin-b-sm">Show this QR code at the OPD entrance terminal or doctor consultation desk.</p>
               <div class="qr-code-box" id="ptQrCodeContainer"></div>
               <small class="sub-text display-block margin-t-xs">Scan link: <span class="font-mono cyan-text" id="ptDirectUrl">https://hospiti-q.vercel.app/?token=A-031</span></small>
+              <div class="margin-t-sm">
+                <span class="badge-pill green-pill font-mono" id="ptValidityBadge"><i data-lucide="shield-check"></i> OP Valid for 15 Days • Patient Data Auto-Erased After Expiry</span>
+              </div>
             </div>
           </div>
 
@@ -1175,6 +1178,7 @@
                   <th>Token #</th>
                   <th>Status</th>
                   <th>Reg. Time</th>
+                  <th>OP Validity (15 Days)</th>
                 </tr>
               </thead>
               <tbody id="patientsTableBody">

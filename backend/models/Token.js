@@ -162,6 +162,15 @@ const tokenSchema = new mongoose.Schema({
   smsSent: {
     type: Boolean,
     default: true
+  },
+  validityDays: {
+    type: Number,
+    default: 15
+  },
+  expiresAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+    index: { expires: 0 } // MongoDB TTL index to automatically erase expired OP records after 15 days
   }
 }, {
   timestamps: true
@@ -169,5 +178,7 @@ const tokenSchema = new mongoose.Schema({
 
 // Composite index for fast queue sorting: finalTriagePriority ascending, registration time ascending
 tokenSchema.index({ status: 1, finalTriagePriority: 1, createdAt: 1 });
+// Native 15-day TTL index on createdAt (15 days = 1,296,000 seconds)
+tokenSchema.index({ createdAt: 1 }, { expireAfterSeconds: 15 * 24 * 60 * 60 });
 
 module.exports = mongoose.model('Token', tokenSchema);

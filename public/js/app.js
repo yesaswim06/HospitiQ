@@ -1007,23 +1007,31 @@ function renderPatientsTable() {
   if (!tbody) return;
 
   if (appState.queue.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No patient records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center sub-text padding-md">No patient records found.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = appState.queue.map(p => `
-    <tr>
-      <td><span class="font-mono gradient-text">${p.tokenNumber}</span></td>
-      <td><strong>${p.patientName}</strong></td>
-      <td>${p.age || 30} yrs, ${p.gender || 'Male'}</td>
-      <td>${p.department}</td>
-      <td>${p.doctor}</td>
-      <td><span class="badge-pill ${p.status === 'IN_CONSULTATION' ? 'orange-pill' : (p.status === 'COMPLETED' ? 'green-pill' : 'blue-pill')}">${p.status}</span></td>
-      <td>
-        <button class="glass-btn small-btn" onclick="switchView('patient-portal'); loadPatientTokenData('${p.tokenNumber}')"><i data-lucide="eye"></i> View Pass</button>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = appState.queue.map(p => {
+    const ptIdNum = (p.tokenNumber || '101').replace(/[^0-9]/g, '') || '101';
+    const regTime = p.registrationTime || '09:30 AM';
+    const statusPill = p.status === 'IN_CONSULTATION' || p.status === 'In Consultation' ? 'orange-pill' : (p.status === 'COMPLETED' ? 'green-pill' : 'blue-pill');
+
+    return `
+      <tr>
+        <td><span class="font-mono cyan-text">PT-${ptIdNum}</span></td>
+        <td><strong>${p.patientName}</strong></td>
+        <td>${p.age || 30} yrs, ${p.gender || 'Male'}</td>
+        <td><span class="font-mono small-text">${p.phone || '+91 99000 11223'}</span></td>
+        <td>${p.department}</td>
+        <td><span class="font-mono gradient-text">${p.tokenNumber}</span></td>
+        <td><span class="badge-pill ${statusPill}">${p.status}</span></td>
+        <td><span class="sub-text">${regTime}</span></td>
+        <td>
+          <span class="badge-pill green-pill small-text font-mono" title="Outpatient data automatically erases after 15 days"><i data-lucide="clock"></i> Valid (15d)</span>
+        </td>
+      </tr>
+    `;
+  }).join('');
 
   lucide.createIcons();
 }

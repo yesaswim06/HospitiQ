@@ -716,6 +716,9 @@ const handleTokenRegistration = async (req, res) => {
       waitTime: estWaitMins,
       patientsAhead: waitingInDept,
       registrationTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      validityDays: 15,
+      expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      opExpiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       smsSent: true
     };
 
@@ -732,6 +735,8 @@ const handleTokenRegistration = async (req, res) => {
         department: tokenPayload.department,
         lastProblemDescription: rawDesc,
         lastTriagePriority: triageResult.finalTriagePriority,
+        validityDays: 15,
+        expiresAt: tokenPayload.expiresAt,
         status: 'Waiting'
       });
       const savedPt = await newPatient.save();
@@ -757,7 +762,7 @@ const handleTokenRegistration = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Token ${tokenNum} registered! AI Priority: ${triageResult.finalTriagePriority} (${triageResult.aiSeverity})${triageResult.emergencySlot ? ` • Assigned Slot: ${triageResult.emergencySlot}` : ''}. Est. Wait: ${estWaitMins} mins.`,
+      message: `Token ${tokenNum} registered! AI Priority: ${triageResult.finalTriagePriority} (${triageResult.aiSeverity})${triageResult.emergencySlot ? ` • Assigned Slot: ${triageResult.emergencySlot}` : ''}. Valid for 15 days (Expires: ${tokenPayload.opExpiryDate}). Est. Wait: ${estWaitMins} mins.`,
       token: savedToken ? savedToken.toObject() : memToken,
       triage: triageResult
     });
@@ -766,6 +771,47 @@ const handleTokenRegistration = async (req, res) => {
     res.status(500).json({ success: false, error: 'SERVER_ERROR', message: 'Unable to register OPD token. Please try again.' });
   }
 };
+
+// --- Automated 15-Day OP Data Lifecycle & Auto-Erase Purge Engine ---
+const cleanupExpiredOPData = async () => {
+  try {
+    const cutoffDate = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    if (isDBConnected()) {
+      const delTokens = await Token.deleteMany({
+        $or: [
+          { createdAt: { $lt: cutoffDate } },
+          { expiresAt: { $lt: now } }
+        ]
+      });
+
+      const delPatients = await Patient.deleteMany({
+        $or: [
+          { createdAt: { $lt: cutoffDate } },
+          { expiresAt: { $lt: now } }
+        ]
+      });
+
+      if (delTokens.deletedCount > 0 || delPatients.deletedCount > 0) {
+        console.log(`[Auto-Purge] Automatically erased ${delTokens.deletedCount} expired OP tokens and ${delPatients.deletedCount} expired OP patient records (> 15 days validity expired).`);
+      }
+    }
+
+    // In-memory purge
+    const initialQueueCount = store.queue.length;
+    store.queue = store.queue.filter(q => {
+      const created = q.createdAt ? new Date(q.createdAt) : (q.expiresAt ? new Date(new Date(q.expiresAt).getTime() - 15 * 24 * 60 * 60 * 1000) : new Date());
+      return (now - created) < 15 * 24 * 60 * 60 * 1000;
+    });
+  } catch (err) {
+    console.error('Error during 15-day OP data auto-purge:', err);
+  }
+};
+
+// Run automated OP purge every 6 hours and on server boot
+setInterval(cleanupExpiredOPData, 6 * 60 * 60 * 1000);
+setTimeout(cleanupExpiredOPData, 5000);
 
 app.post('/api/queue/token', handleTokenRegistration);
 app.post('/api/tokens', handleTokenRegistration);

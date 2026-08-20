@@ -124,6 +124,15 @@ const connectDB = async () => {
     isConnected = true;
     console.log('✅ MongoDB Atlas connected successfully for HOSPITIQ.');
 
+    // Ensure 15-day TTL and composite indexes are synchronized with MongoDB Atlas
+    try {
+      await Token.syncIndexes();
+      await Patient.syncIndexes();
+      console.log('✅ MongoDB Atlas 15-Day OP TTL & Search Indexes synchronized.');
+    } catch (e) {
+      console.warn('Index sync warning:', e.message);
+    }
+
     // Auto-seed if collections are empty
     const tokenCount = await Token.countDocuments();
     if (tokenCount === 0) {

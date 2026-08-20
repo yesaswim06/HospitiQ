@@ -53,9 +53,21 @@ const patientSchema = new mongoose.Schema({
     type: String,
     enum: ['P1', 'P2', 'P3', 'P4', 'P5', 'Normal', 'High', 'Emergency'],
     default: 'P4'
+  },
+  validityDays: {
+    type: Number,
+    default: 15
+  },
+  expiresAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+    index: { expires: 0 } // MongoDB TTL index to automatically erase OP patient records after 15 days
   }
 }, {
   timestamps: true
 });
+
+// Native 15-day TTL index on createdAt (15 days = 1,296,000 seconds)
+patientSchema.index({ createdAt: 1 }, { expireAfterSeconds: 15 * 24 * 60 * 60 });
 
 module.exports = mongoose.model('Patient', patientSchema);
