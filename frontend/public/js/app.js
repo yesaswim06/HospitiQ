@@ -549,6 +549,7 @@ function renderAllViews() {
   renderAdmissionsTable();
   renderAdminTable();
   renderDoctorPortalQueue();
+  renderTriageReviewTable();
   renderReports();
   populateDoctorOptions();
   updateSidebarBadges();
@@ -734,12 +735,15 @@ function renderCapacityOverview() {
 function updateSidebarBadges() {
   const waitingCount = appState.queue.filter(q => q.status === 'WAITING' || q.status === 'Waiting').length;
   const availBedsCount = appState.beds.filter(b => b.status === 'AVAILABLE' || b.status === 'Available').length;
+  const pendingTriageCount = appState.queue.filter(q => q.triageStatus === 'PENDING_REVIEW' || q.finalTriagePriority === 'P1' || q.finalTriagePriority === 'P2').length;
 
   const queueBadge = document.getElementById('sideQueueBadge');
   const bedBadge = document.getElementById('sideBedBadge');
+  const triageBadge = document.getElementById('sideTriageBadge');
 
   if (queueBadge) queueBadge.textContent = waitingCount;
   if (bedBadge) bedBadge.textContent = availBedsCount;
+  if (triageBadge) triageBadge.textContent = pendingTriageCount;
 }
 
 function renderDashboardStats() {
@@ -870,6 +874,17 @@ async function updateMyDoctorStatus(status) {
   }
 }
 
+// Priority helper badge HTML generator
+function getPriorityBadge(priority) {
+  const p = String(priority || 'P4').toUpperCase().trim();
+  if (p === 'P1' || p === 'IMMEDIATE') return `<span class="badge-pill red-pill font-bold"><i data-lucide="alert-triangle"></i> P1 – Immediate</span>`;
+  if (p === 'P2' || p === 'EMERGENCY') return `<span class="badge-pill red-pill font-bold">⚠️ P2 – Emergency</span>`;
+  if (p === 'P3' || p === 'HIGH' || p === 'URGENT') return `<span class="badge-pill orange-pill">🟡 P3 – Urgent</span>`;
+  if (p === 'P4' || p === 'NORMAL' || p === 'LESS URGENT') return `<span class="badge-pill blue-pill">🔵 P4 – Less Urgent</span>`;
+  if (p === 'P5' || p === 'NON-URGENT' || p === 'NON_URGENT') return `<span class="badge-pill green-pill">⚪ P5 – Non-Urgent</span>`;
+  return `<span class="badge-pill blue-pill">${p}</span>`;
+}
+
 // --- Queue Table Render ---
 function renderQueueTable() {
   const tbody = document.getElementById('queueTableBody');
@@ -898,25 +913,30 @@ function renderQueueTable() {
   }
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No matching patients in OPD queue.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center sub-text padding-md">No matching patients in OPD queue.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map(q => {
-    let priorityPill = q.priority === 'Emergency' ? 'red-pill' : (q.priority === 'High' ? 'orange-pill' : 'blue-pill');
-    let statusPill = q.status === 'IN_CONSULTATION' || q.status === 'In Consultation' ? 'orange-pill' : (q.status === 'COMPLETED' ? 'green-pill' : 'blue-pill');
+    const finalP = q.finalTriagePriority || q.priority || 'P4';
+    const statusPill = q.status === 'IN_CONSULTATION' || q.status === 'In Consultation' ? 'orange-pill' : (q.status === 'COMPLETED' ? 'green-pill' : 'blue-pill');
+    const redFlagSnippet = (q.aiRedFlags && q.aiRedFlags.length > 0) ? `<br/><small class="red-text font-bold"><i data-lucide="alert-circle"></i> ${q.aiRedFlags[0]}</small>` : '';
 
     return `
       <tr>
         <td><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
-        <td><strong>${q.patientName}</strong> (${q.age || 30}, ${q.gender || 'Male'})</td>
+        <td>
+          <strong>${q.patientName}</strong> (${q.age || 30}, ${q.gender || 'Male'})
+          ${redFlagSnippet}
+        </td>
         <td>${q.department}</td>
         <td>${q.doctor}</td>
-        <td><span class="badge-pill ${priorityPill}">${q.priority}</span></td>
+        <td><strong>${q.waitTime !== undefined ? q.waitTime : 15} mins</strong></td>
+        <td>${getPriorityBadge(finalP)}</td>
         <td><span class="badge-pill ${statusPill}">${q.status}</span></td>
         <td>
           ${q.status === 'WAITING' || q.status === 'Waiting' 
-            ? `<button class="action-btn glow-btn small-btn" onclick="callPatientToken('${q.doctorId}')"><i data-lucide="bell"></i> Call</button>`
+            ? `<button class="action-btn glow-btn small-btn" onclick="callPatientToken('${q.doctorId || q.doctor}')"><i data-lucide="bell"></i> Call</button>`
             : (q.status === 'IN_CONSULTATION' || q.status === 'In Consultation'
               ? `<button class="glass-btn success-btn small-btn" onclick="completeConsultationCurrentDoctor()"><i data-lucide="check"></i> Finish</button>`
               : `<span class="sub-text">Done</span>`)}
@@ -941,22 +961,27 @@ function renderDoctorPortalQueue() {
   }
 
   tbody.innerHTML = docQueue.map(q => {
-    let priorityPill = q.priority === 'Emergency' ? 'red-pill' : (q.priority === 'High' ? 'orange-pill' : 'blue-pill');
+    const finalP = q.finalTriagePriority || q.priority || 'P4';
+    const redFlagSnippet = (q.aiRedFlags && q.aiRedFlags.length > 0) ? `<span class="badge-pill red-pill small-text margin-l-xs"><i data-lucide="alert-triangle"></i> ${q.aiRedFlags[0]}</span>` : '';
 
     return `
       <tr>
         <td><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
-        <td><strong>${q.patientName}</strong> (${q.age || 30}, ${q.gender || 'Male'})</td>
-        <td><span class="badge-pill ${priorityPill}">${q.priority}</span></td>
+        <td>
+          <strong>${q.patientName}</strong> (${q.age || 30}, ${q.gender || 'Male'})
+          ${redFlagSnippet}
+          ${q.problemDescription ? `<div class="sub-text small-text" style="max-width:220px;"><em>"${q.problemDescription}"</em></div>` : ''}
+        </td>
+        <td>${getPriorityBadge(finalP)}</td>
         <td>
           <div class="triage-vitals-pills">
             <span class="vitals-chip"><i data-lucide="heart"></i> 76 bpm</span>
             <span class="vitals-chip"><i data-lucide="activity"></i> 120/80</span>
           </div>
         </td>
-        <td><strong>${q.waitTime || 12} mins</strong></td>
+        <td><strong>${q.waitTime !== undefined ? q.waitTime : 12} mins</strong></td>
         <td>
-          <button class="action-btn glow-btn small-btn" onclick="callPatientToken('${q.doctorId}')"><i data-lucide="bell"></i> Call Patient</button>
+          <button class="action-btn glow-btn small-btn" onclick="callPatientToken('${q.doctorId || q.doctor}')"><i data-lucide="bell"></i> Call Patient</button>
         </td>
       </tr>
     `;
@@ -1319,6 +1344,154 @@ function renderAdminTable() {
   `).join('');
 
   lucide.createIcons();
+}
+
+// --- AI Clinical Triage Review Engine ---
+function renderTriageReviewTable() {
+  const tbody = document.getElementById('triageTableBody');
+  if (!tbody) return;
+
+  const waitingTokens = appState.queue.filter(q => q.status === 'WAITING' || q.status === 'Waiting');
+  
+  const p1p2 = waitingTokens.filter(q => q.finalTriagePriority === 'P1' || q.finalTriagePriority === 'P2' || q.priority === 'Emergency' || q.aiSuggestedPriority === 'P1' || q.aiSuggestedPriority === 'P2').length;
+  const p3 = waitingTokens.filter(q => q.finalTriagePriority === 'P3' || q.priority === 'High' || q.aiSuggestedPriority === 'P3').length;
+  const p4p5 = waitingTokens.filter(q => q.finalTriagePriority === 'P4' || q.finalTriagePriority === 'P5' || q.priority === 'Normal' || q.aiSuggestedPriority === 'P4' || q.aiSuggestedPriority === 'P5').length;
+  const pending = appState.queue.filter(q => q.triageStatus === 'PENDING_REVIEW').length;
+
+  const p1p2El = document.getElementById('triageP1P2Count');
+  const p3El = document.getElementById('triageP3Count');
+  const p4p5El = document.getElementById('triageP4P5Count');
+  const pendingEl = document.getElementById('triagePendingCount');
+
+  if (p1p2El) p1p2El.textContent = p1p2;
+  if (p3El) p3El.textContent = p3;
+  if (p4p5El) p4p5El.textContent = p4p5;
+  if (pendingEl) pendingEl.textContent = pending;
+
+  if (appState.queue.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center sub-text padding-md">No patient triage records found in database.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = appState.queue.map(q => {
+    const aiPriority = q.aiSuggestedPriority || q.priority || 'P4';
+    const finalPriority = q.finalTriagePriority || q.priority || 'P4';
+    const redFlags = q.aiRedFlags || [];
+    const symptoms = q.aiSymptoms || [];
+    const isPending = q.triageStatus === 'PENDING_REVIEW';
+    const isOverridden = q.triageStatus === 'OVERRIDDEN';
+
+    const redFlagHtml = redFlags.map(rf => `<span class="badge-pill red-pill font-mono small-text"><i data-lucide="alert-triangle"></i> ${rf}</span>`).join(' ');
+    const symptomHtml = symptoms.map(s => `<span class="badge-pill blue-pill font-mono small-text">${s}</span>`).join(' ');
+
+    return `
+      <tr>
+        <td><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
+        <td>
+          <strong>${q.patientName}</strong> (${q.age || 30} yrs, ${q.gender || 'Male'})<br/>
+          <span class="sub-text">${q.department} • ${q.doctor}</span>
+        </td>
+        <td>
+          <div style="max-width: 260px; word-wrap: break-word;">
+            <em>"${q.problemDescription || 'General outpatient consultation'}"</em>
+            ${q.patientReportedUrgency ? `<br/><small class="sub-text">Reported Urgency: <strong>${q.patientReportedUrgency}</strong></small>` : ''}
+          </div>
+        </td>
+        <td>
+          <div class="flex-column gap-xs" style="max-width: 200px;">
+            ${redFlagHtml || ''}
+            ${symptomHtml || '<span class="sub-text">Routine checkup</span>'}
+          </div>
+        </td>
+        <td>
+          ${getPriorityBadge(aiPriority)}
+          ${q.aiReason ? `<div class="sub-text small-text margin-t-xs" style="max-width:180px; font-size:11px;">${q.aiReason}</div>` : ''}
+        </td>
+        <td>
+          ${getPriorityBadge(finalPriority)}
+          ${isOverridden && q.overrideReason ? `<div class="sub-text small-text cyan-text margin-t-xs" style="max-width:160px;">Override: ${q.overrideReason} (by ${q.reviewedBy || 'Staff'})</div>` : ''}
+        </td>
+        <td>
+          <span class="badge-pill ${isPending ? 'orange-pill' : 'green-pill'}">
+            ${isPending ? '⚠️ PENDING REVIEW' : (isOverridden ? 'VERIFIED (OVERRIDDEN)' : 'VERIFIED')}
+          </span>
+        </td>
+        <td>
+          <div class="action-row">
+            ${isPending ? `<button class="action-btn glow-btn small-btn" onclick="confirmTriagePriority('${q.tokenNumber || q.id}')" title="Confirm AI Recommendation"><i data-lucide="check"></i> Confirm</button>` : ''}
+            <button class="glass-btn small-btn" onclick="openOverrideTriageModal('${q.tokenNumber || q.id}')" title="Override Priority Level"><i data-lucide="edit-3"></i> Override</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  lucide.createIcons();
+}
+
+function openOverrideTriageModal(tokenId) {
+  const token = appState.queue.find(q => q.tokenNumber === tokenId || q.id === tokenId);
+  if (!token) return;
+
+  const idInput = document.getElementById('overrideTokenId');
+  const infoInput = document.getElementById('overridePatientInfo');
+  const descEl = document.getElementById('overrideProblemDesc');
+  const aiInput = document.getElementById('overrideAiSuggestion');
+  const prioritySelect = document.getElementById('overridePrioritySelect');
+  const reviewedByInput = document.getElementById('overrideReviewedBy');
+
+  if (idInput) idInput.value = token.tokenNumber || token.id;
+  if (infoInput) infoInput.value = `${token.tokenNumber} — ${token.patientName} (${token.department} / ${token.doctor})`;
+  if (descEl) descEl.textContent = `"${token.problemDescription || 'No description provided'}"`;
+  if (aiInput) aiInput.value = `${token.aiSuggestedPriority || 'P4'} (${token.aiSeverity || 'Moderate'}) — ${token.aiReason || 'Standard outpatient triage'}`;
+  if (prioritySelect) prioritySelect.value = token.finalTriagePriority || token.aiSuggestedPriority || 'P4';
+  if (reviewedByInput) reviewedByInput.value = appState.currentUser?.name || 'Triage Officer';
+
+  openModal('overrideTriageModal');
+}
+
+async function handleOverrideTriageSubmit(e) {
+  e.preventDefault();
+  const tokenId = document.getElementById('overrideTokenId')?.value;
+  const finalTriagePriority = document.getElementById('overridePrioritySelect')?.value;
+  const overrideReason = document.getElementById('overrideReasonInput')?.value;
+  const reviewedBy = document.getElementById('overrideReviewedBy')?.value;
+
+  if (!tokenId) return;
+
+  try {
+    const res = await api.overrideTriage(tokenId, finalTriagePriority, overrideReason, reviewedBy);
+    if (res.success) {
+      closeModal('overrideTriageModal');
+      e.target.reset();
+      showToast(res.message || `Triage priority updated to ${finalTriagePriority}`, 'success');
+      await loadAppData();
+    } else {
+      showToast(res.message || 'Error updating triage priority.', 'danger');
+    }
+  } catch (err) {
+    showToast('Failed to update triage priority.', 'danger');
+  }
+}
+
+async function confirmTriagePriority(tokenId) {
+  const token = appState.queue.find(q => q.tokenNumber === tokenId || q.id === tokenId);
+  if (!token) return;
+
+  const staffName = appState.currentUser?.name || 'Triage Staff';
+  const targetP = token.aiSuggestedPriority || token.finalTriagePriority || 'P4';
+
+  try {
+    const res = await api.overrideTriage(tokenId, targetP, 'Confirmed AI clinical assessment without modification.', staffName);
+    if (res.success) {
+      showToast(`Triage confirmed for Token ${token.tokenNumber} at ${targetP}!`, 'success');
+      await loadAppData();
+    } else {
+      showToast(res.message || 'Error confirming triage.', 'danger');
+    }
+  } catch (err) {
+    showToast('Failed to confirm triage.', 'danger');
+  }
 }
 
 function openEditDoctorModal(docId) {
@@ -1747,7 +1920,8 @@ function initModals() {
       gender: document.getElementById('inputPatientGender')?.value,
       phone: document.getElementById('inputPatientPhone')?.value,
       doctorId: document.getElementById('inputDoctorSelect')?.value,
-      priority: document.getElementById('inputPriority')?.value
+      problemDescription: document.getElementById('inputProblemDesc')?.value || '',
+      patientReportedUrgency: document.getElementById('inputPatientReportedUrgency')?.value || 'Normal'
     };
 
     try {
@@ -1755,7 +1929,9 @@ function initModals() {
       if (res.success && res.token) {
         closeModal('newTokenModal');
         e.target.reset();
-        showToast(`Token ${res.token.tokenNumber} generated! Est. Wait: ${res.token.waitTime || 15} mins.`, 'success');
+        const p = res.token.finalTriagePriority || res.token.priority || 'P4';
+        const sev = res.triage?.aiSeverity || 'Moderate';
+        showToast(`Token ${res.token.tokenNumber} generated! AI Triage Priority: ${p} (${sev}). Est. Wait: ${res.token.waitTime || 15} mins.`, 'success');
         await loadAppData();
 
         loadPatientTokenData(res.token.tokenNumber);
@@ -1772,6 +1948,9 @@ function initModals() {
       showToast('Error registering patient.', 'danger');
     }
   });
+
+  // Override Triage Form Submission
+  document.getElementById('overrideTriageForm')?.addEventListener('submit', handleOverrideTriageSubmit);
 
   // Inpatient Admission Form Submission
   document.getElementById('admitPatientForm')?.addEventListener('submit', async (e) => {

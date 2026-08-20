@@ -60,9 +60,64 @@ const tokenSchema = new mongoose.Schema({
   },
   priority: {
     type: String,
-    enum: ['Emergency', 'High', 'Normal'],
+    enum: ['Emergency', 'High', 'Normal', 'P1', 'P2', 'P3', 'P4', 'P5'],
     default: 'Normal',
     index: true
+  },
+  // --- AI-Assisted Triage Fields ---
+  problemDescription: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  patientReportedUrgency: {
+    type: String,
+    default: 'Normal'
+  },
+  aiSuggestedPriority: {
+    type: String,
+    enum: ['P1', 'P2', 'P3', 'P4', 'P5', ''],
+    default: 'P4',
+    index: true
+  },
+  aiSymptoms: {
+    type: [String],
+    default: []
+  },
+  aiSeverity: {
+    type: String,
+    default: 'Moderate'
+  },
+  aiRedFlags: {
+    type: [String],
+    default: []
+  },
+  aiReason: {
+    type: String,
+    default: ''
+  },
+  finalTriagePriority: {
+    type: String,
+    enum: ['P1', 'P2', 'P3', 'P4', 'P5'],
+    default: 'P4',
+    index: true
+  },
+  triageStatus: {
+    type: String,
+    enum: ['PENDING_REVIEW', 'CONFIRMED', 'OVERRIDDEN'],
+    default: 'CONFIRMED',
+    index: true
+  },
+  reviewedBy: {
+    type: String,
+    default: 'System AI'
+  },
+  reviewedAt: {
+    type: Date
+  },
+  overrideReason: {
+    type: String,
+    default: ''
   },
   status: {
     type: String,
@@ -98,7 +153,7 @@ const tokenSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Composite index for fast queue sorting: priority descending, registration time ascending
-tokenSchema.index({ status: 1, priority: 1, createdAt: 1 });
+// Composite index for fast queue sorting: finalTriagePriority ascending, registration time ascending
+tokenSchema.index({ status: 1, finalTriagePriority: 1, createdAt: 1 });
 
 module.exports = mongoose.model('Token', tokenSchema);

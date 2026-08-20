@@ -145,11 +145,136 @@ const rateLimiter = (req, res, next) => {
   next();
 };
 
-// Priority helper
+// Priority helper for clinical P1-P5 ordering
 const priorityWeight = (p) => {
-  if (p === 'Emergency') return 1000;
-  if (p === 'High') return 500;
-  return 100;
+  const norm = String(p || '').toUpperCase().trim();
+  if (norm === 'P1' || norm === 'IMMEDIATE') return 5000;
+  if (norm === 'P2' || norm === 'EMERGENCY') return 4000;
+  if (norm === 'P3' || norm === 'HIGH' || norm === 'URGENT') return 3000;
+  if (norm === 'P4' || norm === 'NORMAL' || norm === 'LESS URGENT') return 2000;
+  if (norm === 'P5' || norm === 'NON-URGENT' || norm === 'NON_URGENT') return 1000;
+  return 2000;
+};
+
+// --- AI Clinical Triage NLP Engine ---
+const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => {
+  const text = String(description || '').toLowerCase().trim();
+
+  const redFlags = [];
+  const symptoms = [];
+  let suggestedPriority = 'P4';
+  let severity = 'Moderate';
+  let reason = 'Standard outpatient evaluation recommended.';
+  let requiresHumanReview = false;
+
+  if (!text || text.length < 3) {
+    return {
+      aiSuggestedPriority: 'P4',
+      aiSymptoms: ['General Health Inquiry'],
+      aiSeverity: 'Mild',
+      aiRedFlags: [],
+      aiReason: 'Brief or unspecified symptoms. Assigned baseline priority P4 for triage verification.',
+      triageStatus: 'PENDING_REVIEW',
+      finalTriagePriority: 'P4'
+    };
+  }
+
+  // --- Non-Urgent / Administrative (P5) ---
+  const isP5Refill = /\b(refill|prescription|renewal|routine checkup|medical certificate|follow up|fitness certificate|general checkup|skin rash mild|routine test|report collection)\b/i.test(text);
+  const isPainOrEmergency = /\b(pain|bleed|breath|unconscious|chest|heart|stroke|fracture|burn|vomit|fever|severe|acute|accident)\b/i.test(text);
+
+  // --- 1. Immediate Life Threat (P1) Detection ---
+  const p1Conditions = [
+    { pattern: /\b(unconscious|not breathing|cardiac arrest|respiratory arrest|collapsed and unresponsive|choking|airway obstruction|cyanosis|turning blue|severe anaphylaxis|massive hemorrhage|severe shock)\b/i, flag: 'Critical Airway / Circulatory / Consciousness Collapse' },
+    { pattern: /\b(unresponsive|no pulse|gasping for air|stridor)\b/i, flag: 'Acute Airway/Ventilation Failure' }
+  ];
+
+  for (const c of p1Conditions) {
+    if (c.pattern.test(text)) {
+      redFlags.push(c.flag);
+      symptoms.push('Unconsciousness / Airway Compromise');
+      suggestedPriority = 'P1';
+      severity = 'Critical';
+      reason = 'Immediate life-threat detected: Airway, Breathing, or Circulatory collapse. Zero-delay resuscitation required.';
+      requiresHumanReview = true;
+      break;
+    }
+  }
+
+  // --- 2. Emergency / Acute Red Flags (P2) Detection (If not P1) ---
+  if (suggestedPriority !== 'P1') {
+    const p2Conditions = [
+      { pattern: /\b(chest pain|heart attack|angina|pressure in chest|radiating to arm|radiating to jaw)\b/i, flag: 'Acute Chest Pain / Suspected ACS', sym: 'Cardiac Chest Pain' },
+      { pattern: /\b(difficulty breathing|shortness of breath|breathless|struggling to breathe|dyspnea|severe asthma)\b/i, flag: 'Acute Respiratory Distress', sym: 'Severe Dyspnea' },
+      { pattern: /\b(slurred speech|facial droop|one sided weakness|stroke|sudden vision loss|paralysis)\b/i, flag: 'Acute Neurological Deficit / Stroke Protocol', sym: 'Suspected Acute Stroke' },
+      { pattern: /\b(heavy bleeding|uncontrolled bleeding|coughing up blood|hemoptysis|vomiting blood|hematemesis)\b/i, flag: 'Active Severe Hemorrhage', sym: 'Severe Bleeding' },
+      { pattern: /\b(severe head injury|major accident|deep laceration|stab wound|gunshot|high voltage burn)\b/i, flag: 'Major Acute Trauma', sym: 'Severe Trauma' },
+      { pattern: /\b(severe abdominal pain|excruciating pain|pain 9\/10|pain 10\/10|unbearable pain)\b/i, flag: 'Acute Severe Pain', sym: 'Severe Acute Pain' },
+      { pattern: /\b(seizure|convulsion|diabetic coma|severe hypoglycemia)\b/i, flag: 'Acute Neurological Instability', sym: 'Seizure' }
+    ];
+
+    for (const c of p2Conditions) {
+      if (c.pattern.test(text)) {
+        redFlags.push(c.flag);
+        symptoms.push(c.sym);
+        suggestedPriority = 'P2';
+        severity = 'Severe';
+        reason = `Emergency red flag identified: ${c.flag}. Urgent medical intervention required (< 15 mins).`;
+        requiresHumanReview = true;
+      }
+    }
+  }
+
+  // --- 3. Urgent (P3) Detection (If not P1/P2) ---
+  if (suggestedPriority !== 'P1' && suggestedPriority !== 'P2') {
+    const p3Conditions = [
+      { pattern: /\b(high fever|chills|shivering|fever 103|fever 104|temperature high)\b/i, sym: 'High Fever' },
+      { pattern: /\b(fracture|broken bone|dislocation|sprain severe|cannot walk|swelling severe)\b/i, sym: 'Suspected Fracture / Orthopedic Injury' },
+      { pattern: /\b(persistent vomiting|severe diarrhea|dehydration|kidney pain|flank pain)\b/i, sym: 'Gastrointestinal / Renal Distress' },
+      { pattern: /\b(moderate pain|pain 6\/10|pain 7\/10|moderate chest discomfort|migraine severe)\b/i, sym: 'Moderate Acute Pain' },
+      { pattern: /\b(asthma mild|wheezing mild|allergic reaction mild|rash spreading)\b/i, sym: 'Moderate Respiratory / Allergic Symptom' }
+    ];
+
+    for (const c of p3Conditions) {
+      if (c.pattern.test(text)) {
+        symptoms.push(c.sym);
+        suggestedPriority = 'P3';
+        severity = 'Moderate';
+        reason = `Urgent clinical presentation identified: ${c.sym}. Medical attention recommended within 30 minutes.`;
+        requiresHumanReview = true;
+      }
+    }
+  }
+
+  // --- 4. Non-Urgent (P5) Confirmation ---
+  if (isP5Refill && !isPainOrEmergency && suggestedPriority !== 'P1' && suggestedPriority !== 'P2') {
+    suggestedPriority = 'P5';
+    severity = 'Minimal';
+    symptoms.push('Routine Prescription / Administrative Request');
+    reason = 'Patient described routine administrative or prescription refill request with no acute red flags.';
+    requiresHumanReview = false;
+  }
+
+  // --- 5. Less Urgent (P4) Default ---
+  if (suggestedPriority !== 'P1' && suggestedPriority !== 'P2' && suggestedPriority !== 'P3' && suggestedPriority !== 'P5') {
+    suggestedPriority = 'P4';
+    severity = 'Mild';
+    symptoms.push('Mild Symptom / Routine Consultation');
+    reason = 'Mild or subacute condition with no immediate red flags. Standard OPD queue allocation.';
+  }
+
+  const uniqueSymptoms = [...new Set(symptoms)];
+  const uniqueRedFlags = [...new Set(redFlags)];
+
+  return {
+    aiSuggestedPriority: suggestedPriority,
+    aiSymptoms: uniqueSymptoms.length > 0 ? uniqueSymptoms : ['General Clinical Assessment'],
+    aiSeverity: severity,
+    aiRedFlags: uniqueRedFlags,
+    aiReason: reason,
+    triageStatus: requiresHumanReview ? 'PENDING_REVIEW' : 'CONFIRMED',
+    finalTriagePriority: suggestedPriority
+  };
 };
 
 // ==============================================================================
@@ -449,8 +574,10 @@ app.get('/api/queue', async (req, res) => {
       if (a.status === 'IN_CONSULTATION' && b.status !== 'IN_CONSULTATION') return -1;
       if (b.status === 'IN_CONSULTATION' && a.status !== 'IN_CONSULTATION') return 1;
       if (a.status === 'WAITING' && b.status === 'WAITING') {
-        const diff = priorityWeight(b.priority) - priorityWeight(a.priority);
-        if (diff !== 0) return diff;
+        const weightA = priorityWeight(a.finalTriagePriority || a.priority);
+        const weightB = priorityWeight(b.finalTriagePriority || b.priority);
+        if (weightB !== weightA) return weightB - weightA;
+        return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
       }
       return 0;
     });
@@ -464,7 +591,16 @@ app.get('/api/queue', async (req, res) => {
 
 // Create/Register Token (Supports both /api/queue/token and /api/tokens)
 const handleTokenRegistration = async (req, res) => {
-  const { patientName, age, gender, phone, department, doctorId, priority } = req.body;
+  const { 
+    patientName, 
+    age, 
+    gender, 
+    phone, 
+    department, 
+    doctorId, 
+    problemDescription, 
+    patientReportedUrgency 
+  } = req.body;
 
   if (!patientName || !patientName.trim()) {
     return res.status(400).json({ success: false, error: 'BAD_REQUEST', message: 'Patient Name is required.' });
@@ -474,6 +610,11 @@ const handleTokenRegistration = async (req, res) => {
   if (isNaN(parsedAge) || parsedAge < 1 || parsedAge > 120) {
     return res.status(400).json({ success: false, error: 'BAD_REQUEST', message: 'Valid Age between 1 and 120 is required.' });
   }
+
+  // Run AI Clinical Triage NLP Engine
+  // Patients cannot directly assign P1/Emergency; AI analyzes problem description
+  const rawDesc = (problemDescription || '').trim();
+  const triageResult = evaluateTriage(rawDesc, patientReportedUrgency || 'Normal');
 
   try {
     let doc = store.doctors.find(d => d.id === doctorId || d.docId === doctorId);
@@ -491,7 +632,10 @@ const handleTokenRegistration = async (req, res) => {
       ? await Token.countDocuments({ status: 'WAITING', department: department || doc.department })
       : store.queue.filter(q => q.status === 'WAITING' && q.department === (department || doc.department)).length;
 
-    const estWaitMins = priority === 'Emergency' ? 0 : (waitingInDept + 1) * 12;
+    let estWaitMins = (waitingInDept + 1) * 12;
+    if (triageResult.finalTriagePriority === 'P1') estWaitMins = 0;
+    else if (triageResult.finalTriagePriority === 'P2') estWaitMins = Math.min(10, (waitingInDept + 1) * 4);
+    else if (triageResult.finalTriagePriority === 'P3') estWaitMins = (waitingInDept + 1) * 8;
 
     const tokenPayload = {
       tokenNumber: tokenNum,
@@ -504,7 +648,17 @@ const handleTokenRegistration = async (req, res) => {
       doctor: doc.name,
       doctorId: doc.docId || doc.id || 'doc-1',
       room: doc.room || 'OPD Room #104',
-      priority: priority || 'Normal',
+      priority: triageResult.finalTriagePriority,
+      problemDescription: rawDesc,
+      patientReportedUrgency: patientReportedUrgency || 'Normal',
+      aiSuggestedPriority: triageResult.aiSuggestedPriority,
+      aiSymptoms: triageResult.aiSymptoms,
+      aiSeverity: triageResult.aiSeverity,
+      aiRedFlags: triageResult.aiRedFlags,
+      aiReason: triageResult.aiReason,
+      finalTriagePriority: triageResult.finalTriagePriority,
+      triageStatus: triageResult.triageStatus,
+      reviewedBy: 'System AI',
       status: 'WAITING',
       waitTime: estWaitMins,
       patientsAhead: waitingInDept,
@@ -523,6 +677,8 @@ const handleTokenRegistration = async (req, res) => {
         phone: tokenPayload.phone,
         activeTokenNumber: tokenNum,
         department: tokenPayload.department,
+        lastProblemDescription: rawDesc,
+        lastTriagePriority: triageResult.finalTriagePriority,
         status: 'Waiting'
       });
       const savedPt = await newPatient.save();
@@ -548,8 +704,9 @@ const handleTokenRegistration = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Token ${tokenNum} generated successfully. Estimated wait: ${estWaitMins} mins.`,
-      token: savedToken ? savedToken.toObject() : memToken
+      message: `Token ${tokenNum} registered with AI Triage Priority ${triageResult.finalTriagePriority} (${triageResult.aiSeverity}). Est. Wait: ${estWaitMins} mins.`,
+      token: savedToken ? savedToken.toObject() : memToken,
+      triage: triageResult
     });
   } catch (err) {
     console.error('Token registration error:', err);
@@ -559,6 +716,63 @@ const handleTokenRegistration = async (req, res) => {
 
 app.post('/api/queue/token', handleTokenRegistration);
 app.post('/api/tokens', handleTokenRegistration);
+
+// --- AI Triage Live Analysis & Override Endpoints ---
+app.post('/api/triage/analyze', (req, res) => {
+  const { problemDescription, patientReportedUrgency } = req.body;
+  const analysis = evaluateTriage(problemDescription, patientReportedUrgency);
+  res.json({ success: true, triage: analysis });
+});
+
+app.get('/api/triage/pending', async (req, res) => {
+  try {
+    let tokens = [];
+    if (isDBConnected()) {
+      tokens = await Token.find({ status: 'WAITING' }).sort({ createdAt: -1 }).lean();
+    } else {
+      tokens = store.queue.filter(q => q.status === 'WAITING');
+    }
+    res.json({ success: true, triageList: tokens });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching triage tokens.' });
+  }
+});
+
+app.post('/api/triage/override/:id', requireRoles(['Doctor', 'Admin']), async (req, res) => {
+  const { finalTriagePriority, overrideReason, reviewedBy } = req.body;
+  const validP = ['P1', 'P2', 'P3', 'P4', 'P5'];
+  if (!validP.includes(finalTriagePriority)) {
+    return res.status(400).json({ success: false, message: `Invalid priority. Must be one of: ${validP.join(', ')}` });
+  }
+
+  try {
+    const updateData = {
+      finalTriagePriority,
+      overrideReason: overrideReason || 'Clinical staff priority review',
+      reviewedBy: reviewedBy || req.user?.name || req.user?.email || 'Authorized Staff',
+      reviewedAt: new Date(),
+      triageStatus: 'OVERRIDDEN',
+      priority: finalTriagePriority
+    };
+
+    if (isDBConnected()) {
+      await Token.updateOne(
+        { $or: [{ tokenNumber: req.params.id }, { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null }] },
+        { $set: updateData }
+      );
+    }
+
+    const memToken = store.queue.find(q => q.tokenNumber === req.params.id || q.id === req.params.id);
+    if (memToken) {
+      Object.assign(memToken, updateData);
+    }
+
+    res.json({ success: true, message: `Triage priority updated to ${finalTriagePriority}.`, token: memToken });
+  } catch (err) {
+    console.error('Triage override error:', err);
+    res.status(500).json({ success: false, message: 'Failed to update triage priority.' });
+  }
+});
 
 // Call Next Patient
 app.post('/api/queue/call-next', requireRoles(['Doctor', 'Admin']), async (req, res) => {

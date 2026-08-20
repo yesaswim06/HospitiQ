@@ -591,6 +591,7 @@
         <div class="nav-section-label role-label-admin">CLINICAL COMMAND</div>
         <button class="side-link active admin-role-link" data-view="dashboard"><i data-lucide="layout-dashboard"></i> <span>Overview Dashboard</span></button>
         <button class="side-link admin-role-link" data-view="opd-queue"><i data-lucide="ticket"></i> <span>Live OPD Queue</span> <span class="badge-count red" id="sideQueueBadge">24</span></button>
+        <button class="side-link admin-role-link doctor-role-link" data-view="triage-review"><i data-lucide="brain-circuit"></i> <span>AI Triage Review</span> <span class="badge-count orange" id="sideTriageBadge">0</span></button>
         <button class="side-link admin-role-link" data-view="patients"><i data-lucide="users"></i> <span>Patient Directory</span></button>
         <button class="side-link admin-role-link" data-view="doctors"><i data-lucide="stethoscope"></i> <span>Doctor Roster & OPD Rooms</span></button>
 
@@ -1049,6 +1050,81 @@
           </div>
         </section>
 
+        <!-- AI-ASSISTED CLINICAL TRIAGE REVIEW VIEW -->
+        <section id="view-triage-review" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>🤖 AI Clinical Triage & Staff Review Terminal</h1>
+              <p>Natural language symptom analysis, automated P1–P5 urgency suggestions, and authorized staff verification.</p>
+            </div>
+            <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> + New Patient Triage</button>
+          </div>
+
+          <!-- Triage Metrics Row -->
+          <div class="stats-grid margin-b-lg">
+            <div class="stat-card red-glow">
+              <div class="stat-icon red-icon"><i data-lucide="alert-triangle"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Immediate / Emergency (P1-P2)</span>
+                <h2 class="stat-value" id="triageP1P2Count">0</h2>
+                <span class="stat-subtext red-text">Critical Attention Required</span>
+              </div>
+            </div>
+
+            <div class="stat-card orange-glow">
+              <div class="stat-icon orange-icon"><i data-lucide="clock"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Urgent (P3)</span>
+                <h2 class="stat-value" id="triageP3Count">0</h2>
+                <span class="stat-subtext orange-text">Target: &lt; 30 Mins</span>
+              </div>
+            </div>
+
+            <div class="stat-card blue-glow">
+              <div class="stat-icon blue-icon"><i data-lucide="user-check"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Less / Non-Urgent (P4-P5)</span>
+                <h2 class="stat-value" id="triageP4P5Count">0</h2>
+                <span class="stat-subtext cyan-text">Standard Queue Allocation</span>
+              </div>
+            </div>
+
+            <div class="stat-card purple-glow">
+              <div class="stat-icon purple-icon"><i data-lucide="shield-alert"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Pending Human Review</span>
+                <h2 class="stat-value font-mono" id="triagePendingCount">0</h2>
+                <span class="stat-subtext font-mono">Triage Verification Needed</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Triage Review Table -->
+          <div class="glass-card table-card">
+            <div class="card-header-flex padding-b-sm">
+              <h3><i data-lucide="list-checks"></i> Real-Time AI Triage Assessment Queue</h3>
+              <span class="badge-pill cyan-pill">Source of Truth: MongoDB Atlas</span>
+            </div>
+            <table class="data-table" id="triageTable">
+              <thead>
+                <tr>
+                  <th>Token #</th>
+                  <th>Patient Details</th>
+                  <th>Natural Language Problem Description</th>
+                  <th>AI Symptoms & Red Flags</th>
+                  <th>AI Suggestion</th>
+                  <th>Final Priority</th>
+                  <th>Triage Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="triageTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- PATIENTS DIRECTORY -->
         <section id="view-patients" class="view-panel">
           <div class="view-header">
@@ -1439,14 +1515,63 @@
           <select id="inputDoctorSelect" class="glass-input" required></select>
         </div>
         <div class="form-group">
-          <label>Triage Priority</label>
-          <select id="inputPriority" class="glass-input">
-            <option value="Normal">Normal OPD Patient</option>
-            <option value="High">High Priority</option>
-            <option value="Emergency">🚨 Emergency / Critical Priority</option>
+          <label><i data-lucide="brain-circuit"></i> Describe Problem / Symptoms in Natural Language (AI Clinical Triage)</label>
+          <textarea id="inputProblemDesc" class="glass-input" rows="3" placeholder="Describe symptoms, duration, pain severity, breathing, bleeding, etc. (e.g. Severe chest pain for 20 mins with sweating and difficulty breathing)"></textarea>
+          <small class="sub-text display-block margin-t-xs cyan-text"><i data-lucide="shield-alert"></i> AI Clinical Triage analyzes red flags and suggests P1–P5 priority for staff verification.</small>
+        </div>
+        <div class="form-group">
+          <label>Patient Reported Discomfort Level</label>
+          <select id="inputPatientReportedUrgency" class="glass-input">
+            <option value="Normal">Mild / Routine (Standard Follow-up or Mild Symptoms)</option>
+            <option value="Moderate">Moderate Discomfort (Manageable Pain / Discomfort)</option>
+            <option value="Severe">Severe Discomfort (Severe Pain / Acute Illness)</option>
           </select>
         </div>
-        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check"></i> Confirm & Generate Token Pass</button>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check"></i> Run AI Triage & Generate Token Pass</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: STAFF OVERRIDE TRIAGE PRIORITY -->
+  <div class="modal-overlay" id="overrideTriageModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="shield-check"></i> Staff Clinical Triage Override</h3>
+        <button class="close-btn" id="closeOverrideTriageModal" onclick="closeModal('overrideTriageModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="overrideTriageForm">
+        <input type="hidden" id="overrideTokenId" />
+        <div class="form-group">
+          <label>Patient & Token Information</label>
+          <input type="text" id="overridePatientInfo" class="glass-input" readonly />
+        </div>
+        <div class="form-group">
+          <label>Problem Description as Reported</label>
+          <div id="overrideProblemDesc" class="sub-text padding-xs glass-input" style="min-height: 48px; background: rgba(0,0,0,0.2);"></div>
+        </div>
+        <div class="form-group">
+          <label>AI Suggested Priority & Rationale</label>
+          <input type="text" id="overrideAiSuggestion" class="glass-input" readonly />
+        </div>
+        <div class="form-group">
+          <label>Select Authorized Final Priority</label>
+          <select id="overridePrioritySelect" class="glass-input" required>
+            <option value="P1">🚨 P1 – Immediate (Resuscitation / Airway / Arrest)</option>
+            <option value="P2">⚠️ P2 – Emergency (Severe Chest Pain / Acute Dyspnea)</option>
+            <option value="P3">🟡 P3 – Urgent (Moderate Acute Pain / High Fever)</option>
+            <option value="P4">🔵 P4 – Less Urgent (Mild Symptoms / Standard OPD)</option>
+            <option value="P5">⚪ P5 – Non-Urgent (Routine Refill / Follow-up)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Clinical Override Justification / Reason</label>
+          <input type="text" id="overrideReasonInput" required placeholder="e.g. Vitals evaluated by Triage Nurse; stable SpO2 at 99%." class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Reviewing Staff Name / Credentials</label>
+          <input type="text" id="overrideReviewedBy" required placeholder="e.g. Nurse Priya Sharma (Triage Officer)" class="glass-input" />
+        </div>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check-circle2"></i> Confirm Final Triage Priority</button>
       </form>
     </div>
   </div>

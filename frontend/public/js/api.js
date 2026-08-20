@@ -97,6 +97,25 @@ const api = {
     });
   },
 
+  // 4b. AI-Assisted Clinical Triage
+  async analyzeTriage(problemDescription, patientReportedUrgency = 'Normal') {
+    return request('/triage/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ problemDescription, patientReportedUrgency })
+    });
+  },
+
+  async getPendingTriage() {
+    return request('/triage/pending');
+  },
+
+  async overrideTriage(tokenId, finalTriagePriority, overrideReason = '', reviewedBy = '') {
+    return request(`/triage/override/${encodeURIComponent(tokenId)}`, {
+      method: 'POST',
+      body: JSON.stringify({ finalTriagePriority, overrideReason, reviewedBy })
+    });
+  },
+
   // 5. Doctors
   async getDoctors() {
     return request('/doctors');

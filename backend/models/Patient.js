@@ -43,7 +43,17 @@ const patientSchema = new mongoose.Schema({
   },
   medicalHistory: [{
     type: String
-  }]
+  }],
+  lastProblemDescription: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  lastTriagePriority: {
+    type: String,
+    enum: ['P1', 'P2', 'P3', 'P4', 'P5', 'Normal', 'High', 'Emergency'],
+    default: 'P4'
+  }
 }, {
   timestamps: true
 });
