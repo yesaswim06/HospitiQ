@@ -1107,24 +1107,24 @@ async function fetchRecommendedBeds() {
 // --- Operational Insights & System Alerts ---
 function renderInsightsAndAlerts() {
   const dashIns = document.getElementById('insightsList');
+  const fullIns = document.getElementById('fullInsightsList');
   const dashAlt = document.getElementById('dashAlertsList');
   const fullAlt = document.getElementById('fullAlertsList');
 
-  if (dashIns) {
-    if (appState.insights.length === 0) {
-      dashIns.innerHTML = `<div class="sub-text padding-md">All department throughputs operating within normal thresholds.</div>`;
-    } else {
-      dashIns.innerHTML = appState.insights.map(ins => `
+  const insightsHtml = appState.insights.length === 0
+    ? `<div class="sub-text padding-md">All department throughputs operating within normal thresholds.</div>`
+    : appState.insights.map(ins => `
         <div class="insight-card ${ins.priority === 'critical' ? 'critical-border' : ''}">
           <div class="insight-icon"><i data-lucide="${ins.icon || 'activity'}"></i></div>
           <div class="insight-content">
-            <span class="badge-pill ${ins.priority === 'critical' ? 'red-pill' : 'cyan-pill'}">${ins.category}</span>
+            <span class="badge-pill ${ins.priority === 'critical' ? 'red-pill' : (ins.priority === 'high' ? 'orange-pill' : 'cyan-pill')}">${ins.category}</span>
             <p class="margin-t-xs">${ins.text}</p>
           </div>
         </div>
       `).join('');
-    }
-  }
+
+  if (dashIns) dashIns.innerHTML = insightsHtml;
+  if (fullIns) fullIns.innerHTML = insightsHtml;
 
   const alertHtml = appState.alerts.length === 0 
     ? `<div class="sub-text padding-md">No critical emergency warnings at this time.</div>`

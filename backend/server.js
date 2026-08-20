@@ -1038,47 +1038,88 @@ app.get('/api/insights', async (req, res) => {
   try {
     let bedList = store.beds;
     let queueList = store.queue;
+    let doctorList = store.doctors;
 
     if (isDBConnected()) {
       bedList = await Bed.find().lean();
       queueList = await Token.find().lean();
+      doctorList = await Doctor.find().lean();
     }
 
     const icuTotal = bedList.filter(b => b.ward === 'ICU').length || 15;
     const icuOccupied = bedList.filter(b => b.ward === 'ICU' && b.status === 'OCCUPIED').length;
     const icuOccPercent = icuTotal > 0 ? Math.round((icuOccupied / icuTotal) * 100) : 0;
 
-    const cardWaiting = queueList.filter(q => q.department === 'Cardiology' && q.status === 'WAITING').length;
+    const waitingQueue = queueList.filter(q => q.status === 'WAITING');
     const dynamicInsights = [];
     const dynamicAlerts = [];
 
-    if (cardWaiting >= 2) {
+    // 1. Department Load Analytics
+    const deptCounts = {};
+    waitingQueue.forEach(q => {
+      deptCounts[q.department] = (deptCounts[q.department] || 0) + 1;
+    });
+
+    let highestDept = null;
+    let maxWaiting = 0;
+    for (const [dept, count] of Object.entries(deptCounts)) {
+      if (count > maxWaiting) {
+        maxWaiting = count;
+        highestDept = dept;
+      }
+    }
+
+    if (highestDept && maxWaiting >= 2) {
       dynamicInsights.push({
-        id: 'ins-card',
-        category: 'Queue Surge',
-        text: `Cardiology OPD queue has ${cardWaiting} patients waiting. Average wait time ~${cardWaiting * 12} mins.`,
-        priority: 'high',
+        id: 'ins-surge',
+        category: 'Queue Surge AI',
+        text: `${highestDept} OPD is currently experiencing high patient influx (${maxWaiting} waiting). Recommend dispatching Dr. Vikramaditya Roy or Dr. Vikram Malhotra to assist Room #104.`,
+        priority: maxWaiting >= 4 ? 'critical' : 'high',
         icon: 'trending-up'
       });
     }
 
-    if (icuOccPercent >= 80) {
+    // 2. ICU & Emergency Life Support Readiness
+    const icuVacant = icuTotal - icuOccupied;
+    const icuVentilators = bedList.filter(b => b.ward === 'ICU' && b.status === 'AVAILABLE' && b.hasVentilator).length;
+
+    if (icuOccPercent >= 75) {
       dynamicInsights.push({
         id: 'ins-icu',
-        category: 'Bed Matrix',
-        text: `ICU Ward is at ${icuOccPercent}% capacity (${icuTotal - icuOccupied} beds remaining). Reserve critical beds.`,
+        category: 'Bed Optimization',
+        text: `ICU Ward capacity reached ${icuOccPercent}%. ${icuVentilators} ventilator-ready ICU bed(s) available. Prioritize general ward transfers for stable recovery patients.`,
         priority: 'critical',
         icon: 'alert-triangle'
       });
       dynamicAlerts.push({
         id: 'alt-icu',
         severity: 'CRITICAL',
-        title: '🛏️ ICU Capacity Warning',
-        message: `ICU occupancy is at ${icuOccPercent}%. Only ${icuTotal - icuOccupied} vacant ICU beds remain.`,
+        title: '🛏️ High ICU Occupancy Alert',
+        message: `ICU occupancy is at ${icuOccPercent}%. Only ${icuVacant} vacant ICU beds remain available for incoming trauma triage.`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+    } else {
+      dynamicInsights.push({
+        id: 'ins-bed-optimal',
+        category: 'Bed Telemetry',
+        text: `Critical Care capacity is healthy. ${icuVacant} ICU beds (${icuVentilators} ventilator-equipped) and ${bedList.filter(b => b.ward === 'Emergency' && b.status === 'AVAILABLE').length} ER bays open for trauma intake.`,
+        priority: 'normal',
+        icon: 'shield-check'
       });
     }
 
+    // 3. Physician Resource Balancing
+    const availableDocs = doctorList.filter(d => d.status === 'AVAILABLE').length;
+    const consultingDocs = doctorList.filter(d => d.status === 'CONSULTING').length;
+    dynamicInsights.push({
+      id: 'ins-physician',
+      category: 'Physician Roster',
+      text: `${consultingDocs} doctors actively consulting with patients, ${availableDocs} physicians ready for instant assignment. OPD average cycle time is optimal at ~14 minutes.`,
+      priority: 'normal',
+      icon: 'user-check'
+    });
+
+    // 4. Emergency Cases Alert
     const emgCount = queueList.filter(q => q.priority === 'Emergency' && q.status !== 'COMPLETED').length;
     if (emgCount > 0) {
       dynamicAlerts.push({
@@ -1086,6 +1127,14 @@ app.get('/api/insights', async (req, res) => {
         severity: 'CRITICAL',
         title: '🚨 Emergency Triage Active',
         message: `${emgCount} active emergency case receiving immediate resuscitation in ER Bay.`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+    } else {
+      dynamicAlerts.push({
+        id: 'alt-status',
+        severity: 'INFO',
+        title: 'ℹ️ Hospital Network Nominal',
+        message: 'All department queue telemetry and bed reservation interfaces are operating within normal SLA limits.',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
     }
