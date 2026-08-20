@@ -407,17 +407,24 @@ function filterSidebarForRole(role) {
 // URL Parameter Direct Access Handler
 async function checkDirectUrlAccess() {
   const urlParams = new URLSearchParams(window.location.search);
-  const tokenParam = urlParams.get('token') || urlParams.get('t');
+  const secParam = urlParams.get('sec') || urlParams.get('secToken');
 
-  if (tokenParam) {
-    const user = {
-      name: 'OPD Patient',
-      role: 'Patient',
-      tokenNumber: tokenParam.toUpperCase(),
-      id: `usr-direct-${Date.now()}`
-    };
-    await launchPortal(user, 'patient-portal');
-    await loadPatientTokenData(tokenParam);
+  if (secParam) {
+    try {
+      const res = await api.getPatientToken(secParam.trim());
+      if (res.success && res.patientToken) {
+        const user = {
+          name: res.patientToken.patientName,
+          role: 'Patient',
+          tokenNumber: res.patientToken.tokenNumber,
+          id: res.patientToken.id || `usr-direct-${Date.now()}`
+        };
+        await launchPortal(user, 'patient-portal');
+        await loadPatientTokenData(res.patientToken.tokenNumber);
+      }
+    } catch (err) {
+      console.error('Direct URL lookup error:', err);
+    }
   }
 }
 
@@ -993,19 +1000,25 @@ function renderAdmissionsTable() {
   if (!tbody) return;
 
   if (appState.admissions.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No inpatient admissions recorded.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center sub-text padding-md">No inpatient admissions recorded.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = appState.admissions.map((a, idx) => `
     <tr>
-      <td><span class="font-mono">ADM-${100 + idx + 1}</span></td>
+      <td><span class="font-mono">${a.admNumber || 'ADM-'+(100 + idx + 1)}</span></td>
       <td><strong>${a.patient}</strong></td>
       <td>${a.ward}</td>
       <td><strong class="cyan-text">${a.bedNumber}</strong></td>
       <td>${a.doctor}</td>
       <td>${a.diagnosis || 'Clinical Inpatient'}</td>
+      <td>${a.admissionDate || new Date().toLocaleDateString()}</td>
       <td><span class="badge-pill ${a.status === 'Admitted' ? 'green-pill' : 'blue-pill'}">${a.status}</span></td>
+      <td>
+        ${a.status === 'Admitted' 
+          ? `<button class="glass-btn small-btn" onclick="dischargeBed('${a.bedNumber}')"><i data-lucide="user-minus"></i> Discharge</button>`
+          : `<span class="sub-text">Discharged</span>`}
+      </td>
     </tr>
   `).join('');
 
@@ -1490,6 +1503,62 @@ function initSearchAndFilters() {
 
   queueDept?.addEventListener('change', renderQueueTable);
   queueStatus?.addEventListener('change', renderQueueTable);
+
+  // Collapse sidebar listener
+  document.getElementById('sidebarCollapseBtn')?.addEventListener('click', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      sidebar.classList.toggle('collapsed');
+      const mainWrapper = document.querySelector('.main-wrapper');
+      if (mainWrapper) {
+        if (sidebar.classList.contains('collapsed')) {
+          mainWrapper.style.marginLeft = '80px';
+          mainWrapper.style.width = 'calc(100% - 80px)';
+        } else {
+          mainWrapper.style.marginLeft = '260px';
+          mainWrapper.style.width = 'calc(100% - 260px)';
+        }
+      }
+    }
+  });
+
+  // Emergency Mode / Siren activation
+  document.getElementById('triggerEmergencyModeBtn')?.addEventListener('click', async () => {
+    try {
+      const res = await api.triggerEmergencySiren();
+      if (res.success) {
+        showToast(res.message || 'Emergency siren activated!', 'danger');
+        await loadAppData();
+      } else {
+        showToast(res.message || 'Error triggering siren.', 'danger');
+      }
+    } catch (err) {
+      showToast('Error triggering emergency siren.', 'danger');
+    }
+  });
+
+  // Dashboard Call Next Patient
+  document.getElementById('dashCallNextBtn')?.addEventListener('click', () => {
+    const docId = appState.currentUser?.docId || appState.currentUser?.id || 'doc-1';
+    callPatientToken(docId);
+  });
+
+  // Dashboard Complete Consultation
+  document.getElementById('dashCompleteBtn')?.addEventListener('click', () => {
+    completeConsultationCurrentDoctor();
+  });
+
+  // Notifications Bell toggle
+  document.getElementById('notifBellBtn')?.addEventListener('click', () => {
+    const dropdown = document.getElementById('notifDropdown');
+    if (dropdown) dropdown.classList.toggle('hidden');
+  });
+
+  // Edit Doctor form submission
+  document.getElementById('editDoctorForm')?.addEventListener('submit', handleEditDoctorSubmit);
+
+  // Inpatient admit ward select change
+  document.getElementById('admitWardSelect')?.addEventListener('change', populateAvailableBedsForWard);
 }
 
 // --- Toast Notifications ---
@@ -1514,4 +1583,94 @@ function showToast(message, type = 'info') {
     toast.style.transform = 'translateX(50px)';
     setTimeout(() => toast.remove(), 400);
   }, 4000);
+}
+
+// --- Missing Functions for HTML Event Gaps ---
+async function handlePublicRegisterSubmit(e) {
+  e.preventDefault();
+  const patientName = document.getElementById('regName')?.value;
+  const email = document.getElementById('regEmail')?.value;
+  const age = document.getElementById('regAge')?.value;
+  const gender = document.getElementById('regGender')?.value;
+  const phone = document.getElementById('regPhone')?.value;
+  const role = document.getElementById('regRole')?.value;
+  const password = document.getElementById('regPassword')?.value;
+
+  if (!patientName || !patientName.trim()) {
+    return showToast('Please enter your full name.', 'warning');
+  }
+
+  try {
+    if (role === 'Patient') {
+      const tokenData = {
+        patientName: patientName.trim(),
+        age: age,
+        gender: gender,
+        phone: phone,
+        department: 'General Medicine',
+        doctorId: 'doc-2', // Dr. Vikram Malhotra (General Medicine)
+        priority: 'Normal'
+      };
+
+      const res = await api.createToken(tokenData);
+      if (res.success && res.token) {
+        showToast(`Registration successful! Generated Token: ${res.token.tokenNumber}`, 'success');
+        e.target.reset();
+        switchPublicPage('login');
+        const loginNameEl = document.getElementById('pageLoginPatientName');
+        const loginTokenEl = document.getElementById('pageLoginTokenNumber');
+        if (loginNameEl) loginNameEl.value = patientName.trim();
+        if (loginTokenEl) loginTokenEl.value = res.token.tokenNumber;
+      } else {
+        showToast(res.message || 'Error generating patient token.', 'danger');
+      }
+    } else if (role === 'Doctor') {
+      const docData = {
+        name: patientName.trim(),
+        email: email,
+        specialization: 'General Physician',
+        department: 'General Medicine',
+        room: 'OPD Room #105',
+        phone: phone
+      };
+
+      const res = await api.addDoctor(docData);
+      if (res.success) {
+        showToast(`Doctor profile registered successfully!`, 'success');
+        e.target.reset();
+        switchPublicPage('login');
+        const loginEmailEl = document.getElementById('pageLoginEmail');
+        if (loginEmailEl) loginEmailEl.value = email;
+      } else {
+        showToast(res.message || 'Error registering doctor.', 'danger');
+      }
+    } else {
+      // Admin/Staff - register as Admin in local users roster
+      showToast('Staff registration completed. Please use credentials to login.', 'success');
+      e.target.reset();
+      switchPublicPage('login');
+    }
+  } catch (err) {
+    showToast('Failed to complete registration.', 'danger');
+  }
+}
+
+async function lookupPatientTokenFromHeader(value) {
+  if (!value || !value.trim()) return;
+  try {
+    const res = await api.getPatientToken(value.trim());
+    if (res.success && res.patientToken) {
+      switchView('patient-portal');
+      loadPatientTokenData(res.patientToken.tokenNumber);
+    } else {
+      showToast('Patient token not found.', 'warning');
+    }
+  } catch (err) {
+    console.error('Header token lookup error:', err);
+  }
+}
+
+function openAdmitPatientModal() {
+  populateAvailableBedsForWard();
+  openModal('admitPatientModal');
 }

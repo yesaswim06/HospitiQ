@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 const { connectDB, isDBConnected, getStore, generateSecureTokenKey, models } = require('./db');
@@ -187,31 +188,45 @@ app.post('/api/auth/login', rateLimiter, async (req, res) => {
             tokenNumber: foundMem.tokenNumber,
             department: foundMem.department
           };
-        } else {
-          user = {
-            id: `usr-pt-${Date.now()}`,
-            name: lookupName || 'OPD Patient',
-            role: 'Patient',
-            tokenNumber: cleanUpper || 'A-031',
-            department: 'General Medicine'
-          };
         }
       }
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          error: 'UNAUTHORIZED',
+          message: 'No patient record or token found matching the provided credentials.'
+        });
+      }
     } else if (role === 'Doctor') {
+      const lookupEmail = (email || identifier || '').trim();
       if (isDBConnected()) {
-        const docUser = await User.findOne({ role: 'Doctor', ...(lookup ? { email: new RegExp(`^${lookup}$`, 'i') } : {}) });
+        const docUser = await User.findOne({ role: 'Doctor', ...(lookupEmail ? { email: new RegExp(`^${lookupEmail}$`, 'i') } : {}) });
         if (docUser) user = docUser.toObject();
       }
       if (!user) {
-        user = store.users.find(u => u.role === 'Doctor') || { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', department: 'Cardiology', email: 'doctor@hospitiq.org' };
+        if (lookupEmail) {
+          const memDoc = store.users.find(u => u.role === 'Doctor' && u.email && u.email.toLowerCase() === lookupEmail.toLowerCase());
+          if (memDoc) user = memDoc;
+        }
+        if (!user) {
+          user = store.users.find(u => u.role === 'Doctor') || { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', department: 'Cardiology', email: 'doctor@hospitiq.org' };
+        }
       }
     } else {
+      const lookupEmail = (email || identifier || '').trim();
       if (isDBConnected()) {
-        const admUser = await User.findOne({ role: 'Admin' });
+        const admUser = await User.findOne({ role: 'Admin', ...(lookupEmail ? { email: new RegExp(`^${lookupEmail}$`, 'i') } : {}) });
         if (admUser) user = admUser.toObject();
       }
       if (!user) {
-        user = store.users.find(u => u.role === 'Admin') || { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', department: 'Administration', email: 'admin@hospitiq.org' };
+        if (lookupEmail) {
+          const memAdm = store.users.find(u => u.role === 'Admin' && u.email && u.email.toLowerCase() === lookupEmail.toLowerCase());
+          if (memAdm) user = memAdm;
+        }
+        if (!user) {
+          user = store.users.find(u => u.role === 'Admin') || { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', department: 'Administration', email: 'admin@hospitiq.org' };
+        }
       }
     }
 
@@ -865,7 +880,7 @@ app.put('/api/beds/:id/admit', requireRoles(['Doctor', 'Admin']), async (req, re
   const { patientName, doctor, diagnosis } = req.body;
 
   try {
-    const admNumber = `ADM-${Date.now().toString().slice(-4)}`;
+    const admNumber = `ADM-${Date.now()}-${crypto.randomBytes(2).toString('hex')}`;
     const admDate = new Date().toISOString().split('T')[0];
 
     if (isDBConnected()) {
@@ -968,8 +983,38 @@ app.get('/api/admissions', async (req, res) => {
 });
 
 // ==============================================================================
-// 8. OPERATIONAL INSIGHTS & ALERTS
+// 8. EMERGENCY SIREN & OPERATIONAL INSIGHTS & ALERTS
 // ==============================================================================
+
+app.post('/api/emergency/siren', requireRoles(['Doctor', 'Admin']), async (req, res) => {
+  try {
+    const alertData = {
+      severity: 'CRITICAL',
+      title: '🚨 EMERGENCY SIREN ACTIVATED',
+      message: `Emergency siren triggered by ${req.user?.name || 'Staff'} at ${new Date().toLocaleTimeString()}. All available personnel respond immediately.`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      triggeredBy: req.user?.name || 'Unknown',
+      triggeredAt: new Date()
+    };
+
+    if (isDBConnected()) {
+      const newAlert = new Alert(alertData);
+      await newAlert.save();
+    }
+
+    store.alerts.unshift(alertData);
+
+    res.json({
+      success: true,
+      message: 'Emergency siren activated! All departments notified.',
+      alert: alertData
+    });
+  } catch (err) {
+    console.error('Emergency siren error:', err);
+    res.status(500).json({ success: false, message: 'Error activating emergency siren.' });
+  }
+});
+
 
 app.get('/api/insights', async (req, res) => {
   try {
