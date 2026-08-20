@@ -154,13 +154,30 @@ function switchPublicPage(pageName, updateHash = true) {
     view.style.display = 'none';
   });
 
-  const targetView = document.getElementById(`public-view-${pageName}`);
+  const isSubSection = ['features', 'services', 'contact'].includes(pageName);
+  const targetViewId = isSubSection ? 'public-view-home' : `public-view-${pageName}`;
+  const targetView = document.getElementById(targetViewId);
+
   if (targetView) {
     targetView.classList.add('active');
     targetView.style.display = 'block';
   }
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (isSubSection) {
+    let sectionId = 'featuresSection';
+    if (pageName === 'services') sectionId = 'servicesSection';
+    if (pageName === 'contact') sectionId = 'footerSection';
+
+    setTimeout(() => {
+      const sectionEl = document.getElementById(sectionId);
+      if (sectionEl) {
+        sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   lucide.createIcons();
 }
 
