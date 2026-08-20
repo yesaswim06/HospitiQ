@@ -725,6 +725,34 @@
               <small class="sub-text display-block margin-t-xs">Scan link: <span class="font-mono cyan-text" id="ptDirectUrl">https://hospiti-q.vercel.app/?token=A-031</span></small>
             </div>
           </div>
+
+          <!-- PATIENTS WHO ARE WAITING QUEUE LIST -->
+          <div class="glass-card margin-b-lg">
+            <div class="card-header-flex">
+              <h3><i data-lucide="users"></i> Live Department Queue & Patients in Line</h3>
+              <span class="badge-pill cyan-pill" id="ptQueueDeptBadge">Live OPD Telemetry</span>
+            </div>
+            <p class="sub-text margin-b-md">Live order of patients scheduled for consultation today. Your current position is highlighted below.</p>
+            
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Position</th>
+                    <th>Token #</th>
+                    <th>Patient Name</th>
+                    <th>Assigned Doctor & Room</th>
+                    <th>Est. Wait</th>
+                    <th>Priority</th>
+                    <th>Live Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ptWaitingQueueTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <!-- ROLE 2: ENHANCED DOCTOR PORTAL VIEW -->

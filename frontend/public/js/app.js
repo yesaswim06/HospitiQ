@@ -645,6 +645,44 @@ async function loadPatientTokenData(tokenNumber) {
         console.warn('QR Code generation warning:', e);
       }
     }
+
+    // Render Waiting Patients in line for the department
+    const queueTbody = document.getElementById('ptWaitingQueueTableBody');
+    const deptBadge = document.getElementById('ptQueueDeptBadge');
+    
+    if (deptBadge) {
+      deptBadge.textContent = `${pt.department || 'OPD'} Live Queue`;
+    }
+
+    if (queueTbody) {
+      const deptWaiting = appState.queue.filter(q => 
+        (q.department || '').toLowerCase() === (pt.department || '').toLowerCase() || 
+        q.status !== 'COMPLETED'
+      );
+
+      if (deptWaiting.length === 0) {
+        queueTbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No other patients currently waiting in this department.</td></tr>`;
+      } else {
+        queueTbody.innerHTML = deptWaiting.map((q, idx) => {
+          const isCurrent = q.tokenNumber === pt.tokenNumber;
+          const statusPill = q.status === 'IN_CONSULTATION' ? 'orange-pill' : (q.status === 'COMPLETED' ? 'green-pill' : 'blue-pill');
+          const priorityPill = q.priority === 'Emergency' ? 'red-pill' : (q.priority === 'High' ? 'orange-pill' : 'cyan-pill');
+          
+          return `
+            <tr style="${isCurrent ? 'background: rgba(14, 165, 233, 0.18); border-left: 4px solid #0ea5e9;' : ''}">
+              <td><strong>#${idx + 1}</strong> ${isCurrent ? '<span class="badge-pill cyan-pill margin-l-xs">Your Token</span>' : ''}</td>
+              <td><strong class="font-mono ${isCurrent ? 'cyan-text' : ''}">${q.tokenNumber}</strong></td>
+              <td><strong>${q.patientName}</strong> (${q.age || 30} yrs, ${q.gender || 'Male'})</td>
+              <td>${q.doctor || 'Dr. Sunita Rao'} (${q.room || 'OPD Room'})</td>
+              <td><strong>${q.waitTime || (idx + 1) * 12} mins</strong></td>
+              <td><span class="badge-pill ${priorityPill}">${q.priority || 'Normal'}</span></td>
+              <td><span class="badge-pill ${statusPill}">${q.status || 'WAITING'}</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
     lucide.createIcons();
   } else {
     showToast(`No token found matching "${cleanStr}". Please verify your token number.`, 'warning');
