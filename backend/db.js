@@ -10,7 +10,7 @@ const Admission = require('./models/Admission');
 const User = require('./models/User');
 const Alert = require('./models/Alert');
 
-const MONGODB_URI = process.env.MONGODB_URI || '';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://yesaswim2006_db_user:0pH36096zKU9jmaQ@interndb.scbiasf.mongodb.net/hospitiq?retryWrites=true&w=majority';
 
 const generateSecureTokenKey = () => crypto.randomBytes(8).toString('hex');
 

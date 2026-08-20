@@ -97,14 +97,19 @@ const requireRoles = (allowedRoles = []) => {
 
 app.use(authenticateUser);
 
-// Ensure Database connection is active for API routes
-const ensureDbConnection = (req, res, next) => {
-  if (req.path.startsWith('/api') && !isDBConnected()) {
-    return res.status(503).json({
-      success: false,
-      error: 'DATABASE_ERROR',
-      message: 'Unable to connect to hospital database. Please try again.'
-    });
+// Ensure Database connection is active for API routes in serverless lifecycle
+const ensureDbConnection = async (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    if (!isDBConnected()) {
+      await connectDB();
+    }
+    if (!isDBConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'DATABASE_ERROR',
+        message: 'Unable to connect to hospital database. Please ensure MongoDB Atlas Network Access allows connections (0.0.0.0/0).'
+      });
+    }
   }
   next();
 };
