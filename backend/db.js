@@ -113,7 +113,8 @@ const connectDB = async () => {
     return;
   }
   if (!MONGODB_URI) {
-    console.info('ℹ️  Running in high-performance in-memory dataset mode.');
+    console.error('❌ MONGODB_URI environment variable is missing.');
+    isConnected = false;
     return;
   }
   try {
@@ -136,7 +137,7 @@ const connectDB = async () => {
     }
   } catch (err) {
     isConnected = false;
-    console.warn('ℹ️  MongoDB Atlas connection deferred. Running in-memory store mode.');
+    console.error('❌ MongoDB Atlas connection failed:', err.message);
   }
 };
 

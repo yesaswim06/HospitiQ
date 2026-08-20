@@ -97,6 +97,19 @@ const requireRoles = (allowedRoles = []) => {
 
 app.use(authenticateUser);
 
+// Ensure Database connection is active for API routes
+const ensureDbConnection = (req, res, next) => {
+  if (req.path.startsWith('/api') && !isDBConnected()) {
+    return res.status(503).json({
+      success: false,
+      error: 'DATABASE_ERROR',
+      message: 'Unable to connect to hospital database. Please try again.'
+    });
+  }
+  next();
+};
+app.use(ensureDbConnection);
+
 // Rate Limiter
 const rateLimitMap = new Map();
 const rateLimiter = (req, res, next) => {
