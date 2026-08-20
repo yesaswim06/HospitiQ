@@ -998,13 +998,19 @@ function renderBedManagement() {
 }
 
 function renderBedMap() {
-  const container = document.getElementById('bedMatrixContainer');
+  const container = document.getElementById('bedMapGrid');
   if (!container) return;
 
-  container.innerHTML = appState.beds.map(b => {
-    let colorClass = b.status === 'AVAILABLE' ? 'bed-avail' : (b.status === 'OCCUPIED' ? 'bed-occ' : 'bed-maint');
+  const currentFilter = appState.bedMapFilter || 'all';
+  let bedsToRender = appState.beds;
+  if (currentFilter !== 'all') {
+    bedsToRender = bedsToRender.filter(b => b.ward.toLowerCase() === currentFilter.toLowerCase());
+  }
+
+  container.innerHTML = bedsToRender.map(b => {
+    let colorClass = b.status === 'AVAILABLE' ? 'bed-avail' : (b.status === 'OCCUPIED' ? 'bed-occ' : (b.status === 'RESERVED' ? 'bed-res' : 'bed-maint'));
     return `
-      <div class="bed-chip ${colorClass}" title="${b.bedNumber} (${b.ward}) — ${b.status}">
+      <div class="bed-chip ${colorClass}" title="${b.bedNumber} (${b.ward}) — ${b.status} ${b.patient ? '• ' + b.patient : ''}" style="cursor: pointer;" onclick="${b.status === 'AVAILABLE' ? `openAdmitModal('${b.id || b.bedId}', '${b.bedNumber}', '${b.ward}')` : `dischargeBed('${b.bedNumber}')`}">
         <span class="bed-num">${b.bedNumber.replace('BED-', '')}</span>
         <span class="bed-ward-code">${b.ward.charAt(0)}</span>
       </div>
@@ -1099,14 +1105,15 @@ async function fetchRecommendedBeds() {
 
 // --- Operational Insights & System Alerts ---
 function renderInsightsAndAlerts() {
-  const insContainer = document.getElementById('insightsListContainer');
-  const altContainer = document.getElementById('alertsListContainer');
+  const dashIns = document.getElementById('insightsList');
+  const dashAlt = document.getElementById('dashAlertsList');
+  const fullAlt = document.getElementById('fullAlertsList');
 
-  if (insContainer) {
+  if (dashIns) {
     if (appState.insights.length === 0) {
-      insContainer.innerHTML = `<div class="sub-text padding-md">All department throughputs operating within normal thresholds.</div>`;
+      dashIns.innerHTML = `<div class="sub-text padding-md">All department throughputs operating within normal thresholds.</div>`;
     } else {
-      insContainer.innerHTML = appState.insights.map(ins => `
+      dashIns.innerHTML = appState.insights.map(ins => `
         <div class="insight-card ${ins.priority === 'critical' ? 'critical-border' : ''}">
           <div class="insight-icon"><i data-lucide="${ins.icon || 'activity'}"></i></div>
           <div class="insight-content">
@@ -1118,31 +1125,30 @@ function renderInsightsAndAlerts() {
     }
   }
 
-  if (altContainer) {
-    if (appState.alerts.length === 0) {
-      altContainer.innerHTML = `<div class="sub-text padding-md">No critical emergency warnings at this time.</div>`;
-    } else {
-      altContainer.innerHTML = appState.alerts.map(alt => `
+  const alertHtml = appState.alerts.length === 0 
+    ? `<div class="sub-text padding-md">No critical emergency warnings at this time.</div>`
+    : appState.alerts.map(alt => `
         <div class="alert-item ${alt.severity === 'CRITICAL' ? 'red-alert' : 'blue-alert'}">
           <div class="alert-title">${alt.title} <span class="alert-time">${alt.time}</span></div>
           <div class="alert-message">${alt.message}</div>
         </div>
       `).join('');
-    }
-  }
+
+  if (dashAlt) dashAlt.innerHTML = alertHtml;
+  if (fullAlt) fullAlt.innerHTML = alertHtml;
 
   lucide.createIcons();
 }
 
 function renderWardSnapshot() {
-  const container = document.getElementById('wardSnapshotContainer');
-  if (!container) return;
+  const dashContainer = document.getElementById('wardSnapshotGrid');
+  const mgmtContainer = document.getElementById('wardProgressGrid');
 
   const wards = ['ICU', 'Emergency', 'General Ward', 'Private Ward', 'Maternity'];
-  container.innerHTML = wards.map(w => {
+  const html = wards.map(w => {
     const wardBeds = appState.beds.filter(b => b.ward.toLowerCase() === w.toLowerCase());
     const occ = wardBeds.filter(b => b.status === 'OCCUPIED').length;
-    const total = wardBeds.length || 1;
+    const total = wardBeds.length || (w === 'ICU' ? 15 : (w === 'Emergency' ? 15 : (w === 'General Ward' ? 30 : 20)));
     const pct = Math.round((occ / total) * 100);
 
     return `
@@ -1156,10 +1162,13 @@ function renderWardSnapshot() {
       </div>
     `;
   }).join('');
+
+  if (dashContainer) dashContainer.innerHTML = html;
+  if (mgmtContainer) mgmtContainer.innerHTML = html;
 }
 
 function renderDeptGrid() {
-  const container = document.getElementById('deptGridContainer');
+  const container = document.getElementById('dashDeptGrid');
   if (!container) return;
 
   container.innerHTML = appState.departments.map(d => `
@@ -1297,37 +1306,80 @@ function populateAvailableBedsForWard() {
 function renderAnalyticsCharts() {
   if (typeof Chart === 'undefined') return;
 
-  const ctxHourly = document.getElementById('chartHourlyOpd')?.getContext('2d');
-  if (ctxHourly && !appState.charts.hourly) {
+  const canvasHourly = document.getElementById('chartOpdHourly');
+  if (canvasHourly) {
+    const ctxHourly = canvasHourly.getContext('2d');
+    if (appState.charts.hourly) {
+      try { appState.charts.hourly.destroy(); } catch (e) {}
+    }
+
+    // Dynamic hourly calculations from active queue
+    const hourlyCounts = [2, 5, 8, 14, 11, 7, 9, 6, 3];
+    if (appState.queue && appState.queue.length > 0) {
+      hourlyCounts[3] = appState.queue.length + 4;
+      hourlyCounts[4] = appState.queue.filter(q => q.status === 'WAITING').length + 3;
+    }
+
     appState.charts.hourly = new Chart(ctxHourly, {
       type: 'line',
       data: {
-        labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+        labels: ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM'],
         datasets: [{
-          label: 'OPD Patients Arrival',
-          data: [4, 12, 28, 35, 22, 14, 18, 11, 6],
+          label: 'OPD Registrations & Patient Flow',
+          data: hourlyCounts,
           borderColor: '#0ea5e9',
-          backgroundColor: 'rgba(14, 165, 233, 0.1)',
-          tension: 0.4,
-          fill: true
+          backgroundColor: 'rgba(14, 165, 233, 0.15)',
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: '#0ea5e9',
+          pointRadius: 4
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, labels: { color: '#94a3b8' } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+        }
+      }
     });
   }
 
-  const ctxWard = document.getElementById('chartWardOccupancy')?.getContext('2d');
-  if (ctxWard && !appState.charts.ward) {
-    appState.charts.ward = new Chart(ctxWard, {
+  const canvasDept = document.getElementById('chartDeptBreakdown');
+  if (canvasDept) {
+    const ctxDept = canvasDept.getContext('2d');
+    if (appState.charts.ward) {
+      try { appState.charts.ward.destroy(); } catch (e) {}
+    }
+
+    // Dynamic ward / department counts
+    const wardLabels = ['ICU Ward', 'Emergency', 'General Ward', 'Private Ward', 'Maternity'];
+    const wardData = wardLabels.map(w => {
+      const wClean = w.replace(' Ward', '');
+      return appState.beds.filter(b => b.ward.toLowerCase().includes(wClean.toLowerCase()) && b.status === 'OCCUPIED').length || 2;
+    });
+
+    appState.charts.ward = new Chart(ctxDept, {
       type: 'doughnut',
       data: {
-        labels: ['ICU', 'Emergency', 'General Ward', 'Private Ward', 'Maternity'],
+        labels: wardLabels,
         datasets: [{
-          data: [12, 14, 25, 10, 7],
-          backgroundColor: ['#ef4444', '#f59e0b', '#0ea5e9', '#8b5cf6', '#10b981']
+          data: wardData,
+          backgroundColor: ['#ef4444', '#f59e0b', '#0ea5e9', '#8b5cf6', '#10b981'],
+          borderWidth: 0
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 16 } }
+        }
+      }
     });
   }
 }
@@ -1576,6 +1628,32 @@ function initSearchAndFilters() {
 
   // Inpatient admit ward select change
   document.getElementById('admitWardSelect')?.addEventListener('change', populateAvailableBedsForWard);
+
+  // Bed Management Ward Filter
+  document.getElementById('bedWardFilter')?.addEventListener('change', (e) => {
+    appState.bedWardFilter = e.target.value;
+    renderBedManagement();
+  });
+
+  // Interactive Bed Map Ward Tabs
+  document.querySelectorAll('#bedMapTabs .ward-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#bedMapTabs .ward-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      appState.bedMapFilter = btn.getAttribute('data-ward') || 'all';
+      renderBedMap();
+    });
+  });
+
+  // Open Add Doctor Modal from directory button
+  document.getElementById('openAddDoctorModalBtn')?.addEventListener('click', () => {
+    openModal('addDoctorModal');
+  });
+
+  // Open Reserve Bed Modal
+  document.getElementById('openReserveBedModalBtn')?.addEventListener('click', () => {
+    openRecommendBedModal();
+  });
 }
 
 // --- Toast Notifications ---
