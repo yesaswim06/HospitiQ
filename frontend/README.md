@@ -25,7 +25,7 @@
 
 In traditional healthcare systems across India, patients spend up to **3.5 hours** waiting in crowded Outpatient Department (OPD) queues, while hospital staff lack real-time visibility into bed occupancy, doctor consultation dispatching, and emergency admissions.
 
-**HOSPITIQ (Med-Space)** resolves this healthcare crisis by implementing a real-time digital OPD token pass system, automated doctor room dispatching, smart bed matrix allocation, and contactless patient QR check-ins.
+**HOSPITIQ** resolves this healthcare crisis by implementing a real-time digital OPD token pass system, automated doctor room dispatching, smart bed matrix allocation, and contactless patient QR check-ins.
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 

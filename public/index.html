@@ -32,7 +32,7 @@
     <div class="blob blob-3"></div>
   </div>
 
-  <!-- PUBLIC LANDING PAGE (MED-SPACE REFERENCE STYLE) -->
+  <!-- PUBLIC LANDING PAGE -->
   <div class="landing-page-wrapper" id="publicLandingPage">
     
     <!-- LANDING HEADER NAVBAR -->
@@ -74,7 +74,7 @@
             No more waiting in long queues. <span class="gradient-text">Fast & Reliable Healthcare</span>
           </h1>
           <p class="hero-description">
-            HOSPITIQ (Med-Space) eliminates OPD waiting lines, automates doctor consultation dispatching, and provides transparent patient care operations across India's healthcare network.
+            HOSPITIQ eliminates OPD waiting lines, automates doctor consultation dispatching, and provides transparent patient care operations across India's healthcare network.
           </p>
 
           <div class="hero-cta-buttons margin-t-md">
@@ -88,12 +88,12 @@
 
           <div class="hero-stats-strip margin-t-lg">
             <div class="strip-item">
-              <span class="strip-num">28 Min</span>
-              <span class="strip-label">Avg OPD Wait Saved</span>
+              <span class="strip-num">~15 Min</span>
+              <span class="strip-label">Estimated OPD Wait</span>
             </div>
             <div class="strip-item">
-              <span class="strip-num">99.8%</span>
-              <span class="strip-label">Dispatch Accuracy</span>
+              <span class="strip-num">100%</span>
+              <span class="strip-label">Live Queue Sync</span>
             </div>
           </div>
         </div>
@@ -463,9 +463,9 @@
         <div class="disclaimer-box text-center margin-t-lg">
           <h4 class="disclaimer-title">DISCLAIMER</h4>
           <p class="disclaimer-text">
-            “The information provided on Med-Space / HOSPITIQ is intended for general informational purposes only and should not be considered as medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider for any medical condition or treatment. Med-Space / HOSPITIQ facilitates OPD appointment booking and hospital data sharing, but it does not endorse or guarantee the quality of services provided by healthcare providers.”
+            “The information provided on HOSPITIQ is intended for general informational purposes only and should not be considered as medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare provider for any medical condition or treatment. HOSPITIQ facilitates OPD appointment booking and hospital data sharing, but it does not endorse or guarantee the quality of services provided by healthcare providers.”
           </p>
-          <div class="copyright-line margin-t-sm">Medi connect ©2026</div>
+          <div class="copyright-line margin-t-sm">HOSPITIQ ©2026</div>
         </div>
       </div>
     </footer>
@@ -724,10 +724,10 @@
               <div class="action-row align-center">
                 <label class="sub-text">Doctor Status:</label>
                 <select id="doctorLiveStatusSelect" class="glass-input-compact" onchange="updateMyDoctorStatus(this.value)">
-                  <option value="Available">🟢 Available</option>
-                  <option value="Busy" selected>🟠 Busy (In Consult)</option>
-                  <option value="On Break">🔵 On Break</option>
-                  <option value="Offline">🔴 Emergency Call</option>
+                  <option value="AVAILABLE">🟢 Available</option>
+                  <option value="CONSULTING" selected>🟠 In Consultation</option>
+                  <option value="ON_BREAK">🔵 On Break</option>
+                  <option value="OFFLINE">🔴 Offline</option>
                 </select>
               </div>
             </div>
@@ -1263,52 +1263,49 @@
         <section id="view-settings" class="view-panel">
           <div class="view-header">
             <div>
-              <h1>Hospital System & Integration Settings</h1>
-              <p>Manage MongoDB cloud parameters, hospital helpline contacts, SMS gateways, and queue refresh rates.</p>
+              <h1>Hospital System & Security Configuration</h1>
+              <p>Review server-side database connectivity, role security policies, and hospital operational parameters.</p>
             </div>
           </div>
 
           <div class="settings-grid-2">
             <div class="glass-card settings-card">
-              <h3><i data-lucide="database"></i> Database Connection (MongoDB Atlas)</h3>
+              <h3><i data-lucide="database"></i> Database & Persistence Status</h3>
               <div class="form-group margin-t-sm">
-                <label>MongoDB Atlas URI</label>
-                <input type="text" class="glass-input width-full" value="mongodb+srv://tarunkumarn999_db_user:yQrv08IV1xbStmHo@cluster0.mongodb.net/hospitiq?retryWrites=true&w=majority" />
+                <label>Database Connection Mode</label>
+                <input type="text" class="glass-input width-full" value="MongoDB Atlas Cloud (Secured via process.env.MONGODB_URI)" readonly />
               </div>
               <div class="form-group">
-                <label>In-Memory Fallback Cache</label>
-                <select class="glass-input width-full">
-                  <option value="enabled" selected>Enabled (High Availability Mode)</option>
-                  <option value="disabled">Disabled</option>
-                </select>
+                <label>High-Performance In-Memory Cache</label>
+                <input type="text" class="glass-input width-full" value="Enabled (Real-time zero-latency sync)" readonly />
               </div>
             </div>
 
             <div class="glass-card settings-card">
-              <h3><i data-lucide="message-square"></i> SMS Notification Gateway</h3>
+              <h3><i data-lucide="shield-check"></i> Security & Authentication</h3>
               <div class="form-group margin-t-sm">
-                <label>Twilio / SMS Gateway Key</label>
-                <input type="password" class="glass-input width-full" value="AC_hospitiq_live_key_9981273" />
+                <label>Role-Based Access Control</label>
+                <input type="text" class="glass-input width-full" value="Enforced (HMAC-SHA256 Signed Sessions)" readonly />
               </div>
               <div class="form-group">
-                <label>Emergency Patient Alert Phone</label>
-                <input type="text" class="glass-input width-full" value="+91 99000 11223" />
+                <label>Patient Token Security Salt</label>
+                <input type="text" class="glass-input width-full" value="Managed Server-Side (Zero Client Leakage)" readonly />
               </div>
             </div>
 
             <div class="glass-card settings-card span-2">
-              <h3><i data-lucide="building-2"></i> Hospital Information & Support Email</h3>
+              <h3><i data-lucide="building-2"></i> Hospital Information & Support Contacts</h3>
               <div class="form-row margin-t-sm">
                 <div class="form-group">
                   <label>Hospital Main Campus Name</label>
-                  <input type="text" class="glass-input" value="HOSPITIQ Central Hospital" />
+                  <input type="text" id="settingsHospitalName" class="glass-input" value="HOSPITIQ Central Hospital" />
                 </div>
                 <div class="form-group">
                   <label>Official Support Email</label>
-                  <input type="email" class="glass-input" value="myselfadmin123@gmail.com" />
+                  <input type="email" id="settingsSupportEmail" class="glass-input" value="myselfadmin123@gmail.com" />
                 </div>
               </div>
-              <button class="action-btn glow-btn margin-t-md" onclick="showToast('Hospital configuration updated successfully!', 'success')"><i data-lucide="save"></i> Save All System Settings</button>
+              <button class="action-btn glow-btn margin-t-md" onclick="showToast('Hospital configuration profile saved!', 'success')"><i data-lucide="save"></i> Save Hospital Profile</button>
             </div>
           </div>
         </section>

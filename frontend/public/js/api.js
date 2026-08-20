@@ -2,174 +2,171 @@
    HOSPITIQ — REST API CLIENT SERVICE
    ========================================================================== */
 
-const API_BASE = window.HOSPITIQ_API_URL || (window.location.origin.includes('localhost') ? '/api' : 'https://hospitiq.onrender.com/api');
+const API_BASE = window.HOSPITIQ_API_URL || '/api';
+
+const request = async (endpoint, options = {}) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+
+  // Attach session token if available
+  const token = window.sessionStorage?.getItem('hospitiq_auth_token') || (window.appState && window.appState.sessionToken);
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return {
+        success: false,
+        status: res.status,
+        error: data.error || `HTTP_${res.status}`,
+        message: data.message || `Request failed with status ${res.status}`
+      };
+    }
+
+    return data;
+  } catch (err) {
+    console.error(`API Error [${endpoint}]:`, err);
+    return {
+      success: false,
+      error: 'NETWORK_ERROR',
+      message: 'Unable to connect to HOSPITIQ server. Running in offline/cached mode.'
+    };
+  }
+};
 
 const api = {
+  // 1. Auth
   async login(credentials) {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    return request('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
     });
-    return res.json();
   },
 
+  async getMe() {
+    return request('/auth/me');
+  },
+
+  // 2. Patient Token Public Lookup
   async getPatientToken(tokenNumber) {
-    const res = await fetch(`${API_BASE}/patient/${tokenNumber}`);
-    return res.json();
+    return request(`/patient/${encodeURIComponent(tokenNumber)}`);
   },
 
+  // 3. Stats & Capacity
   async getStats() {
-    const res = await fetch(`${API_BASE}/stats`);
-    return res.json();
+    return request('/stats');
   },
 
   async getCapacity() {
-    const res = await fetch(`${API_BASE}/capacity`);
-    return res.json();
+    return request('/capacity');
   },
 
+  // 4. Queue CRUD
   async getQueue() {
-    const res = await fetch(`${API_BASE}/queue`);
-    return res.json();
+    return request('/queue');
   },
 
   async createToken(tokenData) {
-    const res = await fetch(`${API_BASE}/queue`, {
+    return request('/queue/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tokenData)
     });
-    return res.json();
   },
 
   async callNextToken(doctorId) {
-    const res = await fetch(`${API_BASE}/queue/call-next`, {
+    return request('/queue/call-next', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ doctorId })
     });
-    return res.json();
   },
 
   async updateQueueStatus(tokenId, status) {
-    const res = await fetch(`${API_BASE}/queue/${tokenId}/status`, {
+    return request(`/queue/${encodeURIComponent(tokenId)}/status`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
-    return res.json();
+  },
+
+  // 5. Doctors
+  async getDoctors() {
+    return request('/doctors');
   },
 
   async updateDoctorStatus(doctorId, status) {
-    const res = await fetch(`${API_BASE}/doctors/${doctorId}/status`, {
+    return request(`/doctors/${encodeURIComponent(doctorId)}/status`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
-    return res.json();
-  },
-
-  async recommendBed(criteria) {
-    const res = await fetch(`${API_BASE}/admissions/recommend-bed`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(criteria)
-    });
-    return res.json();
-  },
-
-  async allocateBed(data) {
-    const res = await fetch(`${API_BASE}/admissions/allocate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return res.json();
-  },
-
-  async dischargePatient(bedId) {
-    const res = await fetch(`${API_BASE}/discharges/process`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bedId })
-    });
-    return res.json();
-  },
-
-  async createEmergencyIntake(data) {
-    const res = await fetch(`${API_BASE}/emergency/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return res.json();
-  },
-
-  async getDoctors() {
-    const res = await fetch(`${API_BASE}/doctors`);
-    return res.json();
   },
 
   async addDoctor(doctorData) {
-    const res = await fetch(`${API_BASE}/doctors`, {
+    return request('/doctors', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(doctorData)
     });
-    return res.json();
   },
 
   async deleteDoctor(doctorId) {
-    const res = await fetch(`${API_BASE}/doctors/${doctorId}`, {
+    return request(`/doctors/${encodeURIComponent(doctorId)}`, {
       method: 'DELETE'
     });
-    return res.json();
   },
 
+  // 6. Beds & Admissions
   async getBeds() {
-    const res = await fetch(`${API_BASE}/beds`);
-    return res.json();
+    return request('/beds');
   },
 
-  async updateBed(bedId, bedData) {
-    const res = await fetch(`${API_BASE}/beds/${bedId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bedData)
+  async recommendBed(criteria) {
+    return request('/admissions/recommend-bed', {
+      method: 'POST',
+      body: JSON.stringify(criteria)
     });
-    return res.json();
   },
 
-  async getDepartments() {
-    const res = await fetch(`${API_BASE}/departments`);
-    return res.json();
+  async admitPatientToBed(bedId, data) {
+    return request(`/beds/${encodeURIComponent(bedId)}/admit`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
   },
 
-  async getPatients() {
-    const res = await fetch(`${API_BASE}/patients`);
-    return res.json();
+  async dischargePatientFromBed(bedId) {
+    return request(`/beds/${encodeURIComponent(bedId)}/discharge`, {
+      method: 'PUT'
+    });
   },
 
-  async getAnalytics() {
-    const res = await fetch(`${API_BASE}/analytics`);
-    return res.json();
+  async getAdmissions() {
+    return request('/admissions');
+  },
+
+  // 7. Emergency & Insights
+  async triggerEmergencySiren() {
+    return request('/emergency/siren', {
+      method: 'POST'
+    });
   },
 
   async getInsights() {
-    const res = await fetch(`${API_BASE}/insights`);
-    return res.json();
+    return request('/insights');
   },
 
-  async getReports() {
-    const res = await fetch(`${API_BASE}/reports`);
-    return res.json();
+  async getDepartments() {
+    return request('/departments');
   },
 
-  async resolveAlert(alertId) {
-    const res = await fetch(`${API_BASE}/alerts/${alertId}/resolve`, {
-      method: 'POST'
-    });
-    return res.json();
+  async getPatients() {
+    return request('/patients');
   }
 };

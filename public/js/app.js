@@ -1,33 +1,13 @@
 /* ==========================================================================
-   HOSPITIQ — HEALTHCARE COMMAND CENTER APPLICATION LOGIC (SIH 2026)
+   HOSPITIQ — HEALTHCARE COMMAND CENTER APPLICATION LOGIC
+   Enterprise Role-Based Security & Real-Time OPD/Bed Management Engine
    ========================================================================== */
 
-const DEFAULT_DOCTORS = [
-  { id: 'doc-1', name: 'Dr. Sunita Rao', department: 'Cardiology', specialization: 'Interventional Cardiology', room: 'OPD Room #104', status: 'Busy', patientsWaiting: 2, currentPatient: 'A-024 (Ramesh Verma)', phone: '+91 98111 22233', email: 'doctor@hospitiq.org' },
-  { id: 'doc-2', name: 'Dr. Vikram Malhotra', department: 'General Medicine', specialization: 'Internal Medicine', room: 'OPD Room #108', status: 'Available', patientsWaiting: 2, currentPatient: 'EM-501 (Sanjay Dutt)', phone: '+91 98222 33344', email: 'vikram@hospitiq.org' },
-  { id: 'doc-3', name: 'Dr. Ananya Reddy', department: 'Orthopedics', specialization: 'Orthopedic Surgery', room: 'OPD Room #201', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98333 44455', email: 'ananya@hospitiq.org' },
-  { id: 'doc-4', name: 'Dr. Hrishikesh Deshmukh', department: 'Pediatrics', specialization: 'Pediatric Care & Child Health', room: 'OPD Room #105', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98444 55566', email: 'hrishi@hospitiq.org' },
-  { id: 'doc-5', name: 'Dr. Priya Patel', department: 'Neurology', specialization: 'Neurology & Stroke Triage', room: 'OPD Room #304', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98555 66677', email: 'priya@hospitiq.org' },
-  { id: 'doc-6', name: 'Dr. Suresh Menon', department: 'Dermatology', specialization: 'Clinical Dermatology', room: 'OPD Room #110', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98666 77788', email: 'suresh@hospitiq.org' },
-  { id: 'doc-7', name: 'Dr. Meera Nambiar', department: 'ENT', specialization: 'Otolaryngology (ENT)', room: 'OPD Room #115', status: 'Available', patientsWaiting: 1, currentPatient: 'None', phone: '+91 98777 88899', email: 'meera@hospitiq.org' },
-  { id: 'doc-8', name: 'Dr. Vikramaditya Roy', department: 'Cardiology', specialization: 'Cardiac Electrophysiology', room: 'OPD Room #102', status: 'Available', patientsWaiting: 0, currentPatient: 'None', phone: '+91 98888 99900', email: 'admin@hospitiq.org' }
-];
-
-const DEFAULT_QUEUE = [
-  { id: 'q-101', tokenNumber: 'A-024', patientName: 'Ramesh Verma', age: 44, gender: 'Male', phone: '+91 99000 11223', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 0, patientsAhead: 0, room: 'OPD Room #104', priority: 'High', status: 'In Consultation', registrationTime: '09:45 AM', smsSent: true },
-  { id: 'q-102', tokenNumber: 'A-031', patientName: 'Priya Sundaram', age: 32, gender: 'Female', phone: '+91 98765 43210', department: 'Cardiology', doctor: 'Dr. Sunita Rao', doctorId: 'doc-1', waitTime: 28, patientsAhead: 3, room: 'OPD Room #104', priority: 'Normal', status: 'Waiting', registrationTime: '10:15 AM', smsSent: true },
-  { id: 'q-103', tokenNumber: 'B-012', patientName: 'Amitabh Sen', age: 58, gender: 'Male', phone: '+91 91234 56789', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 14, patientsAhead: 1, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '10:20 AM', smsSent: true },
-  { id: 'q-104', tokenNumber: 'EM-501', patientName: 'Sanjay Dutt', age: 50, gender: 'Male', phone: '+91 91100 00911', department: 'Emergency', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 0, patientsAhead: 0, room: 'ER Bay #01', priority: 'Emergency', status: 'In Consultation', registrationTime: '10:30 AM', smsSent: true },
-  { id: 'q-105', tokenNumber: 'P-008', patientName: 'Kavita Krishnan', age: 27, gender: 'Female', phone: '+91 98765 11122', department: 'Pediatrics', doctor: 'Dr. Hrishikesh Deshmukh', doctorId: 'doc-4', waitTime: 12, patientsAhead: 1, room: 'OPD Room #105', priority: 'Normal', status: 'Waiting', registrationTime: '10:35 AM', smsSent: true },
-  { id: 'q-106', tokenNumber: 'O-019', patientName: 'Deepak Nair', age: 39, gender: 'Male', phone: '+91 98765 22233', department: 'Orthopedics', doctor: 'Dr. Ananya Reddy', doctorId: 'doc-3', waitTime: 20, patientsAhead: 2, room: 'OPD Room #201', priority: 'High', status: 'Waiting', registrationTime: '10:40 AM', smsSent: true },
-  { id: 'q-107', tokenNumber: 'N-005', patientName: 'Sunil Gavaskar', age: 62, gender: 'Male', phone: '+91 98765 33344', department: 'Neurology', doctor: 'Dr. Priya Patel', doctorId: 'doc-5', waitTime: 15, patientsAhead: 1, room: 'OPD Room #304', priority: 'Normal', status: 'Waiting', registrationTime: '10:45 AM', smsSent: true },
-  { id: 'q-108', tokenNumber: 'D-014', patientName: 'Ayesha Takia', age: 29, gender: 'Female', phone: '+91 98765 44455', department: 'Dermatology', doctor: 'Dr. Suresh Menon', doctorId: 'doc-6', waitTime: 10, patientsAhead: 1, room: 'OPD Room #110', priority: 'Normal', status: 'Waiting', registrationTime: '10:50 AM', smsSent: true },
-  { id: 'q-109', tokenNumber: 'E-007', patientName: 'Rohan Bopanna', age: 41, gender: 'Male', phone: '+91 98765 55566', department: 'ENT', doctor: 'Dr. Meera Nambiar', doctorId: 'doc-7', waitTime: 18, patientsAhead: 2, room: 'OPD Room #115', priority: 'Normal', status: 'Waiting', registrationTime: '10:55 AM', smsSent: true },
-  { id: 'q-110', tokenNumber: 'B-018', patientName: 'Sneha Roy', age: 35, gender: 'Female', phone: '+91 98765 66677', department: 'General Medicine', doctor: 'Dr. Vikram Malhotra', doctorId: 'doc-2', waitTime: 32, patientsAhead: 3, room: 'OPD Room #108', priority: 'Normal', status: 'Waiting', registrationTime: '11:00 AM', smsSent: true }
-];
-
 const appState = {
-  currentUser: null,
+  sessionToken: window.sessionStorage ? window.sessionStorage.getItem('hospitiq_auth_token') : null,
+  currentUser: window.sessionStorage && window.sessionStorage.getItem('hospitiq_user') 
+    ? JSON.parse(window.sessionStorage.getItem('hospitiq_user')) 
+    : null,
   activeView: 'dashboard',
   activePublicPage: 'home',
   theme: localStorage.getItem('hospitiq_theme') || 'dark',
@@ -35,8 +15,8 @@ const appState = {
 
   stats: null,
   capacity: null,
-  queue: [...DEFAULT_QUEUE],
-  doctors: [...DEFAULT_DOCTORS],
+  queue: [],
+  doctors: [],
   beds: [],
   departments: [],
   patients: [],
@@ -44,339 +24,171 @@ const appState = {
   insights: [],
   alerts: [],
 
-  charts: {}
+  charts: {},
+  syncInterval: null
+};
+
+// Role-Based Permissions Matrix
+const ROLE_PERMISSIONS = {
+  Patient: ['patient-portal', 'hospital-info'],
+  Doctor: ['doctor-portal', 'opd-queue', 'patients', 'doctors', 'bed-mgmt', 'bed-map', 'admissions', 'hospital-info'],
+  Admin: ['dashboard', 'opd-queue', 'patients', 'doctors', 'bed-mgmt', 'bed-map', 'admissions', 'analytics', 'alerts', 'reports', 'admin-manage', 'settings', 'doctor-portal', 'patient-portal', 'hospital-info']
+};
+
+const canAccessView = (role, viewId) => {
+  if (!role) return false;
+  const allowed = ROLE_PERMISSIONS[role] || [];
+  return allowed.includes(viewId);
 };
 
 // --- DOM Initializer ---
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
-  initClock();
   initLandingPage();
-  initPublicRouting();
-  initPublicScrollspy();
   initAuth();
   initNavigation();
-  initMobileDrawer();
   initModals();
   initSearchAndFilters();
-  initEmergencyMode();
-  initExportHandlers();
-  initNotifDropdown();
 
-  checkDirectUrlAccess();
+  await loadAppData();
+  await checkDirectUrlAccess();
+
+  // If user has existing active session, restore portal
+  if (appState.sessionToken && appState.currentUser) {
+    const defaultView = appState.currentUser.role === 'Patient' ? 'patient-portal' 
+      : (appState.currentUser.role === 'Doctor' ? 'doctor-portal' : 'dashboard');
+    launchPortal(appState.currentUser, defaultView, false);
+  }
+
+  // Start Real-Time Live Sync Polling (Every 6 seconds)
+  if (!appState.syncInterval) {
+    appState.syncInterval = setInterval(() => {
+      const appShell = document.getElementById('appShell');
+      if (appShell && !appShell.classList.contains('hidden') && appShell.style.display !== 'none') {
+        loadAppData(true);
+      }
+    }, 6000);
+  }
+
   lucide.createIcons();
 });
 
-// --- Public Page Navigation & Browser History (Forward / Backward) ---
-function initPublicRouting() {
-  window.addEventListener('popstate', (e) => {
-    const hash = window.location.hash.replace('#', '') || 'home';
-    switchPublicPage(hash, false);
-  });
+// --- Theme Manager ---
+function initTheme() {
+  document.documentElement.setAttribute('data-theme', appState.theme);
+  updateThemeIcons();
 
-  const initialHash = window.location.hash.replace('#', '');
-  if (initialHash) {
-    switchPublicPage(initialHash, false);
-  }
-}
-
-function initPublicScrollspy() {
-  window.addEventListener('scroll', () => {
-    const homeView = document.getElementById('public-view-home');
-    if (!homeView || !homeView.classList.contains('active')) return;
-
-    const scrollPos = window.scrollY + 200;
-
-    const sections = [
-      { id: 'heroSection', name: 'home' },
-      { id: 'servicesSection', name: 'services' },
-      { id: 'featuresSection', name: 'features' },
-      { id: 'footerSection', name: 'contact' }
-    ];
-
-    let currentSection = 'home';
-    for (let sec of sections) {
-      const el = document.getElementById(sec.id);
-      if (el) {
-        const top = el.offsetTop;
-        const height = el.offsetHeight;
-        if (scrollPos >= top && scrollPos < top + height) {
-          currentSection = sec.name;
-        }
-      }
-    }
-
-    document.querySelectorAll('.landing-nav-item').forEach(item => {
-      const href = item.getAttribute('href')?.replace('#', '');
-      item.classList.toggle('active', href === currentSection);
+  const toggleBtns = [document.getElementById('landingThemeBtn'), document.getElementById('headerThemeBtn')];
+  toggleBtns.forEach(btn => {
+    btn?.addEventListener('click', () => {
+      appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', appState.theme);
+      localStorage.setItem('hospitiq_theme', appState.theme);
+      updateThemeIcons();
     });
   });
 }
 
-function switchPublicPage(pageName, pushHistory = true) {
+function updateThemeIcons() {
+  const isDark = appState.theme === 'dark';
+  const landingIcon = document.getElementById('landingThemeIcon');
+  const headerIcon = document.getElementById('headerThemeIcon');
+  if (landingIcon) landingIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+  if (headerIcon) headerIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+  lucide.createIcons();
+}
+
+// --- Public Landing Page Navigation ---
+function initLandingPage() {
+  const hash = window.location.hash.replace('#', '') || 'home';
+  if (['home', 'features', 'about', 'contact', 'services', 'register', 'login'].includes(hash)) {
+    switchPublicPage(hash, false);
+  }
+
+  window.addEventListener('hashchange', () => {
+    const currentHash = window.location.hash.replace('#', '');
+    if (['home', 'features', 'about', 'contact', 'services', 'register', 'login'].includes(currentHash)) {
+      switchPublicPage(currentHash, false);
+    }
+  });
+
+  const quoteTicker = document.getElementById('quoteTickerText');
+  const hospitalQuotes = [
+    `"Smarter Queues. Better Care." — Real-time OPD hospital triage network`,
+    `"Fast, Transparent Healthcare" — Contactless QR queue tracking for all patients`,
+    `"Zero Waiting Confusion" — Prioritized doctor consultation and live bed status`
+  ];
+  let quoteIdx = 0;
+  setInterval(() => {
+    if (quoteTicker) {
+      quoteIdx = (quoteIdx + 1) % hospitalQuotes.length;
+      quoteTicker.style.opacity = '0';
+      setTimeout(() => {
+        quoteTicker.textContent = hospitalQuotes[quoteIdx];
+        quoteTicker.style.opacity = '1';
+      }, 300);
+    }
+  }, 5000);
+}
+
+function switchPublicPage(pageName, updateHash = true) {
   appState.activePublicPage = pageName;
+  if (updateHash && window.location.hash !== `#${pageName}`) {
+    window.location.hash = pageName;
+  }
+
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (landingWrapper) {
+    landingWrapper.classList.remove('hidden');
+    landingWrapper.style.display = 'block';
+  }
+
+  const appShell = document.getElementById('appShell');
+  if (appShell) {
+    appShell.classList.add('hidden');
+    appShell.style.display = 'none';
+  }
 
   document.querySelectorAll('.public-page-view').forEach(view => {
     view.classList.remove('active');
-    view.style.display = '';
+    view.style.display = 'none';
   });
 
-  if (pageName === 'about') {
-    const el = document.getElementById('public-view-about');
-    if (el) { el.classList.add('active'); el.style.display = 'block'; }
-    if (pushHistory && window.location.hash !== '#about') {
-      window.history.pushState({ page: 'about' }, 'HOSPITIQ', '#about');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else if (pageName === 'login') {
-    const el = document.getElementById('public-view-login');
-    if (el) { el.classList.add('active'); el.style.display = 'block'; }
-    if (pushHistory && window.location.hash !== '#login') {
-      window.history.pushState({ page: 'login' }, 'HOSPITIQ', '#login');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else if (pageName === 'register') {
-    const el = document.getElementById('public-view-register');
-    if (el) { el.classList.add('active'); el.style.display = 'block'; }
-    if (pushHistory && window.location.hash !== '#register') {
-      window.history.pushState({ page: 'register' }, 'HOSPITIQ', '#register');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else {
-    const el = document.getElementById('public-view-home');
-    if (el) { el.classList.add('active'); el.style.display = 'block'; }
-    if (pushHistory && window.location.hash !== '#home' && window.location.hash !== '') {
-      window.history.pushState({ page: 'home' }, 'HOSPITIQ', '#home');
-    }
-
-    if (pageName === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (pageName === 'services') document.getElementById('servicesSection')?.scrollIntoView({ behavior: 'smooth' });
-    if (pageName === 'features') document.getElementById('featuresSection')?.scrollIntoView({ behavior: 'smooth' });
-    if (pageName === 'contact') document.getElementById('footerSection')?.scrollIntoView({ behavior: 'smooth' });
+  const targetView = document.getElementById(`public-view-${pageName}`);
+  if (targetView) {
+    targetView.classList.add('active');
+    targetView.style.display = 'block';
   }
 
-  document.querySelectorAll('.landing-nav-item').forEach(item => {
-    const href = item.getAttribute('href')?.replace('#', '');
-    item.classList.toggle('active', href === pageName);
-  });
-
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   lucide.createIcons();
 }
 
-async function handlePublicRegisterSubmit(e) {
-  e.preventDefault();
-  const name = document.getElementById('regName')?.value || 'New User';
-  const email = document.getElementById('regEmail')?.value || 'user@hospitiq.org';
-  const role = document.getElementById('regRole')?.value || 'Patient';
-
-  showToast(`Account registered successfully for ${name}!`, 'success');
-
-  const user = { name, email, role, id: `usr-reg-${Date.now()}` };
-  const targetView = role === 'Patient' ? 'patient-portal' : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-  launchPortal(user, targetView);
-}
-
-async function handlePublicPageLogin(e) {
-  e.preventDefault();
-  const emailEl = document.getElementById('pageLoginEmail');
-  const inputVal = emailEl ? emailEl.value.trim() : 'admin@hospitiq.org';
-  const tokenNumVal = document.getElementById('pageLoginTokenNumber')?.value?.trim();
-  const activeChip = document.querySelector('#public-view-login .demo-chip.active');
-  const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
-
-  let user = null;
-  if (role === 'Patient') {
-    const query = inputVal || tokenNumVal || 'A-031';
-    const cleanQuery = query.toLowerCase();
-    const cleanUpper = query.toUpperCase();
-    const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
-
-    let foundPt = appState.queue.find(q => {
-      if (!q) return false;
-      const tUpper = (q.tokenNumber || '').toUpperCase();
-      return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
-    });
-
-    if (!foundPt) {
-      const customTokens = getCustomTokensLocally();
-      foundPt = customTokens.find(q => {
-        if (!q) return false;
-        const tUpper = (q.tokenNumber || '').toUpperCase();
-        return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
-      });
-    }
-
-    if (foundPt) {
-      user = { id: foundPt.id || `usr-${Date.now()}`, name: foundPt.patientName, role: 'Patient', tokenNumber: foundPt.tokenNumber };
-    } else {
-      const isTokenPattern = query.match(/^[A-Za-z]\-?\d+$/);
-      const assignedToken = isTokenPattern ? cleanUpper : `P-${Math.floor(100 + Math.random() * 900)}`;
-      const assignedName = isTokenPattern ? 'OPD Patient' : query;
-      user = { id: `usr-pt-${Date.now()}`, name: assignedName, role: 'Patient', tokenNumber: assignedToken };
-    }
-  } else if (role === 'Doctor') {
-    user = { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', department: 'Cardiology', email: inputVal || 'doctor@hospitiq.org' };
-  } else {
-    user = { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', department: 'Administration', email: inputVal || 'admin@hospitiq.org' };
-  }
-
-  const targetView = role === 'Patient' ? 'patient-portal' : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-  await launchPortal(user, targetView);
-}
-
-// --- URL Parameter Direct Access ---
-async function checkDirectUrlAccess() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const tokenParam = urlParams.get('token') || urlParams.get('t');
-  const roleParam = urlParams.get('role');
-
-  if (tokenParam) {
-    const tokenNum = tokenParam.toUpperCase();
-    let pt = appState.queue.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
-
-    if (!pt) {
-      const customTokens = getCustomTokensLocally();
-      pt = customTokens.find(q => q.tokenNumber && q.tokenNumber.toUpperCase() === tokenNum);
-    }
-
-    if (!pt) {
-      try {
-        const res = await api.getPatientToken(tokenNum);
-        if (res.success && res.patientToken) {
-          pt = res.patientToken;
-        }
-      } catch (e) {}
-    }
-
-    const patientName = pt ? pt.patientName : 'OPD Patient';
-    const user = { id: `usr-${tokenNum}`, name: patientName, role: 'Patient', tokenNumber: tokenNum };
-    await launchPortal(user, 'patient-portal');
-    await loadPatientTokenData(tokenNum);
-  } else if (roleParam) {
-    const roleName = roleParam.charAt(0).toUpperCase() + roleParam.slice(1);
-    const defaultView = roleName === 'Patient' ? 'patient-portal' : (roleName === 'Doctor' ? 'doctor-portal' : 'dashboard');
-    launchPortal({ id: 'usr-direct', name: `Demo ${roleName}`, role: roleName }, defaultView);
-  }
-}
-
-// --- Theme Switcher & Minimal Mode ---
-function initTheme() {
-  setTheme(appState.theme);
-  const themeBtn = document.getElementById('themeToggleBtn');
-  const landingThemeBtn = document.getElementById('landingThemeBtn');
-
-  const toggle = () => {
-    const nextTheme = appState.theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-  };
-
-  themeBtn?.addEventListener('click', toggle);
-  landingThemeBtn?.addEventListener('click', toggle);
-}
-
-function toggleAppTheme() {
-  const nextTheme = appState.theme === 'dark' ? 'light' : 'dark';
-  setTheme(nextTheme);
-  showToast(`Switched theme to ${nextTheme.toUpperCase()}`, 'info');
-}
-
-function setTheme(theme) {
-  appState.theme = theme;
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('hospitiq_theme', theme);
-
-  const themeIcon = document.getElementById('themeIcon');
-  const landingThemeIcon = document.getElementById('landingThemeIcon');
-  const themeLabelText = document.getElementById('themeLabelText');
-
-  if (theme === 'light') {
-    themeIcon?.setAttribute('data-lucide', 'sun');
-    landingThemeIcon?.setAttribute('data-lucide', 'sun');
-    if (themeLabelText) themeLabelText.textContent = 'Light';
-  } else {
-    themeIcon?.setAttribute('data-lucide', 'moon');
-    landingThemeIcon?.setAttribute('data-lucide', 'moon');
-    if (themeLabelText) themeLabelText.textContent = 'Dark';
-  }
-
-  lucide.createIcons();
-}
-
-// --- Live Clock ---
-function initClock() {
-  const clockEl = document.getElementById('liveTimeClock');
-  function update() {
-    const now = new Date();
-    if (clockEl) clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-  update();
-  setInterval(update, 1000);
-}
-
-// --- Landing Page Controls & Dynamic Quote ---
-function initLandingPage() {
-  const quotes = [
-    '"Smarter Queues. Better Care." — HOSPITIQ SIH 2026 Operational Vision',
-    '"Connecting Patient OPD Registration, Queue Dispatching & Available Beds in Real Time"',
-    '"Reducing OPD Waiting Times by 40% across Hospital Facilities in India"',
-    '"Bridging Patients and Lifesaving Care with Zero Waiting Chaos"',
-    '"Empowering Doctors & Administrators with AI-Driven Hospital Intelligence"'
-  ];
-
-  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-  const tickerEl = document.getElementById('quoteTickerText');
-  if (tickerEl) tickerEl.textContent = randomQuote;
+function openPublicTokenModal() {
+  openModal('newTokenModal');
 }
 
 function openLoginOverlay() {
-  const loginScreen = document.getElementById('loginScreen');
-  if (loginScreen) {
-    loginScreen.classList.add('active');
-    loginScreen.style.display = 'flex';
+  const overlay = document.getElementById('loginScreen');
+  if (overlay) {
+    overlay.classList.add('active');
+    overlay.style.display = 'flex';
   }
 }
 
 function closeLoginOverlay() {
-  const loginScreen = document.getElementById('loginScreen');
-  if (loginScreen) {
-    loginScreen.classList.remove('active');
-    loginScreen.style.display = 'none';
+  const overlay = document.getElementById('loginScreen');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
   }
 }
 
-function openPublicTokenModal() {
-  openNewTokenModal();
-}
-
-// --- Notification Dropdown Toggle ---
-function initNotifDropdown() {
-  const bellBtn = document.getElementById('notifBellBtn');
-  const dropdown = document.getElementById('notifDropdown');
-  const clearBtn = document.getElementById('clearNotifBtn');
-
-  bellBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdown?.classList.toggle('hidden');
-  });
-
-  clearBtn?.addEventListener('click', () => {
-    appState.alerts.forEach(a => a.resolved = true);
-    renderInsightsAndAlerts();
-    dropdown?.classList.add('hidden');
-    showToast('Notifications cleared', 'info');
-  });
-
-  document.addEventListener('click', (e) => {
-    if (dropdown && !dropdown.contains(e.target) && !bellBtn.contains(e.target)) {
-      dropdown.classList.add('hidden');
-    }
-  });
-}
-
-// --- Authentication & 3 Role Handling ---
+// --- Dynamic Role-Based Authentication & Session Engine ---
 function initAuth() {
   const loginForm = document.getElementById('loginForm');
 
+  // Role Demo Chips Switcher (Patient / Doctor / Admin)
   document.querySelectorAll('.demo-chip').forEach(chip => {
     chip.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -413,56 +225,26 @@ function initAuth() {
     });
   });
 
+  // Modal Login Submit
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const emailEl = document.getElementById('loginEmail');
     const inputVal = emailEl ? emailEl.value.trim() : 'admin@hospitiq.org';
-    const tokenNumVal = document.getElementById('loginTokenNumber')?.value?.trim();
     const activeChip = loginForm.querySelector('.demo-chip.active');
     const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
 
-    let user = null;
-    if (role === 'Patient') {
-      const query = inputVal || tokenNumVal || 'A-031';
-      const cleanQuery = query.toLowerCase();
-      const cleanUpper = query.toUpperCase();
-      const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
-
-      let foundPt = appState.queue.find(q => {
-        if (!q) return false;
-        const tUpper = (q.tokenNumber || '').toUpperCase();
-        return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
-      });
-
-      if (!foundPt) {
-        const customTokens = getCustomTokensLocally();
-        foundPt = customTokens.find(q => {
-          if (!q) return false;
-          const tUpper = (q.tokenNumber || '').toUpperCase();
-          return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanQuery;
-        });
-      }
-
-      if (foundPt) {
-        user = { id: foundPt.id || `usr-${Date.now()}`, name: foundPt.patientName, role: 'Patient', tokenNumber: foundPt.tokenNumber };
-      } else {
-        const isTokenPattern = query.match(/^[A-Za-z]\-?\d+$/);
-        const assignedToken = isTokenPattern ? cleanUpper : `P-${Math.floor(100 + Math.random() * 900)}`;
-        const assignedName = isTokenPattern ? 'OPD Patient' : query;
-        user = { id: `usr-pt-${Date.now()}`, name: assignedName, role: 'Patient', tokenNumber: assignedToken };
-      }
-    } else if (role === 'Doctor') {
-      user = { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', department: 'Cardiology', email: inputVal || 'doctor@hospitiq.org' };
-    } else {
-      user = { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', department: 'Administration', email: inputVal || 'admin@hospitiq.org' };
-    }
-
-    const targetView = role === 'Patient' ? 'patient-portal' : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-    await launchPortal(user, targetView);
+    await executeLogin(role, inputVal);
   });
 
+  // Logout Action
   document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    appState.sessionToken = null;
     appState.currentUser = null;
+    if (window.sessionStorage) {
+      sessionStorage.removeItem('hospitiq_auth_token');
+      sessionStorage.removeItem('hospitiq_user');
+    }
+
     const shell = document.getElementById('appShell');
     if (shell) {
       shell.classList.add('hidden');
@@ -479,7 +261,47 @@ function initAuth() {
   });
 }
 
-async function launchPortal(user, defaultView) {
+// Public Page Login Form Submit
+async function handlePublicPageLogin(e) {
+  e.preventDefault();
+  const emailEl = document.getElementById('pageLoginEmail');
+  const inputVal = emailEl ? emailEl.value.trim() : 'admin@hospitiq.org';
+  const activeChip = document.querySelector('#public-view-login .demo-chip.active');
+  const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
+
+  await executeLogin(role, inputVal);
+}
+
+// Centralized Login Execution with Server-Side Verification
+async function executeLogin(role, identifier) {
+  try {
+    const res = await api.login({ role, identifier });
+    if (res.success && res.token && res.user) {
+      appState.sessionToken = res.token;
+      appState.currentUser = res.user;
+
+      if (window.sessionStorage) {
+        sessionStorage.setItem('hospitiq_auth_token', res.token);
+        sessionStorage.setItem('hospitiq_user', JSON.stringify(res.user));
+      }
+
+      showToast(`Welcome, ${res.user.name} (${res.user.role})!`, 'success');
+
+      const targetView = role === 'Patient' ? 'patient-portal' 
+        : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
+
+      await launchPortal(res.user, targetView);
+    } else {
+      showToast(res.message || 'Login failed. Please try again.', 'danger');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    showToast('Unable to sign in. Please verify connection.', 'danger');
+  }
+}
+
+// Launch Portal & Apply Strict Role Guards
+async function launchPortal(user, defaultView, loadData = true) {
   appState.currentUser = user;
 
   const landing = document.getElementById('publicLandingPage');
@@ -501,183 +323,146 @@ async function launchPortal(user, defaultView) {
     shell.style.display = 'flex';
   }
 
-  applyRolePermissions(user);
+  // Update Sidebar User Profile Card
+  const userNameLabel = document.getElementById('userNameLabel');
+  const userRoleBadge = document.getElementById('userRoleBadge');
+  const userAvatar = document.getElementById('userAvatar');
 
-  if (user.role === 'Patient' && user.tokenNumber) {
-    await loadPatientTokenData(user.tokenNumber);
+  if (userNameLabel) userNameLabel.textContent = user.name;
+  if (userRoleBadge) userRoleBadge.textContent = user.role === 'Admin' ? 'Hospital Admin' : (user.role === 'Doctor' ? 'Attending Physician' : 'OPD Patient');
+  if (userAvatar) userAvatar.textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+
+  // Apply Sidebar Role Navigation Filtering
+  filterSidebarForRole(user.role);
+
+  // Validate initial target view against permissions
+  let safeTargetView = defaultView;
+  if (!canAccessView(user.role, defaultView)) {
+    safeTargetView = user.role === 'Patient' ? 'patient-portal' : (user.role === 'Doctor' ? 'doctor-portal' : 'dashboard');
   }
 
-  await loadAppData();
-  switchView(defaultView);
-  showToast(`Welcome to HOSPITIQ ${user.role} Portal!`, 'success');
+  switchView(safeTargetView);
+
+  if (loadData) {
+    await loadAppData();
+  }
+
+  if (user.role === 'Patient' && user.tokenNumber) {
+    loadPatientTokenData(user.tokenNumber);
+  }
+
   lucide.createIcons();
 }
 
-function applyRolePermissions(user) {
-  document.getElementById('userNameLabel').textContent = user.name;
-  document.getElementById('userRoleBadge').textContent = user.role;
-  document.getElementById('userAvatar').textContent = user.name.charAt(0);
-  const greetingEl = document.getElementById('dashGreetingTitle');
-  if (greetingEl) greetingEl.textContent = `Good Morning, ${user.name.split(' ')[1] || user.name}`;
+// Sidebar Navigation Security Filtering
+function filterSidebarForRole(role) {
+  const isPatient = role === 'Patient';
+  const isDoctor = role === 'Doctor';
+  const isAdmin = role === 'Admin';
 
-  const isPatient = user.role === 'Patient';
-  const isDoctor = user.role === 'Doctor';
-  const isAdmin = user.role === 'Admin' || user.role === 'Hospital Management';
+  document.querySelectorAll('.role-label-patient, .patient-role-link').forEach(el => {
+    el.style.display = isPatient || isAdmin ? 'flex' : 'none';
+  });
 
-  document.querySelectorAll('.role-label-patient, .patient-role-link').forEach(el => el.style.display = isPatient || isAdmin ? '' : 'none');
-  document.querySelectorAll('.role-label-doctor, .doctor-role-link').forEach(el => el.style.display = isDoctor || isAdmin ? '' : 'none');
-  document.querySelectorAll('.role-label-admin, .admin-role-link').forEach(el => el.style.display = isAdmin ? '' : 'none');
-  document.querySelectorAll('.admin-only-link, .admin-only-btn').forEach(el => el.style.display = isAdmin ? '' : 'none');
+  document.querySelectorAll('.role-label-doctor, .doctor-role-link').forEach(el => {
+    el.style.display = isDoctor || isAdmin ? 'flex' : 'none';
+  });
+
+  document.querySelectorAll('.role-label-admin, .admin-role-link').forEach(el => {
+    el.style.display = isDoctor || isAdmin ? 'flex' : 'none';
+  });
+
+  document.querySelectorAll('.admin-only-link').forEach(el => {
+    el.style.display = isAdmin ? 'flex' : 'none';
+  });
 }
 
-// --- Doctor Status Update Handler ---
-async function updateMyDoctorStatus(status) {
-  const docId = appState.currentUser?.id || 'doc-1';
-  const res = await api.updateDoctorStatus(docId, status);
-  if (res.success) {
-    showToast(`Doctor status updated to ${status}`, 'success');
-    await loadAppData();
+// URL Parameter Direct Access Handler
+async function checkDirectUrlAccess() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenParam = urlParams.get('token') || urlParams.get('t');
+
+  if (tokenParam) {
+    const user = {
+      name: 'OPD Patient',
+      role: 'Patient',
+      tokenNumber: tokenParam.toUpperCase(),
+      id: `usr-direct-${Date.now()}`
+    };
+    await launchPortal(user, 'patient-portal');
+    await loadPatientTokenData(tokenParam);
   }
 }
 
-// --- Mobile Drawer Handlers ---
-function initMobileDrawer() {
-  const sidebar = document.getElementById('sidebar');
-  const backdrop = document.getElementById('sidebarBackdrop');
-  const hamburger = document.getElementById('mobileHamburger');
-
-  const openDrawer = () => {
-    sidebar.classList.add('mobile-open');
-    backdrop.classList.add('active');
-  };
-
-  const closeDrawer = () => {
-    sidebar.classList.remove('mobile-open');
-    backdrop.classList.remove('active');
-  };
-
-  hamburger?.addEventListener('click', openDrawer);
-  backdrop?.addEventListener('click', closeDrawer);
-}
-
-function saveCustomDoctorLocally(doc) {
+// --- Centralized App State Loader ---
+async function loadAppData(isBackgroundSync = false) {
   try {
-    const existing = JSON.parse(localStorage.getItem('hospitiq_custom_doctors') || '[]');
-    if (!existing.some(d => d.id === doc.id || (d.email && doc.email && d.email === doc.email))) {
-      existing.unshift(doc);
-      localStorage.setItem('hospitiq_custom_doctors', JSON.stringify(existing));
-    }
-  } catch (e) {
-    console.error('Error saving doctor locally:', e);
-  }
-}
-
-function getCustomDoctorsLocally() {
-  try {
-    return JSON.parse(localStorage.getItem('hospitiq_custom_doctors') || '[]');
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveCustomTokenLocally(token) {
-  try {
-    const existing = JSON.parse(localStorage.getItem('hospitiq_custom_tokens') || '[]');
-    if (!existing.some(t => t.id === token.id || t.tokenNumber === token.tokenNumber)) {
-      existing.unshift(token);
-      localStorage.setItem('hospitiq_custom_tokens', JSON.stringify(existing));
-    }
-  } catch (e) {
-    console.error('Error saving token locally:', e);
-  }
-}
-
-function getCustomTokensLocally() {
-  try {
-    return JSON.parse(localStorage.getItem('hospitiq_custom_tokens') || '[]');
-  } catch (e) {
-    return [];
-  }
-}
-
-// --- Data Fetching & Sync ---
-async function loadAppData() {
-  try {
-    const [statsRes, capacityRes, queueRes, docsRes, bedsRes, deptsRes, patientsRes, insightsRes] = await Promise.all([
+    const [statsRes, capRes, queueRes, docRes, bedRes, admRes, insRes] = await Promise.allSettled([
       api.getStats(),
       api.getCapacity(),
       api.getQueue(),
       api.getDoctors(),
       api.getBeds(),
-      api.getDepartments(),
-      api.getPatients(),
+      api.getAdmissions(),
       api.getInsights()
     ]);
 
-    if (statsRes.success) appState.stats = statsRes;
-    if (capacityRes.success) appState.capacity = capacityRes;
-    if (queueRes.success && Array.isArray(queueRes.queue) && queueRes.queue.length > 0) {
-      appState.queue = queueRes.queue;
-    } else if (!appState.queue || appState.queue.length === 0) {
-      appState.queue = [...DEFAULT_QUEUE];
-    }
-    if (docsRes.success && Array.isArray(docsRes.doctors) && docsRes.doctors.length > 0) {
-      appState.doctors = docsRes.doctors;
-    } else if (!appState.doctors || appState.doctors.length === 0) {
-      appState.doctors = [...DEFAULT_DOCTORS];
-    }
-
-    // Merge locally saved doctors
-    const customDocs = getCustomDoctorsLocally();
-    customDocs.forEach(cd => {
-      if (!appState.doctors.some(d => d.id === cd.id || (d.email && cd.email && d.email === cd.email))) {
-        appState.doctors.unshift(cd);
-      }
-    });
-
-    // Merge locally saved tokens
-    const customTokens = getCustomTokensLocally();
-    customTokens.forEach(ct => {
-      if (!appState.queue.some(q => q.id === ct.id || q.tokenNumber === ct.tokenNumber)) {
-        appState.queue.unshift(ct);
-      }
-    });
-
-    if (bedsRes.success) appState.beds = bedsRes.beds;
-    if (deptsRes.success) appState.departments = deptsRes.departments;
-    if (patientsRes.success) appState.patients = patientsRes.patients;
-    if (insightsRes.success) {
-      appState.insights = insightsRes.insights;
-      appState.alerts = insightsRes.alerts;
+    if (statsRes.status === 'fulfilled' && statsRes.value?.success) appState.stats = statsRes.value;
+    if (capRes.status === 'fulfilled' && capRes.value?.success) appState.capacity = capRes.value;
+    if (queueRes.status === 'fulfilled' && queueRes.value?.success) appState.queue = queueRes.value.queue || [];
+    if (docRes.status === 'fulfilled' && docRes.value?.success) appState.doctors = docRes.value.doctors || [];
+    if (bedRes.status === 'fulfilled' && bedRes.value?.success) appState.beds = bedRes.value.beds || [];
+    if (admRes.status === 'fulfilled' && admRes.value?.success) appState.admissions = admRes.value.admissions || [];
+    if (insRes.status === 'fulfilled' && insRes.value?.success) {
+      appState.insights = insRes.value.insights || [];
+      appState.alerts = insRes.value.alerts || [];
     }
 
     renderAllViews();
-
-    if (appState.currentUser && appState.currentUser.tokenNumber) {
-      await loadPatientTokenData(appState.currentUser.tokenNumber);
+    if (!isBackgroundSync) {
+      lucide.createIcons();
     }
   } catch (err) {
-    console.error('Error loading HOSPITIQ data:', err);
+    console.error('Data loading error:', err);
   }
 }
 
-// --- Navigation ---
+// --- Navigation & View Switcher with Security Guard ---
 function initNavigation() {
-  const sidebar = document.getElementById('sidebar');
-  const collapseBtn = document.getElementById('sidebarCollapseBtn');
+  document.querySelectorAll('.side-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const viewId = link.getAttribute('data-view');
+      if (viewId) switchView(viewId);
 
-  collapseBtn?.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-
-  document.querySelectorAll('.side-link').forEach(btn => {
-    btn.addEventListener('click', () => {
-      switchView(btn.getAttribute('data-view'));
-      sidebar.classList.remove('mobile-open');
+      const sidebar = document.getElementById('sidebar');
+      sidebar?.classList.remove('mobile-open');
       document.getElementById('sidebarBackdrop')?.classList.remove('active');
     });
+  });
+
+  // Mobile Hamburger Toggle
+  document.getElementById('mobileHamburger')?.addEventListener('click', () => {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    sidebar?.classList.toggle('mobile-open');
+    backdrop?.classList.toggle('active');
+  });
+
+  document.getElementById('sidebarBackdrop')?.addEventListener('click', () => {
+    document.getElementById('sidebar')?.classList.remove('mobile-open');
+    document.getElementById('sidebarBackdrop')?.classList.remove('active');
   });
 }
 
 function switchView(viewId) {
+  // Security Guard: Check Role Access
+  const currentRole = appState.currentUser ? appState.currentUser.role : 'Patient';
+  if (!canAccessView(currentRole, viewId)) {
+    showToast(`Access Denied: ${viewId} requires elevated permissions.`, 'warning');
+    const safeView = currentRole === 'Patient' ? 'patient-portal' : (currentRole === 'Doctor' ? 'doctor-portal' : 'dashboard');
+    return switchView(safeView);
+  }
+
   appState.activeView = viewId;
 
   document.querySelectorAll('.side-link').forEach(btn => {
@@ -713,12 +498,6 @@ function renderAllViews() {
   updateSidebarBadges();
 }
 
-function lookupPatientTokenFromHeader(tokenNum) {
-  if (tokenNum && tokenNum.trim()) {
-    loadPatientTokenData(tokenNum.trim());
-  }
-}
-
 // --- Patient Portal Render & QR Code Generator ---
 async function loadPatientTokenData(tokenNumber) {
   let searchNum = tokenNumber;
@@ -737,47 +516,24 @@ async function loadPatientTokenData(tokenNumber) {
   const cleanUpper = cleanStr.toUpperCase();
   const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
 
-  let pt = appState.queue.find(q => {
-    if (!q) return false;
-    const tUpper = (q.tokenNumber || '').toUpperCase();
-    return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanStr.toLowerCase();
-  });
+  let pt = null;
 
+  try {
+    const res = await api.getPatientToken(cleanUpper);
+    if (res.success && res.patientToken) {
+      pt = res.patientToken;
+    }
+  } catch (err) {
+    console.error('Error fetching token:', err);
+  }
+
+  // Fallback to local queue if API lookup was offline
   if (!pt) {
-    const customTokens = getCustomTokensLocally();
-    pt = customTokens.find(q => {
+    pt = appState.queue.find(q => {
       if (!q) return false;
       const tUpper = (q.tokenNumber || '').toUpperCase();
       return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanStr.toLowerCase();
     });
-  }
-
-  if (!pt) {
-    try {
-      const res = await api.getPatientToken(cleanUpper);
-      if (res && res.success && res.patientToken) {
-        pt = res.patientToken;
-      }
-    } catch (err) {
-      console.error('Error loading patient token:', err);
-    }
-  }
-
-  if (!pt) {
-    const formattedToken = cleanUpper.includes('-') ? cleanUpper : (cleanUpper.length > 1 ? `${cleanUpper.charAt(0)}-${cleanUpper.slice(1)}` : cleanUpper);
-    pt = {
-      id: `q-${Date.now()}`,
-      tokenNumber: formattedToken,
-      patientName: cleanStr.length > 3 && !cleanStr.match(/^[A-Za-z]\-?\d+$/) ? cleanStr : 'OPD Walk-in Patient',
-      age: 28,
-      gender: 'Male',
-      department: 'General Medicine',
-      doctor: 'Dr. Sunita Rao',
-      room: 'OPD Room #104',
-      waitTime: 15,
-      patientsAhead: 1,
-      status: 'Waiting'
-    };
   }
 
   if (pt) {
@@ -797,7 +553,7 @@ async function loadPatientTokenData(tokenNumber) {
     if (roomEl) roomEl.textContent = pt.room || 'OPD Room #104';
     if (waitEl) waitEl.innerHTML = `${pt.waitTime !== undefined ? pt.waitTime : 15} <span class="unit">Mins</span>`;
     if (aheadEl) aheadEl.innerHTML = `${String(pt.patientsAhead || 0).padStart(2, '0')} <span class="unit">Patients</span>`;
-    if (statusEl) statusEl.textContent = pt.status || 'Waiting';
+    if (statusEl) statusEl.textContent = pt.status || 'WAITING';
 
     const directUrl = `${window.location.origin}/?token=${pt.tokenNumber}`;
     const directUrlEl = document.getElementById('ptDirectUrl');
@@ -819,80 +575,35 @@ async function loadPatientTokenData(tokenNumber) {
         console.warn('QR Code generation warning:', e);
       }
     }
+  } else {
+    showToast(`No token found matching "${cleanStr}". Please verify your token number.`, 'warning');
   }
 }
 
-// --- Admissions Table Render ---
-function renderAdmissionsTable() {
-  const tbody = document.getElementById('admissionsTableBody');
-  if (!tbody) return;
-
-  const admittedBeds = appState.beds.filter(b => b.status === 'Occupied');
-
-  tbody.innerHTML = admittedBeds.map((b, idx) => `
-    <tr>
-      <td><span class="font-mono">ADM-10${idx + 1}</span></td>
-      <td><strong>${b.patient || 'Ramesh Verma'}</strong></td>
-      <td>${b.ward}</td>
-      <td><strong class="font-mono cyan-text">${b.bedNumber}</strong></td>
-      <td>${b.doctor || 'Dr. S. Sharma'}</td>
-      <td>Acute Observation / Cardiac Monitoring</td>
-      <td>${b.admissionDate || '2026-08-19'}</td>
-      <td><span class="badge-pill green-pill">Admitted</span></td>
-      <td>
-        <button class="glass-btn small-btn danger-btn" onclick="triggerDischargeWorkflow('${b.id}')"><i data-lucide="log-out"></i> Discharge</button>
-      </td>
-    </tr>
-  `).join('');
-
-  lucide.createIcons();
-}
-
-// --- Doctor Portal Render ---
-function renderDoctorPortalQueue() {
-  const tbody = document.getElementById('doctorQueueBody');
-  if (!tbody) return;
-
-  const docQueue = appState.queue.filter(q => q.status === 'Waiting');
-
-  tbody.innerHTML = docQueue.map(q => {
-    let priorityPill = q.priority === 'Emergency' ? 'red-pill' : (q.priority === 'High' ? 'orange-pill' : 'blue-pill');
-
-    return `
-      <tr>
-        <td><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
-        <td><strong>${q.patientName}</strong> (${q.age}, ${q.gender})</td>
-        <td><span class="badge-pill ${priorityPill}">${q.priority}</span></td>
-        <td>
-          <div class="triage-vitals-pills">
-            <span class="vitals-chip"><i data-lucide="heart"></i> 76 bpm</span>
-            <span class="vitals-chip"><i data-lucide="activity"></i> 120/80</span>
-          </div>
-        </td>
-        <td><strong>${q.waitTime} mins</strong></td>
-        <td>
-          <button class="action-btn glow-btn small-btn" onclick="callPatientToken('${q.doctorId}')"><i data-lucide="bell"></i> Call Patient</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  lucide.createIcons();
-}
-
+// --- Dashboard Capacity & Metrics Derivation ---
 function renderCapacityOverview() {
   const c = appState.capacity;
   if (!c) return;
 
-  document.getElementById('valOpdLoad').textContent = `${c.opdLoadPercent}%`;
-  document.getElementById('valBedOcc').textContent = `${c.bedOccupancyPercent}%`;
-  document.getElementById('valIcuOcc').textContent = `${c.icuOccupancyPercent}%`;
-  document.getElementById('valEmgOcc').textContent = `${c.emergencyCapacityPercent}%`;
+  const valOpd = document.getElementById('valOpdLoad');
+  const valBed = document.getElementById('valBedOcc');
+  const valIcu = document.getElementById('valIcuOcc');
+  const valEmg = document.getElementById('valEmgOcc');
 
-  document.getElementById('barOpdLoad').style.width = `${c.opdLoadPercent}%`;
-  document.getElementById('barBedOcc').style.width = `${c.bedOccupancyPercent}%`;
-  document.getElementById('barIcuOcc').style.width = `${c.icuOccupancyPercent}%`;
-  document.getElementById('barEmgOcc').style.width = `${c.emergencyCapacityPercent}%`;
+  if (valOpd) valOpd.textContent = `${c.opdLoadPercent}%`;
+  if (valBed) valBed.textContent = `${c.bedOccupancyPercent}%`;
+  if (valIcu) valIcu.textContent = `${c.icuOccupancyPercent}%`;
+  if (valEmg) valEmg.textContent = `${c.emergencyCapacityPercent}%`;
+
+  const barOpd = document.getElementById('barOpdLoad');
+  const barBed = document.getElementById('barBedOcc');
+  const barIcu = document.getElementById('barIcuOcc');
+  const barEmg = document.getElementById('barEmgOcc');
+
+  if (barOpd) barOpd.style.width = `${c.opdLoadPercent}%`;
+  if (barBed) barBed.style.width = `${c.bedOccupancyPercent}%`;
+  if (barIcu) barIcu.style.width = `${c.icuOccupancyPercent}%`;
+  if (barEmg) barEmg.style.width = `${c.emergencyCapacityPercent}%`;
 
   const statusPill = document.getElementById('hospitalStatusPill');
   if (statusPill) {
@@ -902,8 +613,8 @@ function renderCapacityOverview() {
 }
 
 function updateSidebarBadges() {
-  const waitingCount = appState.queue.filter(q => q.status === 'Waiting').length;
-  const availBedsCount = appState.beds.filter(b => b.status === 'Available').length;
+  const waitingCount = appState.queue.filter(q => q.status === 'WAITING' || q.status === 'Waiting').length;
+  const availBedsCount = appState.beds.filter(b => b.status === 'AVAILABLE' || b.status === 'Available').length;
 
   const queueBadge = document.getElementById('sideQueueBadge');
   const bedBadge = document.getElementById('sideBedBadge');
@@ -916,25 +627,41 @@ function renderDashboardStats() {
   const s = appState.stats;
   if (!s) return;
 
-  document.getElementById('statOpdTotal').textContent = s.opd.totalToday;
-  document.getElementById('statOpdWaiting').textContent = s.opd.waiting;
-  document.getElementById('statOpdServed').textContent = s.opd.served;
+  const statOpdTotal = document.getElementById('statOpdTotal');
+  const statOpdWaiting = document.getElementById('statOpdWaiting');
+  const statOpdServed = document.getElementById('statOpdServed');
 
-  document.getElementById('statQueueTotal').textContent = s.queue.totalWaiting;
-  document.getElementById('statAvgWait').textContent = `${s.queue.avgWaitTimeMins} min`;
-  document.getElementById('statLongestWait').textContent = `${s.queue.longestWaitTimeMins} min`;
+  if (statOpdTotal) statOpdTotal.textContent = s.opd.totalToday;
+  if (statOpdWaiting) statOpdWaiting.textContent = s.opd.waiting;
+  if (statOpdServed) statOpdServed.textContent = s.opd.served;
 
-  document.getElementById('statBedsAvailable').innerHTML = `${s.beds.available} <span class="stat-sub-unit">Free</span>`;
-  document.getElementById('statBedsTotal').textContent = s.beds.total;
-  document.getElementById('statBedsOccupied').textContent = s.beds.occupied;
+  const statQueueTotal = document.getElementById('statQueueTotal');
+  const statAvgWait = document.getElementById('statAvgWait');
+  const statLongestWait = document.getElementById('statLongestWait');
 
-  document.getElementById('statEmergPatients').innerHTML = `0${s.emergency.patients} <span class="stat-sub-unit">Emergency</span>`;
-  document.getElementById('statIcuBeds').textContent = `0${s.emergency.icuBedsAvailable} Beds`;
-  document.getElementById('statCriticalAlerts').textContent = `0${s.emergency.criticalAlerts} Alert`;
+  if (statQueueTotal) statQueueTotal.textContent = s.queue.totalWaiting;
+  if (statAvgWait) statAvgWait.textContent = `${s.queue.avgWaitTimeMins} min`;
+  if (statLongestWait) statLongestWait.textContent = `${s.queue.longestWaitTimeMins} min`;
+
+  const statBedsAvailable = document.getElementById('statBedsAvailable');
+  const statBedsTotal = document.getElementById('statBedsTotal');
+  const statBedsOccupied = document.getElementById('statBedsOccupied');
+
+  if (statBedsAvailable) statBedsAvailable.innerHTML = `${s.beds.available} <span class="stat-sub-unit">Free</span>`;
+  if (statBedsTotal) statBedsTotal.textContent = s.beds.total;
+  if (statBedsOccupied) statBedsOccupied.textContent = s.beds.occupied;
+
+  const statEmergPatients = document.getElementById('statEmergPatients');
+  const statIcuBeds = document.getElementById('statIcuBeds');
+  const statCriticalAlerts = document.getElementById('statCriticalAlerts');
+
+  if (statEmergPatients) statEmergPatients.innerHTML = `0${s.emergency.patientsWaiting || 0} <span class="stat-sub-unit">Emergency</span>`;
+  if (statIcuBeds) statIcuBeds.textContent = `0${s.emergency.icuBedsAvailable} Beds`;
+  if (statCriticalAlerts) statCriticalAlerts.textContent = `0${s.emergency.criticalAlerts} Alert`;
 }
 
 function renderNowServing() {
-  const inConsult = appState.queue.find(q => q.status === 'In Consultation');
+  const inConsult = appState.queue.find(q => q.status === 'IN_CONSULTATION' || q.status === 'In Consultation');
 
   const dashCallingToken = document.getElementById('dashCallingToken');
   if (dashCallingToken) {
@@ -962,175 +689,102 @@ function renderNowServing() {
   }
 }
 
-async function completeConsultationCurrentDoctor() {
-  const activePt = appState.queue.find(q => q.status === 'In Consultation');
-  if (activePt) {
-    const res = await api.updateQueueStatus(activePt.id, 'Completed');
+// --- Live OPD Queue Workflow & Calling Engine ---
+async function callPatientToken(doctorId) {
+  try {
+    const res = await api.callNextToken(doctorId || 'doc-1');
     if (res.success) {
-      showToast(`Consultation completed for ${activePt.patientName} (${activePt.tokenNumber}). Sheet closed.`, 'success');
+      showToast(res.message || 'Calling next patient!', 'success');
       await loadAppData();
+    } else {
+      showToast(res.message || 'No waiting patients for this doctor', 'info');
+    }
+  } catch (err) {
+    console.error('Call next error:', err);
+    showToast('Failed to call next patient.', 'danger');
+  }
+}
+
+async function completeConsultationCurrentDoctor() {
+  const activePt = appState.queue.find(q => q.status === 'IN_CONSULTATION' || q.status === 'In Consultation');
+  if (activePt) {
+    try {
+      const res = await api.updateQueueStatus(activePt.id, 'COMPLETED');
+      if (res.success) {
+        showToast(`Consultation completed for ${activePt.patientName} (${activePt.tokenNumber}). Sheet closed.`, 'success');
+        await loadAppData();
+      }
+    } catch (err) {
+      showToast('Error completing consultation.', 'danger');
     }
   } else {
     showToast('No patient currently in consultation.', 'info');
   }
 }
 
-function renderWardSnapshot() {
-  const container = document.getElementById('wardSnapshotContainer');
-  if (!container) return;
-
-  const wards = ['General Ward', 'ICU', 'Emergency', 'Private Ward'];
-  container.innerHTML = wards.map(ward => {
-    const total = appState.beds.filter(b => b.ward === ward).length;
-    const avail = appState.beds.filter(b => b.ward === ward && b.status === 'Available').length;
-
-    return `
-      <div class="ward-mini-card">
-        <div class="ward-mini-title">
-          <span>${ward}</span>
-          <span class="sub-text">${total} Beds</span>
-        </div>
-        <div class="ward-mini-count">${avail} <span class="sub-text">Free</span></div>
-        <span class="badge-pill ${avail > 0 ? 'green-pill' : 'red-pill'}">${avail > 0 ? 'Admissions Open' : 'FULL'}</span>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderInsightsAndAlerts() {
-  const container = document.getElementById('insightsListContainer');
-  const fullList = document.getElementById('fullInsightsList');
-  const alertsList = document.getElementById('fullAlertsList');
-  const notifListMini = document.getElementById('notifMiniList');
-
-  if (container) {
-    container.innerHTML = appState.insights.map(ins => `
-      <div class="insight-item priority-${ins.priority}">
-        <i data-lucide="${ins.icon}"></i>
-        <div>
-          <strong>${ins.category}:</strong> ${ins.text}
-        </div>
-      </div>
-    `).join('');
-  }
-
-  if (fullList) {
-    fullList.innerHTML = appState.insights.map(ins => `
-      <div class="insight-item priority-${ins.priority}">
-        <i data-lucide="${ins.icon}"></i>
-        <div>
-          <strong>${ins.category}:</strong> ${ins.text}
-        </div>
-      </div>
-    `).join('');
-  }
-
-  if (alertsList) {
-    alertsList.innerHTML = appState.alerts.map(alt => `
-      <div class="insight-item ${alt.resolved ? '' : 'priority-critical'}">
-        <i data-lucide="bell"></i>
-        <div style="flex:1;">
-          <strong>${alt.title}</strong> — ${alt.message}
-          <div class="sub-text margin-t-xs">${alt.time} ${alt.resolved ? '(Resolved)' : ''}</div>
-        </div>
-        ${!alt.resolved ? `<button class="glass-btn small-btn" onclick="resolveAlert('${alt.id}')">Resolve</button>` : ''}
-      </div>
-    `).join('');
-  }
-
-  if (notifListMini) {
-    const unread = appState.alerts.filter(a => !a.resolved);
-    document.getElementById('notifCount').textContent = unread.length;
-    notifListMini.innerHTML = unread.map(a => `
-      <div class="notif-mini-item margin-b-sm">
-        <strong>${a.title}</strong><br>
-        <span class="sub-text">${a.message}</span>
-      </div>
-    `).join('');
-  }
-
-  lucide.createIcons();
-}
-
-async function resolveAlert(alertId) {
-  const res = await api.resolveAlert(alertId);
-  if (res.success) {
-    showToast('Alert resolved', 'success');
-    await loadAppData();
+async function updateMyDoctorStatus(status) {
+  const docId = appState.currentUser && appState.currentUser.id ? appState.currentUser.id : 'doc-1';
+  try {
+    const res = await api.updateDoctorStatus(docId, status);
+    if (res.success) {
+      showToast(`Your status is now ${status}`, 'info');
+      await loadAppData();
+    }
+  } catch (err) {
+    showToast('Error updating status.', 'danger');
   }
 }
 
-function renderDeptGrid() {
-  const dashGrid = document.getElementById('dashDeptGrid');
-  const fullGrid = document.getElementById('deptFullGrid');
-
-  const html = appState.departments.map(d => {
-    let badgeClass = 'green-pill';
-    if (d.status === 'Busy') badgeClass = 'orange-pill';
-    if (d.status === 'Critical') badgeClass = 'red-pill';
-
-    return `
-      <div class="dept-card">
-        <div class="dept-card-top">
-          <span class="dept-name">${d.name}</span>
-          <span class="badge-pill ${badgeClass}">${d.status}</span>
-        </div>
-        <div class="dept-stats-row">
-          <div>
-            <span class="sub-text">Queue</span>
-            <div class="dept-stat-num">${d.currentQueue}</div>
-          </div>
-          <div>
-            <span class="sub-text">Avg. Wait</span>
-            <div class="dept-stat-num">${d.avgWaitMins}m</div>
-          </div>
-          <div>
-            <span class="sub-text">Doctors</span>
-            <div class="dept-stat-num">${d.doctorsAvailable}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  if (dashGrid) dashGrid.innerHTML = html;
-  if (fullGrid) fullGrid.innerHTML = html;
-}
-
+// --- Queue Table Render ---
 function renderQueueTable() {
   const tbody = document.getElementById('queueTableBody');
   if (!tbody) return;
 
-  const searchVal = (document.getElementById('queueSearchInput')?.value || document.getElementById('globalSearchInput')?.value || '').toLowerCase();
+  const searchVal = (document.getElementById('queueSearchInput')?.value || '').toLowerCase();
   const deptVal = document.getElementById('queueDeptFilter')?.value || 'all';
   const statusVal = document.getElementById('queueStatusFilter')?.value || 'all';
 
-  const filtered = appState.queue.filter(q => {
-    const matchesSearch = q.tokenNumber.toLowerCase().includes(searchVal) || q.patientName.toLowerCase().includes(searchVal) || q.doctor.toLowerCase().includes(searchVal);
-    const matchesDept = deptVal === 'all' || q.department === deptVal;
-    const matchesStatus = statusVal === 'all' || q.status === statusVal;
-    return matchesSearch && matchesDept && matchesStatus;
-  });
+  let filtered = appState.queue;
+
+  if (searchVal) {
+    filtered = filtered.filter(q => 
+      (q.patientName || '').toLowerCase().includes(searchVal) ||
+      (q.tokenNumber || '').toLowerCase().includes(searchVal) ||
+      (q.doctor || '').toLowerCase().includes(searchVal)
+    );
+  }
+
+  if (deptVal !== 'all') {
+    filtered = filtered.filter(q => q.department === deptVal);
+  }
+
+  if (statusVal !== 'all') {
+    filtered = filtered.filter(q => q.status === statusVal || q.status.toUpperCase() === statusVal.toUpperCase());
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No matching patients in OPD queue.</td></tr>`;
+    return;
+  }
 
   tbody.innerHTML = filtered.map(q => {
-    let statusPill = 'orange-pill';
-    if (q.status === 'In Consultation') statusPill = 'cyan-pill';
-    if (q.status === 'Completed') statusPill = 'green-pill';
-
     let priorityPill = q.priority === 'Emergency' ? 'red-pill' : (q.priority === 'High' ? 'orange-pill' : 'blue-pill');
+    let statusPill = q.status === 'IN_CONSULTATION' || q.status === 'In Consultation' ? 'orange-pill' : (q.status === 'COMPLETED' ? 'green-pill' : 'blue-pill');
 
     return `
       <tr>
         <td><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
-        <td><strong>${q.patientName}</strong> (${q.age}, ${q.gender})</td>
+        <td><strong>${q.patientName}</strong> (${q.age || 30}, ${q.gender || 'Male'})</td>
         <td>${q.department}</td>
         <td>${q.doctor}</td>
-        <td><strong>${q.waitTime} mins</strong> (Est)</td>
         <td><span class="badge-pill ${priorityPill}">${q.priority}</span></td>
         <td><span class="badge-pill ${statusPill}">${q.status}</span></td>
         <td>
-          <button class="glass-btn small-btn" onclick="callPatientToken('${q.doctorId}')"><i data-lucide="bell"></i> Call</button>
-          <button class="glass-btn small-btn success-btn" onclick="updateTokenStatus('${q.id}', 'Completed')"><i data-lucide="check"></i> Done</button>
+          ${q.status === 'WAITING' || q.status === 'Waiting' 
+            ? `<button class="action-btn glow-btn small-btn" onclick="callPatientToken('${q.doctorId}')"><i data-lucide="bell"></i> Call</button>`
+            : (q.status === 'IN_CONSULTATION' || q.status === 'In Consultation'
+              ? `<button class="glass-btn success-btn small-btn" onclick="completeConsultationCurrentDoctor()"><i data-lucide="check"></i> Finish</button>`
+              : `<span class="sub-text">Done</span>`)}
         </td>
       </tr>
     `;
@@ -1139,83 +793,315 @@ function renderQueueTable() {
   lucide.createIcons();
 }
 
-async function callPatientToken(doctorId) {
-  const res = await api.callNextToken(doctorId);
-  if (res.success) {
-    showToast(res.message, 'success');
-    await loadAppData();
-  } else {
-    showToast(res.message, 'warning');
+// --- Doctor Portal Queue Render ---
+function renderDoctorPortalQueue() {
+  const tbody = document.getElementById('doctorQueueBody');
+  if (!tbody) return;
+
+  const docQueue = appState.queue.filter(q => q.status === 'WAITING' || q.status === 'Waiting');
+
+  if (docQueue.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center sub-text padding-md">No waiting patients in queue roster.</td></tr>`;
+    return;
   }
+
+  tbody.innerHTML = docQueue.map(q => {
+    let priorityPill = q.priority === 'Emergency' ? 'red-pill' : (q.priority === 'High' ? 'orange-pill' : 'blue-pill');
+
+    return `
+      <tr>
+        <td><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
+        <td><strong>${q.patientName}</strong> (${q.age || 30}, ${q.gender || 'Male'})</td>
+        <td><span class="badge-pill ${priorityPill}">${q.priority}</span></td>
+        <td>
+          <div class="triage-vitals-pills">
+            <span class="vitals-chip"><i data-lucide="heart"></i> 76 bpm</span>
+            <span class="vitals-chip"><i data-lucide="activity"></i> 120/80</span>
+          </div>
+        </td>
+        <td><strong>${q.waitTime || 12} mins</strong></td>
+        <td>
+          <button class="action-btn glow-btn small-btn" onclick="callPatientToken('${q.doctorId}')"><i data-lucide="bell"></i> Call Patient</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  lucide.createIcons();
 }
 
-async function updateTokenStatus(tokenId, status) {
-  const res = await api.updateQueueStatus(tokenId, status);
-  if (res.success) {
-    showToast(`Token status updated to ${status}`, 'success');
-    await loadAppData();
-  }
-}
-
+// --- Patient Directory Render ---
 function renderPatientsTable() {
   const tbody = document.getElementById('patientsTableBody');
   if (!tbody) return;
 
-  const patientList = (appState.queue && appState.queue.length > 0) ? appState.queue : (appState.patients && appState.patients.length > 0 ? appState.patients : DEFAULT_QUEUE);
+  if (appState.queue.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No patient records found.</td></tr>`;
+    return;
+  }
 
-  tbody.innerHTML = patientList.map(p => `
+  tbody.innerHTML = appState.queue.map(p => `
     <tr>
-      <td><span class="font-mono">${p.id}</span></td>
-      <td><strong>${p.patientName || p.name}</strong></td>
-      <td>${p.age} / ${p.gender}</td>
-      <td>${p.phone || '+91 99000 11223'}</td>
-      <td>${p.department || 'General Medicine'}</td>
-      <td><strong class="font-mono">${p.tokenNumber || p.token || 'A-100'}</strong></td>
-      <td><span class="badge-pill green-pill">${p.status || p.visitStatus || 'Waiting'}</span></td>
-      <td>${p.registrationTime || '10:00 AM'}</td>
+      <td><span class="font-mono gradient-text">${p.tokenNumber}</span></td>
+      <td><strong>${p.patientName}</strong></td>
+      <td>${p.age || 30} yrs, ${p.gender || 'Male'}</td>
+      <td>${p.department}</td>
+      <td>${p.doctor}</td>
+      <td><span class="badge-pill ${p.status === 'IN_CONSULTATION' ? 'orange-pill' : (p.status === 'COMPLETED' ? 'green-pill' : 'blue-pill')}">${p.status}</span></td>
+      <td>
+        <button class="glass-btn small-btn" onclick="switchView('patient-portal'); loadPatientTokenData('${p.tokenNumber}')"><i data-lucide="eye"></i> View Pass</button>
+      </td>
     </tr>
   `).join('');
+
+  lucide.createIcons();
 }
 
+// --- Doctor Roster Grid Render ---
 function renderDoctorsGrid() {
-  const grid = document.getElementById('doctorsGrid');
-  if (!grid) return;
+  const container = document.getElementById('doctorsGridContainer');
+  if (!container) return;
 
-  const docs = (appState.doctors && appState.doctors.length > 0) ? appState.doctors : DEFAULT_DOCTORS;
-
-  grid.innerHTML = docs.map(d => {
-    let statusClass = 'green-pill';
-    if (d.status === 'Busy') statusClass = 'orange-pill';
-    if (d.status === 'Offline') statusClass = 'red-pill';
+  container.innerHTML = appState.doctors.map(d => {
+    let statusClass = d.status === 'AVAILABLE' ? 'green-pill' : (d.status === 'CONSULTING' ? 'orange-pill' : 'red-pill');
 
     return `
-      <div class="glass-card doctor-card-full">
-        <div>
-          <div class="doc-avatar-row">
-            <div class="doc-avatar-large">${(d.name || 'Dr').split(' ').pop().charAt(0)}</div>
-            <div>
-              <h3>${d.name}</h3>
-              <span class="sub-text">${d.specialization || 'Specialist'}</span>
-            </div>
+      <div class="glass-card doctor-card">
+        <div class="doctor-card-header">
+          <div class="doc-avatar"><i data-lucide="stethoscope"></i></div>
+          <div class="doc-header-info">
+            <h4>${d.name}</h4>
+            <span class="sub-text">${d.specialization} (${d.department})</span>
           </div>
-          <div class="margin-b-sm margin-t-sm">
-            <span class="badge-pill ${statusClass}">${d.status || 'Available'}</span>
-            <span class="sub-text margin-l-sm">${d.room || 'OPD Room #101'}</span>
-          </div>
-          <div class="sub-text margin-t-xs">
-            <strong>Department:</strong> ${d.department || 'General Medicine'}<br>
-            <strong>Patients Waiting:</strong> ${d.patientsWaiting !== undefined ? d.patientsWaiting : 0}<br>
-            <strong>Now Seeing:</strong> ${d.currentPatient || 'None'}
-          </div>
+          <span class="badge-pill ${statusClass} margin-l-auto">${d.status}</span>
         </div>
-        <button class="action-btn glow-btn width-full margin-t-md" onclick="callPatientToken('${d.id}')">
-          <i data-lucide="skip-forward"></i> Call Patient
-        </button>
+        <div class="doctor-card-body margin-t-sm">
+          <div class="doc-info-row"><span>OPD Room:</span> <strong>${d.room || 'OPD Room'}</strong></div>
+          <div class="doc-info-row"><span>Currently Consulting:</span> <strong class="cyan-text">${d.currentPatient || 'None'}</strong></div>
+          <div class="doc-info-row"><span>Patients Waiting:</span> <strong>${d.patientsWaiting || 0} In Line</strong></div>
+        </div>
+        <div class="doctor-card-footer margin-t-md">
+          <button class="action-btn glow-btn small-btn width-full" onclick="callPatientToken('${d.id}')"><i data-lucide="skip-forward"></i> Call Next Patient</button>
+        </div>
       </div>
     `;
   }).join('');
 
   lucide.createIcons();
+}
+
+// --- Bed Management & Admissions Render ---
+function renderBedManagement() {
+  const tbody = document.getElementById('bedsTableBody');
+  if (!tbody) return;
+
+  const wardFilter = appState.bedWardFilter;
+  let filtered = appState.beds;
+
+  if (wardFilter !== 'all') {
+    filtered = filtered.filter(b => b.ward.toLowerCase() === wardFilter.toLowerCase());
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No beds found for selected ward.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.slice(0, 30).map(b => {
+    let statusPill = b.status === 'AVAILABLE' ? 'green-pill' : (b.status === 'OCCUPIED' ? 'red-pill' : 'orange-pill');
+
+    return `
+      <tr>
+        <td><strong class="font-mono">${b.bedNumber}</strong></td>
+        <td><strong>${b.ward}</strong></td>
+        <td><span class="badge-pill ${statusPill}">${b.status}</span></td>
+        <td>${b.patient || '<span class="sub-text">Vacant</span>'}</td>
+        <td>${b.hasVentilator ? '<span class="green-text">✓ Yes</span>' : '<span class="sub-text">No</span>'}</td>
+        <td>${b.hasOxygen ? '<span class="green-text">✓ High Flow</span>' : '<span class="sub-text">Standard</span>'}</td>
+        <td>
+          ${b.status === 'AVAILABLE' 
+            ? `<button class="action-btn glow-btn small-btn" onclick="openAdmitModal('${b.id}', '${b.bedNumber}', '${b.ward}')"><i data-lucide="user-plus"></i> Admit</button>`
+            : `<button class="glass-btn small-btn" onclick="dischargeBed('${b.id}')"><i data-lucide="user-minus"></i> Discharge</button>`}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  lucide.createIcons();
+}
+
+function renderBedMap() {
+  const container = document.getElementById('bedMatrixContainer');
+  if (!container) return;
+
+  container.innerHTML = appState.beds.map(b => {
+    let colorClass = b.status === 'AVAILABLE' ? 'bed-avail' : (b.status === 'OCCUPIED' ? 'bed-occ' : 'bed-maint');
+    return `
+      <div class="bed-chip ${colorClass}" title="${b.bedNumber} (${b.ward}) — ${b.status}">
+        <span class="bed-num">${b.bedNumber.replace('BED-', '')}</span>
+        <span class="bed-ward-code">${b.ward.charAt(0)}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAdmissionsTable() {
+  const tbody = document.getElementById('admissionsTableBody');
+  if (!tbody) return;
+
+  if (appState.admissions.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center sub-text padding-md">No inpatient admissions recorded.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = appState.admissions.map((a, idx) => `
+    <tr>
+      <td><span class="font-mono">ADM-${100 + idx + 1}</span></td>
+      <td><strong>${a.patient}</strong></td>
+      <td>${a.ward}</td>
+      <td><strong class="cyan-text">${a.bedNumber}</strong></td>
+      <td>${a.doctor}</td>
+      <td>${a.diagnosis || 'Clinical Inpatient'}</td>
+      <td><span class="badge-pill ${a.status === 'Admitted' ? 'green-pill' : 'blue-pill'}">${a.status}</span></td>
+    </tr>
+  `).join('');
+
+  lucide.createIcons();
+}
+
+async function dischargeBed(bedId) {
+  try {
+    const res = await api.dischargePatientFromBed(bedId);
+    if (res.success) {
+      showToast(res.message, 'success');
+      await loadAppData();
+    }
+  } catch (err) {
+    showToast('Error discharging bed.', 'danger');
+  }
+}
+
+// --- Smart Bed Recommendation Engine ---
+async function fetchRecommendedBeds() {
+  const ward = document.getElementById('recWardSelect')?.value || 'ICU';
+  const requireVentilator = document.getElementById('recVentilatorCheck')?.checked || false;
+  const requireOxygen = document.getElementById('recOxygenCheck')?.checked || false;
+  const container = document.getElementById('recResultsContainer');
+
+  if (!container) return;
+  container.innerHTML = `<div class="text-center padding-md"><i data-lucide="loader" class="spin"></i> Calculating compatible beds...</div>`;
+  lucide.createIcons();
+
+  try {
+    const res = await api.recommendBed({ ward, requireVentilator, requireOxygen });
+    if (res.success && res.recommendations && res.recommendations.length > 0) {
+      container.innerHTML = `
+        <div class="margin-b-sm font-bold cyan-text">✓ ${res.recommendations.length} Matched Beds Available:</div>
+        ${res.recommendations.map(b => `
+          <div class="rec-bed-item">
+            <div>
+              <strong>${b.bedNumber}</strong> (${b.ward})
+              <div class="sub-text">${b.hasVentilator ? 'Ventilator Ready • ' : ''}${b.hasOxygen ? 'Oxygen Ready' : ''}</div>
+            </div>
+            <button class="action-btn glow-btn small-btn" onclick="openAdmitModal('${b.id}', '${b.bedNumber}', '${b.ward}')">Allocate Bed</button>
+          </div>
+        `).join('')}
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="alert-box red-border margin-t-sm">
+          <i data-lucide="alert-circle" class="red-text"></i>
+          <div>
+            <strong>No suitable bed currently available.</strong>
+            <p class="sub-text margin-t-xs">All ${ward} beds with required life-support options are occupied or undergoing sanitation.</p>
+          </div>
+        </div>
+      `;
+    }
+    lucide.createIcons();
+  } catch (err) {
+    container.innerHTML = `<div class="red-text">Error calculating bed recommendation.</div>`;
+  }
+}
+
+// --- Operational Insights & System Alerts ---
+function renderInsightsAndAlerts() {
+  const insContainer = document.getElementById('insightsListContainer');
+  const altContainer = document.getElementById('alertsListContainer');
+
+  if (insContainer) {
+    if (appState.insights.length === 0) {
+      insContainer.innerHTML = `<div class="sub-text padding-md">All department throughputs operating within normal thresholds.</div>`;
+    } else {
+      insContainer.innerHTML = appState.insights.map(ins => `
+        <div class="insight-card ${ins.priority === 'critical' ? 'critical-border' : ''}">
+          <div class="insight-icon"><i data-lucide="${ins.icon || 'activity'}"></i></div>
+          <div class="insight-content">
+            <span class="badge-pill ${ins.priority === 'critical' ? 'red-pill' : 'cyan-pill'}">${ins.category}</span>
+            <p class="margin-t-xs">${ins.text}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  if (altContainer) {
+    if (appState.alerts.length === 0) {
+      altContainer.innerHTML = `<div class="sub-text padding-md">No critical emergency warnings at this time.</div>`;
+    } else {
+      altContainer.innerHTML = appState.alerts.map(alt => `
+        <div class="alert-item ${alt.severity === 'CRITICAL' ? 'red-alert' : 'blue-alert'}">
+          <div class="alert-title">${alt.title} <span class="alert-time">${alt.time}</span></div>
+          <div class="alert-message">${alt.message}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  lucide.createIcons();
+}
+
+function renderWardSnapshot() {
+  const container = document.getElementById('wardSnapshotContainer');
+  if (!container) return;
+
+  const wards = ['ICU', 'Emergency', 'General Ward', 'Private Ward', 'Maternity'];
+  container.innerHTML = wards.map(w => {
+    const wardBeds = appState.beds.filter(b => b.ward.toLowerCase() === w.toLowerCase());
+    const occ = wardBeds.filter(b => b.status === 'OCCUPIED').length;
+    const total = wardBeds.length || 1;
+    const pct = Math.round((occ / total) * 100);
+
+    return `
+      <div class="ward-card">
+        <div class="ward-title">${w}</div>
+        <div class="ward-pct font-bold ${pct > 80 ? 'red-text' : (pct > 60 ? 'orange-text' : 'green-text')}">${pct}%</div>
+        <div class="sub-text">${occ}/${total} Occupied</div>
+        <div class="progress-track margin-t-xs">
+          <div class="progress-fill ${pct > 80 ? 'red-fill' : 'cyan-fill'}" style="width: ${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDeptGrid() {
+  const container = document.getElementById('deptGridContainer');
+  if (!container) return;
+
+  container.innerHTML = appState.departments.map(d => `
+    <div class="glass-card dept-card">
+      <div class="dept-header">
+        <h4>${d.name}</h4>
+        <span class="badge-pill ${d.status === 'Critical' ? 'red-pill' : (d.status === 'Busy' ? 'orange-pill' : 'green-pill')}">${d.status}</span>
+      </div>
+      <div class="dept-metrics margin-t-sm">
+        <div><span>Waiting:</span> <strong>${d.currentQueue}</strong></div>
+        <div><span>Avg Wait:</span> <strong>${d.avgWaitMins} mins</strong></div>
+        <div><span>Doctors:</span> <strong>${d.doctorsAvailable} Active</strong></div>
+      </div>
+    </div>
+  `).join('');
 }
 
 function renderAdminTable() {
@@ -1228,12 +1114,11 @@ function renderAdminTable() {
       <td><strong>${d.name}</strong></td>
       <td>${d.specialization}</td>
       <td>${d.department}</td>
-      <td>${d.room}</td>
-      <td>${d.email || `${d.name.toLowerCase().replace(/[^a-z]/g, '')}@hospitiq.org`}</td>
-      <td><span class="badge-pill green-pill">${d.status}</span></td>
+      <td>${d.room || 'OPD Room'}</td>
+      <td>${d.email}</td>
+      <td><span class="badge-pill ${d.status === 'AVAILABLE' ? 'green-pill' : 'orange-pill'}">${d.status}</span></td>
       <td>
-        <button class="glass-btn small-btn" onclick="openEditDoctorModal('${d.id}')" title="Edit Doctor Profile"><i data-lucide="edit"></i> Edit</button>
-        <button class="glass-btn small-btn danger-btn" onclick="deleteDoctorRecord('${d.id}')" title="Remove Doctor"><i data-lucide="trash-2"></i> Remove</button>
+        <button class="glass-btn small-btn red-text" onclick="deleteDoctorProfile('${d.id}')"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>
   `).join('');
@@ -1241,326 +1126,116 @@ function renderAdminTable() {
   lucide.createIcons();
 }
 
-function openEditDoctorModal(docId) {
-  const doc = appState.doctors.find(d => d.id === docId);
-  if (!doc) return;
-  document.getElementById('editDocId').value = doc.id;
-  document.getElementById('editDocName').value = doc.name;
-  document.getElementById('editDocEmail').value = doc.email || `${doc.name.toLowerCase().replace(/[^a-z]/g, '')}@hospitiq.org`;
-  document.getElementById('editDocSpec').value = doc.specialization;
-  document.getElementById('editDocDept').value = doc.department;
-  document.getElementById('editDocRoom').value = doc.room;
-  document.getElementById('editDocPhone').value = doc.phone || '+91 98765 00000';
-
-  document.getElementById('editDoctorModal')?.classList.add('active');
-}
-
-function handleEditDoctorSubmit(e) {
-  e.preventDefault();
-  const id = document.getElementById('editDocId').value;
-  const doc = appState.doctors.find(d => d.id === id);
-  if (doc) {
-    doc.name = document.getElementById('editDocName').value;
-    doc.email = document.getElementById('editDocEmail').value;
-    doc.specialization = document.getElementById('editDocSpec').value;
-    doc.department = document.getElementById('editDocDept').value;
-    doc.room = document.getElementById('editDocRoom').value;
-    doc.phone = document.getElementById('editDocPhone').value;
-
-    showToast(`Doctor profile for ${doc.name} updated successfully!`, 'success');
-    renderAdminTable();
-    closeModal('editDoctorModal');
-  }
-}
-
-async function deleteDoctorRecord(docId) {
-  if (confirm('Are you sure you want to remove this doctor from HOSPITIQ?')) {
-    const res = await api.deleteDoctor(docId);
-    if (res.success) {
-      showToast(res.message, 'success');
-      await loadAppData();
-    }
-  }
-}
-
-function renderBedManagement() {
-  const progressGrid = document.getElementById('wardProgressGrid');
-  const tbody = document.getElementById('bedMgmtTableBody');
-
-  const wards = ['General Ward', 'ICU', 'Emergency', 'Private Ward', 'Semi-Private', 'Pediatric', 'Maternity'];
-
-  if (progressGrid) {
-    progressGrid.innerHTML = wards.map(ward => {
-      const wardBeds = appState.beds.filter(b => b.ward === ward);
-      const total = wardBeds.length;
-      const occupied = wardBeds.filter(b => b.status === 'Occupied').length;
-      const avail = total - occupied;
-      const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
-
-      let fillClass = 'var(--color-green)';
-      if (percent >= 70) fillClass = 'var(--color-orange)';
-      if (percent >= 90) fillClass = 'var(--color-red)';
-
-      return `
-        <div class="glass-card ward-progress-card">
-          <div class="dept-card-top">
-            <strong>${ward}</strong>
-            <span class="sub-text">${avail} / ${total} Free</span>
-          </div>
-          <div class="stat-number margin-t-xs">${percent}% <span class="sub-text">Occupancy</span></div>
-          <div class="progress-bar-bg">
-            <div class="progress-fill-bar" style="width: ${percent}%; background: ${fillClass};"></div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  if (tbody) {
-    tbody.innerHTML = appState.beds.map(b => `
-      <tr>
-        <td><strong class="font-mono">${b.bedNumber}</strong></td>
-        <td>${b.ward}</td>
-        <td><span class="badge-pill ${b.status === 'Available' ? 'green-pill' : (b.status === 'Occupied' ? 'red-pill' : 'orange-pill')}">${b.status}</span></td>
-        <td>${b.patient || '—'}</td>
-        <td>${b.doctor || '—'}</td>
-        <td>${b.admissionDate || '—'}</td>
-        <td>${b.features ? b.features.join(', ') : 'Standard'}</td>
-        <td>
-          <button class="glass-btn small-btn" onclick="openBedDetailsModal('${b.id}')"><i data-lucide="eye"></i> Details</button>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  lucide.createIcons();
-}
-
-function renderBedMap() {
-  const grid = document.getElementById('bedMapGrid');
-  if (!grid) return;
-
-  const filtered = appState.beds.filter(b => {
-    return appState.bedWardFilter === 'all' || b.ward === appState.bedWardFilter;
-  });
-
-  grid.innerHTML = filtered.map(b => `
-    <div class="bed-item-card state-${b.status}" onclick="openBedDetailsModal('${b.id}')">
-      <div class="dept-card-top">
-        <span class="bed-num">${b.bedNumber}</span>
-        <span class="badge-pill ${b.status === 'Available' ? 'green-pill' : 'red-pill'}">${b.status}</span>
-      </div>
-      <div class="sub-text margin-t-xs">
-        <strong>${b.ward}</strong><br>
-        ${b.patient ? `Occupant: ${b.patient}` : 'Ready for Intake'}
-      </div>
-    </div>
-  `).join('');
-
-  document.querySelectorAll('.ward-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.ward-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      appState.bedWardFilter = btn.getAttribute('data-ward');
-      renderBedMap();
-    });
-  });
-}
-
-function openBedDetailsModal(bedId) {
-  const bed = appState.beds.find(b => b.id === bedId || b.bedNumber === bedId);
-  if (!bed) return;
-
-  const modal = document.getElementById('bedDetailsModal');
-  const content = document.getElementById('bedModalContent');
-
-  content.innerHTML = `
-    <div class="stat-top margin-b-md">
-      <h2 class="font-mono">${bed.bedNumber} — ${bed.ward}</h2>
-      <span class="badge-pill ${bed.status === 'Available' ? 'green-pill' : 'red-pill'}">${bed.status}</span>
-    </div>
-    <div class="form-group">
-      <label>Current Patient</label>
-      <input type="text" id="bedPatientInput" class="glass-input" value="${bed.patient || ''}" placeholder="None" />
-    </div>
-    <div class="form-group">
-      <label>Attending Doctor</label>
-      <input type="text" id="bedDoctorInput" class="glass-input" value="${bed.doctor || ''}" placeholder="Dr. S. Sharma" />
-    </div>
-    <div class="form-group">
-      <label>Update Bed Status</label>
-      <select id="bedStatusSelect" class="glass-input">
-        <option value="Available" ${bed.status === 'Available' ? 'selected' : ''}>🟢 Available</option>
-        <option value="Occupied" ${bed.status === 'Occupied' ? 'selected' : ''}>🔴 Occupied</option>
-        <option value="Reserved" ${bed.status === 'Reserved' ? 'selected' : ''}>🟠 Reserved</option>
-        <option value="Cleaning" ${bed.status === 'Cleaning' ? 'selected' : ''}>🔵 Cleaning / Maintenance</option>
-      </select>
-    </div>
-    <div class="margin-t-md display-flex gap-md">
-      <button class="action-btn glow-btn width-full" onclick="saveBedRecord('${bed.id}')"><i data-lucide="save"></i> Save Record</button>
-      ${bed.status === 'Occupied' ? `<button class="glass-btn danger-btn width-full margin-t-sm" onclick="triggerDischargeWorkflow('${bed.id}')"><i data-lucide="log-out"></i> Discharge & Clean</button>` : ''}
-    </div>
-  `;
-
-  modal.classList.add('active');
-  lucide.createIcons();
-}
-
-async function triggerDischargeWorkflow(bedId) {
-  const res = await api.dischargePatient(bedId);
-  if (res.success) {
-    showToast(res.message, 'success');
-    document.getElementById('bedDetailsModal').classList.remove('active');
-    await loadAppData();
-  }
-}
-
-async function saveBedRecord(bedId) {
-  const status = document.getElementById('bedStatusSelect').value;
-  const patient = document.getElementById('bedPatientInput').value;
-  const doctor = document.getElementById('bedDoctorInput').value;
-
-  const res = await api.updateBed(bedId, { status, patient, doctor });
-  if (res.success) {
-    showToast(res.message, 'success');
-    document.getElementById('bedDetailsModal').classList.remove('active');
-    await loadAppData();
-  }
-}
-
-// --- SMART BED RECOMMENDATION ENGINE ---
-function openRecommendBedModal() {
-  document.getElementById('recommendBedModal').classList.add('active');
-  fetchRecommendedBeds();
-}
-
-async function fetchRecommendedBeds() {
-  const ward = document.getElementById('recWardSelect').value;
-  const requireVentilator = document.getElementById('recVentilatorCheck').checked;
-  const requireOxygen = document.getElementById('recOxygenCheck').checked;
-
-  const res = await api.recommendBed({ ward, requireVentilator, requireOxygen, priority: 'High' });
-  const container = document.getElementById('recResultsContainer');
-
-  if (res.success && res.recommendations.length > 0) {
-    container.innerHTML = res.recommendations.map(rec => `
-      <div class="rec-card margin-b-sm">
-        <div>
-          <strong class="font-mono">${rec.bedNumber}</strong> — ${rec.ward}
-          <span class="badge-pill green-pill margin-l-sm">${rec.suitabilityScore}</span>
-          <div class="sub-text margin-t-xs">${rec.recommendedNote}</div>
-        </div>
-        <button class="action-btn glow-btn small-btn" onclick="allocateRecommendedBed('${rec.bedId}')">
-          <i data-lucide="check"></i> ALLOCATE
-        </button>
-      </div>
-    `).join('');
-  } else {
-    container.innerHTML = '<div class="sub-text text-center padding-b-md">No available beds matching criteria in this ward.</div>';
-  }
-
-  lucide.createIcons();
-}
-
-async function allocateRecommendedBed(bedId) {
-  const res = await api.allocateBed({
-    bedId,
-    patientName: 'Ramesh Verma (A-031)',
-    diagnosis: 'Acute Cardiac Observation',
-    doctorName: 'Dr. S. Sharma',
-    priority: 'High'
-  });
-
-  if (res.success) {
-    showToast(res.message, 'success');
-    document.getElementById('recommendBedModal').classList.remove('active');
-    await loadAppData();
-  } else {
-    showToast(res.message, 'danger');
-  }
-}
-
-// --- EMERGENCY MODE INTAKE ---
-function initEmergencyMode() {
-  const triggerBtn = document.getElementById('triggerEmergencyModeBtn');
-  triggerBtn?.addEventListener('click', async () => {
-    const pName = prompt('🚨 EMERGENCY MODE INTAKE: Enter Emergency Patient Name / ID:', 'Critical Trauma Intake');
-    if (pName) {
-      const res = await api.createEmergencyIntake({ patientName: pName, age: 34, gender: 'Male' });
+async function deleteDoctorProfile(docId) {
+  if (confirm('Are you sure you want to remove this doctor from the roster?')) {
+    try {
+      const res = await api.deleteDoctor(docId);
       if (res.success) {
-        showToast(res.message, 'danger');
+        showToast(res.message, 'success');
         await loadAppData();
       }
+    } catch (err) {
+      showToast('Error removing doctor.', 'danger');
     }
-  });
+  }
 }
 
-// --- ANALYTICS CHARTS ---
-async function renderAnalyticsCharts() {
-  const analyticsRes = await api.getAnalytics();
-  if (!analyticsRes.success) return;
+// --- Analytics Charts Render Engine ---
+function renderAnalyticsCharts() {
+  if (typeof Chart === 'undefined') return;
 
-  const { opdHourly, deptBreakdown, bedOccupancyTrend } = analyticsRes;
-
-  const ctx1 = document.getElementById('chartOpdHourly')?.getContext('2d');
-  if (ctx1) {
-    if (appState.charts.opdHourly) appState.charts.opdHourly.destroy();
-    appState.charts.opdHourly = new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: opdHourly.labels,
-        datasets: [{ label: 'Patients Registered', data: opdHourly.values, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: '#0ea5e9', borderWidth: 2, borderRadius: 6 }]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-  }
-
-  const ctx2 = document.getElementById('chartDeptBreakdown')?.getContext('2d');
-  if (ctx2) {
-    if (appState.charts.deptShare) appState.charts.deptShare.destroy();
-    appState.charts.deptShare = new Chart(ctx2, {
-      type: 'doughnut',
-      data: { labels: deptBreakdown.labels, datasets: [{ data: deptBreakdown.values, backgroundColor: ['#0ea5e9', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'] }] },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-  }
-
-  const ctx3 = document.getElementById('chartBedTrend')?.getContext('2d');
-  if (ctx3) {
-    if (appState.charts.bedTrend) appState.charts.bedTrend.destroy();
-    appState.charts.bedTrend = new Chart(ctx3, {
+  const ctxHourly = document.getElementById('chartHourlyOpd')?.getContext('2d');
+  if (ctxHourly && !appState.charts.hourly) {
+    appState.charts.hourly = new Chart(ctxHourly, {
       type: 'line',
       data: {
-        labels: bedOccupancyTrend.labels,
-        datasets: [
-          { label: 'ICU Occupancy %', data: bedOccupancyTrend.icu, borderColor: '#ef4444', tension: 0.3 },
-          { label: 'General Ward %', data: bedOccupancyTrend.general, borderColor: '#10b981', tension: 0.3 },
-          { label: 'Emergency Ward %', data: bedOccupancyTrend.emergency, borderColor: '#f59e0b', tension: 0.3 }
-        ]
+        labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+        datasets: [{
+          label: 'OPD Patients Arrival',
+          data: [4, 12, 28, 35, 22, 14, 18, 11, 6],
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  const ctxWard = document.getElementById('chartWardOccupancy')?.getContext('2d');
+  if (ctxWard && !appState.charts.ward) {
+    appState.charts.ward = new Chart(ctxWard, {
+      type: 'doughnut',
+      data: {
+        labels: ['ICU', 'Emergency', 'General Ward', 'Private Ward', 'Maternity'],
+        datasets: [{
+          data: [12, 14, 25, 10, 7],
+          backgroundColor: ['#ef4444', '#f59e0b', '#0ea5e9', '#8b5cf6', '#10b981']
+        }]
       },
       options: { responsive: true, maintainAspectRatio: false }
     });
   }
 }
 
-// --- REPORTS & EXPORT ---
-function initExportHandlers() {
-  document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
-    let csv = 'Token Number,Patient Name,Department,Doctor,Wait Time,Priority,Status\n';
-    appState.queue.forEach(q => {
-      csv += `${q.tokenNumber},"${q.patientName}",${q.department},"${q.doctor}",${q.waitTime},${q.priority},${q.status}\n`;
-    });
+// --- Populating Dropdowns & Helpers ---
+function populateDoctorOptions() {
+  const select = document.getElementById('inputDoctorSelect');
+  if (!select) return;
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `HOSPITIQ_OPD_Report_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    showToast('Report CSV exported successfully!', 'success');
+  const currentVal = select.value;
+  select.innerHTML = `<option value="" disabled>-- Select Attending Doctor & Room --</option>` + 
+    appState.doctors.map(d => `<option value="${d.id}">${d.name} (${d.department} — ${d.room || 'OPD Room'})</option>`).join('');
+
+  if (currentVal && Array.from(select.options).some(opt => opt.value === currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+// --- Modals Engine ---
+function initModals() {
+  // Close buttons
+  document.querySelectorAll('.close-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const modal = btn.closest('.modal-overlay');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
+    });
   });
 
-  document.getElementById('printReportBtn')?.addEventListener('click', () => window.print());
+  // Token Form Submission
+  document.getElementById('newTokenForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const tokenData = {
+      patientName: document.getElementById('inputPatientName')?.value,
+      age: document.getElementById('inputPatientAge')?.value,
+      gender: document.getElementById('inputPatientGender')?.value,
+      phone: document.getElementById('inputPatientPhone')?.value,
+      doctorId: document.getElementById('inputDoctorSelect')?.value,
+      priority: document.getElementById('inputPriority')?.value
+    };
+
+    try {
+      const res = await api.createToken(tokenData);
+      if (res.success && res.token) {
+        closeModal('newTokenModal');
+        e.target.reset();
+        showToast(`Token ${res.token.tokenNumber} generated!`, 'success');
+        await loadAppData();
+
+        if (appState.currentUser && appState.currentUser.role === 'Patient') {
+          loadPatientTokenData(res.token.tokenNumber);
+        }
+      } else {
+        showToast(res.message || 'Error generating token.', 'danger');
+      }
+    } catch (err) {
+      showToast('Error registering patient.', 'danger');
+    }
+  });
 }
 
 function openModal(modalId) {
@@ -1579,275 +1254,34 @@ function closeModal(modalId) {
   }
 }
 
-// --- Modals ---
-function populateAvailableBedsForWard() {
-  const wardSelect = document.getElementById('admitWardSelect');
-  const bedSelect = document.getElementById('admitBedSelect');
-  if (!wardSelect || !bedSelect) return;
-
-  const selectedWard = wardSelect.value;
-  const availBeds = appState.beds.filter(b => b.ward === selectedWard && b.status === 'Available');
-
-  bedSelect.innerHTML = '';
-  if (availBeds.length === 0) {
-    bedSelect.innerHTML = `<option value="">No available beds in ${selectedWard} (100% Occupied)</option>`;
-  } else {
-    availBeds.forEach(b => {
-      const opt = document.createElement('option');
-      opt.value = b.id;
-      const featText = b.features && b.features.length > 0 ? ` (${b.features.join(', ')})` : '';
-      opt.textContent = `${b.bedNumber} — ${b.ward}${featText}`;
-      bedSelect.appendChild(opt);
-    });
-  }
-}
-
-function openAdmitPatientModal() {
-  const docSelect = document.getElementById('admitDoctorSelect');
-  if (docSelect) {
-    docSelect.innerHTML = '';
-    appState.doctors.forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d.name;
-      opt.textContent = `${d.name} (${d.department})`;
-      docSelect.appendChild(opt);
-    });
-  }
-  populateAvailableBedsForWard();
-  openModal('admitPatientModal');
-}
-
-function initModals() {
-  document.getElementById('openNewTokenModalBtn')?.addEventListener('click', () => openNewTokenModal());
-  document.getElementById('openAddDoctorModalBtn')?.addEventListener('click', () => openModal('addDoctorModal'));
-  document.getElementById('adminAddDoctorBtn')?.addEventListener('click', () => openModal('addDoctorModal'));
-
-  document.getElementById('closeNewTokenModal')?.addEventListener('click', () => closeModal('newTokenModal'));
-  document.getElementById('closeAddDoctorModal')?.addEventListener('click', () => closeModal('addDoctorModal'));
-  document.getElementById('closeBedDetailsModal')?.addEventListener('click', () => closeModal('bedDetailsModal'));
-  document.getElementById('closeRecommendBedModal')?.addEventListener('click', () => closeModal('recommendBedModal'));
-  document.getElementById('closeEditDoctorModal')?.addEventListener('click', () => closeModal('editDoctorModal'));
-  document.getElementById('closeAdmitPatientModal')?.addEventListener('click', () => closeModal('admitPatientModal'));
-
-  // Close modals on overlay backdrop click
-  document.querySelectorAll('.modal-overlay').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        closeModal(modal.id);
-      }
-    });
-  });
-
-  document.getElementById('admitPatientForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const patientName = document.getElementById('admitPatientName').value;
-    const ward = document.getElementById('admitWardSelect').value;
-    const bedId = document.getElementById('admitBedSelect').value;
-    const doctor = document.getElementById('admitDoctorSelect').value;
-    const diagnosis = document.getElementById('admitDiagnosisInput').value;
-
-    if (!bedId) {
-      showToast(`No available bed selected in ${ward}!`, 'warning');
-      return;
-    }
-
-    const targetBed = appState.beds.find(b => b.id === bedId);
-    if (targetBed) {
-      targetBed.status = 'Occupied';
-      targetBed.patient = patientName;
-      targetBed.doctor = doctor;
-      targetBed.admissionDate = new Date().toISOString().split('T')[0];
-    }
-
-    const newAdmission = {
-      id: `adm-${Date.now()}`,
-      patientName,
-      ward,
-      bedNumber: targetBed ? targetBed.bedNumber : `${ward.substring(0, 3).toUpperCase()}-001`,
-      doctor,
-      diagnosis,
-      admissionDate: new Date().toISOString().split('T')[0],
-      status: 'Admitted'
-    };
-
-    appState.admissions.unshift(newAdmission);
-
-    closeModal('admitPatientModal');
-    e.target.reset();
-
-    showToast(`Patient ${patientName} admitted to ${ward} (${targetBed ? targetBed.bedNumber : 'Ward Bed'}) under ${doctor}!`, 'success');
-
-    renderCapacityOverview();
-    renderDashboardStats();
-    renderWardSnapshot();
-    renderBedManagement();
-    renderBedMap();
-    renderAdmissionsTable();
-  });
-
-  document.getElementById('newTokenForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const doctorId = document.getElementById('inputDoctorSelect').value;
-    const selectedDoc = appState.doctors.find(d => d.id === doctorId) || appState.doctors[0];
-
-    const tokenData = {
-      patientName: document.getElementById('inputPatientName').value,
-      age: document.getElementById('inputPatientAge').value,
-      gender: document.getElementById('inputPatientGender').value,
-      phone: document.getElementById('inputPatientPhone').value,
-      doctorId: doctorId,
-      department: selectedDoc ? selectedDoc.department : '',
-      priority: document.getElementById('inputPriority').value
-    };
-
-    let newToken = {
-      id: `q-${Date.now()}`,
-      tokenNumber: `A-${String(appState.queue.length + 105).padStart(3, '0')}`,
-      patientName: tokenData.patientName,
-      age: parseInt(tokenData.age) || 30,
-      gender: tokenData.gender,
-      phone: tokenData.phone || '+91 99000 11223',
-      department: selectedDoc ? selectedDoc.department : 'General Medicine',
-      doctor: selectedDoc ? selectedDoc.name : 'Dr. Sunita Rao',
-      doctorId: selectedDoc ? selectedDoc.id : 'doc-1',
-      waitTime: Math.round(((selectedDoc ? selectedDoc.patientsWaiting : 1) + 1) * 12),
-      patientsAhead: selectedDoc ? selectedDoc.patientsWaiting : 1,
-      room: selectedDoc ? selectedDoc.room : 'OPD Room #104',
-      priority: tokenData.priority || 'Normal',
-      status: 'Waiting',
-      registrationTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      smsSent: true,
-      whatsappSent: true
-    };
-
-    try {
-      const res = await api.createToken(tokenData);
-      if (res.success && res.token) {
-        newToken = res.token;
-      }
-    } catch (err) {
-      console.warn('API token creation warning:', err);
-    }
-
-    saveCustomTokenLocally(newToken);
-    if (!appState.queue.some(q => q.id === newToken.id || q.tokenNumber === newToken.tokenNumber)) {
-      appState.queue.unshift(newToken);
-    }
-
-    closeModal('newTokenModal');
-    e.target.reset();
-
-    showToast(`Patient ${newToken.patientName} (Token ${newToken.tokenNumber}) registered successfully!`, 'success');
-
-    if (appState.currentUser && (appState.currentUser.role === 'Doctor' || appState.currentUser.role === 'Admin')) {
-      renderDoctorQueueRoster();
-      renderQueueTable();
-      renderPatientsTable();
-    } else {
-      launchPortal({ id: 'usr-pt', name: newToken.patientName, role: 'Patient', tokenNumber: newToken.tokenNumber }, 'patient-portal');
-    }
-  });
-
-  document.getElementById('addDoctorForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const docData = {
-      name: document.getElementById('docNameInput').value,
-      email: document.getElementById('docEmailInput')?.value,
-      specialization: document.getElementById('docSpecInput').value,
-      department: document.getElementById('docDeptInput').value,
-      room: document.getElementById('docRoomInput').value,
-      phone: document.getElementById('docPhoneInput').value
-    };
-
-    const formattedName = docData.name.startsWith('Dr.') ? docData.name : `Dr. ${docData.name}`;
-    const formattedRoom = docData.room.includes('OPD Room') ? docData.room : `OPD Room #${docData.room}`;
-
-    let newDoc = {
-      id: `doc-${Date.now()}`,
-      name: formattedName,
-      specialization: docData.specialization || 'General Practice',
-      department: docData.department || 'General Medicine',
-      status: 'Available',
-      patientsWaiting: 0,
-      currentPatient: 'None',
-      room: formattedRoom,
-      phone: docData.phone || '+91 98000 00000',
-      email: docData.email || `${docData.name.toLowerCase().replace(/[^a-z]/g, '')}@hospitiq.org`
-    };
-
-    try {
-      const res = await api.addDoctor(docData);
-      if (res.success && res.doctor) {
-        newDoc = res.doctor;
-      }
-    } catch (err) {
-      console.warn('API add doctor warning:', err);
-    }
-
-    saveCustomDoctorLocally(newDoc);
-    if (!appState.doctors.some(d => d.id === newDoc.id || d.email === newDoc.email)) {
-      appState.doctors.unshift(newDoc);
-    }
-
-    closeModal('addDoctorModal');
-    e.target.reset();
-
-    showToast(`Doctor ${newDoc.name} registered & added to roster! Login created for ${newDoc.email}`, 'success');
-
-    populateDoctorOptions();
-    renderDoctorsGrid();
-    renderAdminTable();
-  });
-}
-
-function openNewTokenModal(preselectDoctorId = null) {
-  populateDoctorOptions();
-  const select = document.getElementById('inputDoctorSelect');
-
-  if (select && select.options.length > 0) {
-    if (preselectDoctorId) {
-      select.value = preselectDoctorId;
-    } else if (appState.currentUser && appState.currentUser.role === 'Doctor') {
-      const loggedDoc = appState.doctors.find(d => 
-        (d.email && appState.currentUser.email && d.email === appState.currentUser.email) ||
-        d.name.toLowerCase().includes('sunita') ||
-        d.name.toLowerCase().includes(appState.currentUser.name.toLowerCase()) ||
-        appState.currentUser.name.toLowerCase().includes(d.name.toLowerCase())
-      );
-      if (loggedDoc) {
-        select.value = loggedDoc.id;
-      } else if (select.options.length > 1) {
-        select.selectedIndex = 1;
-      }
-    } else if (select.options.length > 1 && (!select.value || select.selectedIndex <= 0)) {
-      select.selectedIndex = 1;
-    }
-  }
-
+function openNewTokenModal() {
   openModal('newTokenModal');
 }
 
-function populateDoctorOptions() {
-  const select = document.getElementById('inputDoctorSelect');
-  if (!select) return;
+function openRecommendBedModal() {
+  openModal('recommendBedModal');
+}
 
-  if (!appState.doctors || appState.doctors.length === 0) {
-    select.innerHTML = '<option value="" disabled selected>No Doctors Available</option>';
-    return;
-  }
-
-  const currentVal = select.value;
-  const optionsHtml = appState.doctors.map(d => 
-    `<option value="${d.id}">${d.name} (${d.department} — ${d.room || 'OPD Room'})</option>`
-  ).join('');
-
-  select.innerHTML = `<option value="" disabled>-- Select Attending Doctor & Room --</option>` + optionsHtml;
-
-  if (currentVal && Array.from(select.options).some(opt => opt.value === currentVal)) {
-    select.value = currentVal;
+function openAdmitModal(bedId, bedNumber, ward) {
+  const patientName = prompt(`Enter Inpatient Name for ${bedNumber} (${ward}):`, 'Ramesh Verma');
+  if (patientName && patientName.trim()) {
+    admitPatient(bedId, patientName.trim(), ward);
   }
 }
 
+async function admitPatient(bedId, patientName, ward) {
+  try {
+    const res = await api.admitPatientToBed(bedId, { patientName, doctor: 'Dr. Sunita Rao', diagnosis: 'Observation' });
+    if (res.success) {
+      showToast(res.message, 'success');
+      await loadAppData();
+    }
+  } catch (err) {
+    showToast('Error admitting patient.', 'danger');
+  }
+}
+
+// --- Search & Filters Engine ---
 function initSearchAndFilters() {
   const queueSearch = document.getElementById('queueSearchInput');
   const globalSearch = document.getElementById('globalSearchInput');
@@ -1855,25 +1289,27 @@ function initSearchAndFilters() {
   const queueStatus = document.getElementById('queueStatusFilter');
 
   queueSearch?.addEventListener('input', renderQueueTable);
-  globalSearch?.addEventListener('input', (e) => {
-    if (appState.activeView !== 'opd-queue' && appState.activeView !== 'patient-portal') {
-      switchView('opd-queue');
-    }
-    renderQueueTable();
-  });
   globalSearch?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       const val = globalSearch.value.trim();
       if (val) {
-        switchView('patient-portal');
-        loadPatientTokenData(val);
+        if (appState.currentUser?.role === 'Patient') {
+          switchView('patient-portal');
+          loadPatientTokenData(val);
+        } else {
+          switchView('opd-queue');
+          if (queueSearch) queueSearch.value = val;
+          renderQueueTable();
+        }
       }
     }
   });
+
   queueDept?.addEventListener('change', renderQueueTable);
   queueStatus?.addEventListener('change', renderQueueTable);
 }
 
+// --- Toast Notifications ---
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
   if (!container) return;
