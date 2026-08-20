@@ -296,24 +296,36 @@
           </div>
 
           <form id="publicPageLoginForm" class="login-form margin-t-md" onsubmit="handlePublicPageLogin(event)">
-            <div class="form-group">
-              <label>Account / Patient Email</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="mail"></i>
-                <input type="email" id="pageLoginEmail" required class="glass-input" value="patient@hospitiq.org" />
+            <!-- Patient Credentials Fields -->
+            <div id="pagePatientCredentialsGroup">
+              <div class="form-group">
+                <label>Patient Full Name</label>
+                <div class="input-icon-wrapper">
+                  <i data-lucide="user"></i>
+                  <input type="text" id="pageLoginPatientName" class="glass-input" placeholder="e.g. tarun, Ramesh Verma" value="tarun" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>OPD Token # (or Pass ID)</label>
+                <div class="input-icon-wrapper">
+                  <i data-lucide="ticket"></i>
+                  <input type="text" id="pageLoginTokenNumber" placeholder="e.g. A-031 or A-024" class="glass-input" value="A-031" />
+                </div>
               </div>
             </div>
 
-            <div class="form-group" id="pageLoginTokenGroup">
-              <label>OR Enter Token # for Instant View</label>
+            <!-- Doctor / Admin Email Field -->
+            <div class="form-group" id="pageStaffCredentialsGroup" style="display: none;">
+              <label id="pageStaffLabel">Official Account Email</label>
               <div class="input-icon-wrapper">
-                <i data-lucide="ticket"></i>
-                <input type="text" id="pageLoginTokenNumber" placeholder="e.g. A-031" class="glass-input" value="A-031" />
+                <i data-lucide="mail"></i>
+                <input type="email" id="pageLoginEmail" class="glass-input" placeholder="doctor@hospitiq.org" value="doctor@hospitiq.org" />
               </div>
             </div>
 
             <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-              <i data-lucide="log-in"></i> Launch Selected Portal
+              <i data-lucide="log-in"></i> Sign In to Portal
             </button>
           </form>
 
@@ -500,24 +512,36 @@
       </div>
 
       <form id="loginForm" class="login-form margin-t-md">
-        <div class="form-group" id="loginEmailGroup">
-          <label>Account / Patient Email</label>
-          <div class="input-icon-wrapper">
-            <i data-lucide="mail"></i>
-            <input type="email" id="loginEmail" required class="glass-input" value="patient@hospitiq.org" />
+        <!-- Patient Credentials Fields -->
+        <div id="modalPatientCredentialsGroup">
+          <div class="form-group">
+            <label>Patient Full Name</label>
+            <div class="input-icon-wrapper">
+              <i data-lucide="user"></i>
+              <input type="text" id="loginPatientName" class="glass-input" placeholder="e.g. tarun, Ramesh Verma" value="tarun" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>OPD Token # (or Pass ID)</label>
+            <div class="input-icon-wrapper">
+              <i data-lucide="ticket"></i>
+              <input type="text" id="loginTokenNumber" placeholder="e.g. A-031 or A-024" class="glass-input" value="A-031" />
+            </div>
           </div>
         </div>
 
-        <div class="form-group" id="loginTokenGroup">
-          <label>OR Enter Token # for Instant View</label>
+        <!-- Doctor / Admin Email Field -->
+        <div class="form-group" id="modalStaffCredentialsGroup" style="display: none;">
+          <label id="modalStaffLabel">Official Account Email</label>
           <div class="input-icon-wrapper">
-            <i data-lucide="ticket"></i>
-            <input type="text" id="loginTokenNumber" placeholder="e.g. A-031" class="glass-input" value="A-031" />
+            <i data-lucide="mail"></i>
+            <input type="email" id="loginEmail" class="glass-input" placeholder="doctor@hospitiq.org" value="doctor@hospitiq.org" />
           </div>
         </div>
 
         <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-          <i data-lucide="log-in"></i> Launch Selected Portal
+          <i data-lucide="log-in"></i> Sign In to Portal
         </button>
 
         <button type="button" class="text-btn small-text width-full margin-t-sm" onclick="closeLoginOverlay()">

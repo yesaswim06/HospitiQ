@@ -138,43 +138,61 @@ const priorityWeight = (p) => {
 // ==============================================================================
 
 app.post('/api/auth/login', rateLimiter, async (req, res) => {
-  const { email, role, identifier } = req.body;
-  const lookup = (identifier || email || '').trim();
+  const { email, role, identifier, patientName, tokenNumber } = req.body;
+  const lookupToken = (tokenNumber || identifier || '').trim().toUpperCase();
+  const lookupName = (patientName || identifier || '').trim();
 
   let user = null;
 
   try {
     if (role === 'Patient') {
-      const cleanUpper = lookup.toUpperCase();
+      const cleanUpper = lookupToken.toUpperCase();
       const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
 
       if (isDBConnected()) {
-        const tokenDoc = await Token.findOne({
-          $or: [
-            { tokenNumber: cleanUpper },
-            { secToken: cleanUpper },
-            { patientName: new RegExp(`^${lookup}$`, 'i') }
-          ]
-        });
+        const queries = [];
+        if (cleanUpper) {
+          queries.push({ tokenNumber: cleanUpper });
+          queries.push({ secToken: cleanUpper });
+        }
+        if (lookupName) {
+          queries.push({ patientName: new RegExp(`^${lookupName}$`, 'i') });
+        }
+
+        const tokenDoc = await Token.findOne(queries.length > 0 ? { $or: queries } : { tokenNumber: 'A-031' });
         if (tokenDoc) {
-          user = { id: tokenDoc._id.toString(), name: tokenDoc.patientName, role: 'Patient', tokenNumber: tokenDoc.tokenNumber, department: tokenDoc.department };
+          user = {
+            id: tokenDoc._id.toString(),
+            name: tokenDoc.patientName,
+            role: 'Patient',
+            tokenNumber: tokenDoc.tokenNumber,
+            department: tokenDoc.department
+          };
         }
       }
 
       if (!user) {
         const foundMem = store.queue.find(q => {
           const t = (q.tokenNumber || '').toUpperCase();
-          return t === cleanUpper || t.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === lookup.toLowerCase();
+          const pName = (q.patientName || '').toLowerCase();
+          return (cleanUpper && (t === cleanUpper || t.replace(/[\s\-]/g, '') === cleanNoDash)) ||
+                 (lookupName && pName === lookupName.toLowerCase());
         });
+
         if (foundMem) {
-          user = { id: foundMem.id, name: foundMem.patientName, role: 'Patient', tokenNumber: foundMem.tokenNumber, department: foundMem.department };
+          user = {
+            id: foundMem.id,
+            name: foundMem.patientName,
+            role: 'Patient',
+            tokenNumber: foundMem.tokenNumber,
+            department: foundMem.department
+          };
         } else {
-          const isTokenPattern = lookup.match(/^[A-Za-z]\-?\d+$/);
           user = {
             id: `usr-pt-${Date.now()}`,
-            name: isTokenPattern ? 'OPD Patient' : (lookup || 'Walk-in Patient'),
+            name: lookupName || 'OPD Patient',
             role: 'Patient',
-            tokenNumber: isTokenPattern ? cleanUpper : 'A-031',
+            tokenNumber: cleanUpper || 'A-031',
             department: 'General Medicine'
           };
         }

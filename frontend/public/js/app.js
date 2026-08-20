@@ -197,30 +197,43 @@ function initAuth() {
       chip.classList.add('active');
 
       const role = chip.getAttribute('data-role');
-      const emailEl = parentForm.querySelector('#loginEmail, #pageLoginEmail') || document.getElementById('loginEmail') || document.getElementById('pageLoginEmail');
-      const tokenGroup = parentForm.querySelector('#loginTokenGroup, #pageLoginTokenGroup') || document.getElementById('loginTokenGroup') || document.getElementById('pageLoginTokenGroup');
-      const labelEl = parentForm.querySelector('label');
+      const isModal = !!parentForm.querySelector('#loginForm') || parentForm.id === 'loginScreen';
 
-      if (emailEl) {
-        if (role === 'Patient') {
-          if (labelEl) labelEl.textContent = 'Patient Name or Token Number';
-          emailEl.type = 'text';
-          emailEl.placeholder = 'e.g. tarun, Ramesh Verma, or A-031';
-          emailEl.value = 'tarun';
-        } else if (role === 'Doctor') {
-          if (labelEl) labelEl.textContent = 'Doctor Account Email';
-          emailEl.type = 'email';
-          emailEl.placeholder = 'doctor@hospitiq.org';
-          emailEl.value = 'doctor@hospitiq.org';
+      const patientGroup = document.getElementById(isModal ? 'modalPatientCredentialsGroup' : 'pagePatientCredentialsGroup') 
+        || document.getElementById('modalPatientCredentialsGroup') 
+        || document.getElementById('pagePatientCredentialsGroup');
+
+      const staffGroup = document.getElementById(isModal ? 'modalStaffCredentialsGroup' : 'pageStaffCredentialsGroup') 
+        || document.getElementById('modalStaffCredentialsGroup') 
+        || document.getElementById('pageStaffCredentialsGroup');
+
+      const staffLabel = document.getElementById(isModal ? 'modalStaffLabel' : 'pageStaffLabel')
+        || document.getElementById('modalStaffLabel')
+        || document.getElementById('pageStaffLabel');
+
+      const staffEmailInput = document.getElementById(isModal ? 'loginEmail' : 'pageLoginEmail')
+        || document.getElementById('loginEmail')
+        || document.getElementById('pageLoginEmail');
+
+      if (role === 'Patient') {
+        if (patientGroup) patientGroup.style.display = 'block';
+        if (staffGroup) staffGroup.style.display = 'none';
+      } else {
+        if (patientGroup) patientGroup.style.display = 'none';
+        if (staffGroup) staffGroup.style.display = 'block';
+        if (role === 'Doctor') {
+          if (staffLabel) staffLabel.textContent = 'Doctor Account Email';
+          if (staffEmailInput) {
+            staffEmailInput.value = 'doctor@hospitiq.org';
+            staffEmailInput.placeholder = 'doctor@hospitiq.org';
+          }
         } else {
-          if (labelEl) labelEl.textContent = 'Admin Account Email';
-          emailEl.type = 'email';
-          emailEl.placeholder = 'admin@hospitiq.org';
-          emailEl.value = 'admin@hospitiq.org';
+          if (staffLabel) staffLabel.textContent = 'Admin Account Email';
+          if (staffEmailInput) {
+            staffEmailInput.value = 'admin@hospitiq.org';
+            staffEmailInput.placeholder = 'admin@hospitiq.org';
+          }
         }
-      }
-      if (tokenGroup) {
-        tokenGroup.style.display = 'none';
       }
     });
   });
@@ -228,12 +241,17 @@ function initAuth() {
   // Modal Login Submit
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const emailEl = document.getElementById('loginEmail');
-    const inputVal = emailEl ? emailEl.value.trim() : 'admin@hospitiq.org';
     const activeChip = loginForm.querySelector('.demo-chip.active');
-    const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
+    const role = activeChip ? activeChip.getAttribute('data-role') : 'Patient';
 
-    await executeLogin(role, inputVal);
+    if (role === 'Patient') {
+      const name = (document.getElementById('loginPatientName')?.value || 'tarun').trim();
+      const token = (document.getElementById('loginTokenNumber')?.value || 'A-031').trim();
+      await executeLogin(role, { patientName: name, tokenNumber: token });
+    } else {
+      const email = (document.getElementById('loginEmail')?.value || 'admin@hospitiq.org').trim();
+      await executeLogin(role, { email });
+    }
   });
 
   // Logout Action
@@ -264,18 +282,27 @@ function initAuth() {
 // Public Page Login Form Submit
 async function handlePublicPageLogin(e) {
   e.preventDefault();
-  const emailEl = document.getElementById('pageLoginEmail');
-  const inputVal = emailEl ? emailEl.value.trim() : 'admin@hospitiq.org';
   const activeChip = document.querySelector('#public-view-login .demo-chip.active');
-  const role = activeChip ? activeChip.getAttribute('data-role') : 'Admin';
+  const role = activeChip ? activeChip.getAttribute('data-role') : 'Patient';
 
-  await executeLogin(role, inputVal);
+  if (role === 'Patient') {
+    const name = (document.getElementById('pageLoginPatientName')?.value || 'tarun').trim();
+    const token = (document.getElementById('pageLoginTokenNumber')?.value || 'A-031').trim();
+    await executeLogin(role, { patientName: name, tokenNumber: token });
+  } else {
+    const email = (document.getElementById('pageLoginEmail')?.value || 'admin@hospitiq.org').trim();
+    await executeLogin(role, { email });
+  }
 }
 
 // Centralized Login Execution with Server-Side Verification
-async function executeLogin(role, identifier) {
+async function executeLogin(role, credentials) {
   try {
-    const res = await api.login({ role, identifier });
+    const payload = typeof credentials === 'string' 
+      ? { role, identifier: credentials } 
+      : { role, ...credentials };
+
+    const res = await api.login(payload);
     if (res.success && res.token && res.user) {
       appState.sessionToken = res.token;
       appState.currentUser = res.user;
