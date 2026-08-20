@@ -1694,10 +1694,14 @@ function initModals() {
       if (res.success && res.token) {
         closeModal('newTokenModal');
         e.target.reset();
-        showToast(`Token ${res.token.tokenNumber} generated!`, 'success');
+        showToast(`Token ${res.token.tokenNumber} generated! Est. Wait: ${res.token.waitTime || 15} mins.`, 'success');
         await loadAppData();
 
-        if (appState.currentUser && appState.currentUser.role === 'Patient') {
+        loadPatientTokenData(res.token.tokenNumber);
+
+        const currentActiveView = document.querySelector('.view-panel.active')?.id;
+        if (currentActiveView === 'view-patient-portal' || appState.currentUser?.role === 'Patient') {
+          switchView('patient-portal');
           loadPatientTokenData(res.token.tokenNumber);
         }
       } else {
@@ -1754,6 +1758,7 @@ function closeModal(modalId) {
 }
 
 function openNewTokenModal() {
+  populateDoctorOptions();
   openModal('newTokenModal');
 }
 
@@ -1888,6 +1893,9 @@ function initSearchAndFilters() {
   document.getElementById('openReserveBedModalBtn')?.addEventListener('click', () => {
     openRecommendBedModal();
   });
+
+  // Open New Token Modal Button
+  document.getElementById('openNewTokenModalBtn')?.addEventListener('click', openNewTokenModal);
 
   // Export CSV Report
   document.getElementById('exportCsvBtn')?.addEventListener('click', exportCsvReport);
