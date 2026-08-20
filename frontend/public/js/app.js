@@ -31,8 +31,8 @@ const appState = {
 // Role-Based Permissions Matrix
 const ROLE_PERMISSIONS = {
   Patient: ['patient-portal', 'hospital-info'],
-  Doctor: ['doctor-portal', 'opd-queue', 'patients', 'doctors', 'bed-mgmt', 'bed-map', 'admissions', 'hospital-info'],
-  Admin: ['dashboard', 'opd-queue', 'patients', 'doctors', 'bed-mgmt', 'bed-map', 'admissions', 'analytics', 'alerts', 'reports', 'admin-manage', 'settings', 'doctor-portal', 'patient-portal', 'hospital-info']
+  Doctor: ['doctor-portal', 'opd-queue', 'triage-review', 'patients', 'doctors', 'bed-mgmt', 'bed-map', 'admissions', 'hospital-info'],
+  Admin: ['dashboard', 'opd-queue', 'triage-review', 'patients', 'doctors', 'bed-mgmt', 'bed-map', 'admissions', 'analytics', 'alerts', 'reports', 'admin-manage', 'settings', 'doctor-portal', 'patient-portal', 'hospital-info']
 };
 
 const canAccessView = (role, viewId) => {
