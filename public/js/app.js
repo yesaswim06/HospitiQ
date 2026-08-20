@@ -526,6 +526,10 @@ function switchView(viewId) {
 
   renderAllViews();
   if (viewId === 'analytics') renderAnalyticsCharts();
+  if (viewId === 'patient-portal') {
+    const activeTok = appState.currentUser?.tokenNumber || (appState.queue && appState.queue[0]?.tokenNumber) || 'A-024';
+    loadPatientTokenData(activeTok);
+  }
   lucide.createIcons();
 }
 
@@ -548,6 +552,12 @@ function renderAllViews() {
   renderReports();
   populateDoctorOptions();
   updateSidebarBadges();
+
+  const currentActiveView = appState.activeView || document.querySelector('.view-panel.active')?.id?.replace('view-', '');
+  if (currentActiveView === 'patient-portal' || appState.currentUser?.role === 'Patient') {
+    const activeTok = appState.currentUser?.tokenNumber || (appState.queue && appState.queue[0]?.tokenNumber) || 'A-024';
+    loadPatientTokenData(activeTok);
+  }
 }
 
 // --- Patient Portal Render & QR Code Generator ---
