@@ -8,7 +8,7 @@ const Admission = require('./models/Admission');
 const User = require('./models/User');
 const Alert = require('./models/Alert');
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://yesaswim2006_db_user:0pH36096zKU9jmaQ@interndb.scbiasf.mongodb.net/hospitiq?retryWrites=true&w=majority';
 
 const initialDoctors = [
   { docId: 'doc-1', name: 'Dr. Sunita Rao', specialization: 'Interventional Cardiology', department: 'Cardiology', status: 'CONSULTING', patientsWaiting: 1, currentPatient: 'A-024 (Ramesh Verma)', room: 'OPD Room #104', phone: '+91 98111 22233', email: 'doctor@hospitiq.org' },
