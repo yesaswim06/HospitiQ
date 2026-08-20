@@ -156,9 +156,10 @@ const priorityWeight = (p) => {
   return 2000;
 };
 
-// --- AI Clinical Triage NLP Engine ---
-const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => {
+// --- AI Clinical Triage NLP Engine with Real-time Pain Scale & Category Mapping ---
+const evaluateTriage = (description = '', patientReportedUrgency = 'Normal', rawPainScore = 3, rawCategory = '') => {
   const text = String(description || '').toLowerCase().trim();
+  const painScore = Math.max(0, Math.min(10, parseInt(rawPainScore, 10) || 0));
 
   const redFlags = [];
   const symptoms = [];
@@ -166,24 +167,47 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => 
   let severity = 'Moderate';
   let reason = 'Standard outpatient evaluation recommended.';
   let requiresHumanReview = false;
+  let category = rawCategory || 'General & Routine';
+  let emergencySlot = '';
 
-  if (!text || text.length < 3) {
-    return {
-      aiSuggestedPriority: 'P4',
-      aiSymptoms: ['General Health Inquiry'],
-      aiSeverity: 'Mild',
-      aiRedFlags: [],
-      aiReason: 'Brief or unspecified symptoms. Assigned baseline priority P4 for triage verification.',
-      triageStatus: 'PENDING_REVIEW',
-      finalTriagePriority: 'P4'
-    };
+  // 1. Evaluate Clinical Category from NLP if not explicitly selected
+  if (/\b(chest|heart|angina|cardiac|palpitation|pressure in chest|stent)\b/i.test(text)) {
+    category = 'Cardiac & Chest';
+  } else if (/\b(breath|dyspnea|asthma|wheezing|cough|choking|airway|stridor|oxygen|suffocating)\b/i.test(text)) {
+    category = 'Respiratory & Airway';
+  } else if (/\b(stroke|unconscious|slurred speech|paralysis|facial droop|seizure|headache|faint|syncope|vertigo)\b/i.test(text)) {
+    category = 'Neurological & Stroke';
+  } else if (/\b(bleed|blood|cut|stab|accident|burn|trauma|wound|laceration|fall|injury|hemorrhage)\b/i.test(text)) {
+    category = 'Trauma, Burns & Bleeding';
+  } else if (/\b(stomach|abdomen|vomit|diarrhea|nausea|cramp|appendix|gallbladder|gastric|acid)\b/i.test(text)) {
+    category = 'Abdominal & Gastrointestinal';
+  } else if (/\b(fracture|bone|dislocation|sprain|joint|knee|ankle|cannot walk|swelling|wrist)\b/i.test(text)) {
+    category = 'Orthopedic & Fractures';
+  } else if (/\b(fever|chills|infection|cold|flu|shivering|temperature|covid|dengue)\b/i.test(text)) {
+    category = 'Infection & High Fever';
+  } else if (/\b(refill|prescription|renewal|routine checkup|medical certificate|follow up|fitness|report)\b/i.test(text)) {
+    category = 'General & Prescription Refill';
   }
 
-  // --- Non-Urgent / Administrative (P5) ---
-  const isP5Refill = /\b(refill|prescription|renewal|routine checkup|medical certificate|follow up|fitness certificate|general checkup|skin rash mild|routine test|report collection)\b/i.test(text);
-  const isPainOrEmergency = /\b(pain|bleed|breath|unconscious|chest|heart|stroke|fracture|burn|vomit|fever|severe|acute|accident)\b/i.test(text);
+  // 2. Visual Analog Pain Scale (VAS 1-10) Real-time Integration
+  if (painScore >= 9) {
+    redFlags.push(`Excruciating Acute Pain (VAS ${painScore}/10)`);
+    symptoms.push(`Severe Pain (VAS ${painScore}/10)`);
+    severity = 'Severe';
+    suggestedPriority = 'P2';
+    reason = `Critical pain score (VAS ${painScore}/10) reported. Fast-track emergency slot allocation required.`;
+    requiresHumanReview = true;
+  } else if (painScore >= 7) {
+    symptoms.push(`Severe Pain (VAS ${painScore}/10)`);
+    severity = 'Severe';
+    suggestedPriority = 'P3';
+    reason = `Severe acute pain (VAS ${painScore}/10) requiring urgent clinical attention (< 30 mins).`;
+    requiresHumanReview = true;
+  } else if (painScore >= 4) {
+    symptoms.push(`Moderate Pain (VAS ${painScore}/10)`);
+  }
 
-  // --- 1. Immediate Life Threat (P1) Detection ---
+  // 3. Immediate Life Threat (P1) Detection
   const p1Conditions = [
     { pattern: /\b(unconscious|not breathing|cardiac arrest|respiratory arrest|collapsed and unresponsive|choking|airway obstruction|cyanosis|turning blue|severe anaphylaxis|massive hemorrhage|severe shock)\b/i, flag: 'Critical Airway / Circulatory / Consciousness Collapse' },
     { pattern: /\b(unresponsive|no pulse|gasping for air|stridor)\b/i, flag: 'Acute Airway/Ventilation Failure' }
@@ -195,18 +219,18 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => 
       symptoms.push('Unconsciousness / Airway Compromise');
       suggestedPriority = 'P1';
       severity = 'Critical';
-      reason = 'Immediate life-threat detected: Airway, Breathing, or Circulatory collapse. Zero-delay resuscitation required.';
+      reason = 'Immediate life-threat detected: Airway, Breathing, or Circulatory collapse. Zero-delay resuscitation slot assigned.';
       requiresHumanReview = true;
       break;
     }
   }
 
-  // --- 2. Emergency / Acute Red Flags (P2) Detection (If not P1) ---
+  // 4. Emergency / Acute Red Flags (P2) Detection (If not P1)
   if (suggestedPriority !== 'P1') {
     const p2Conditions = [
-      { pattern: /\b(chest pain|heart attack|angina|pressure in chest|radiating to arm|radiating to jaw)\b/i, flag: 'Acute Chest Pain / Suspected ACS', sym: 'Cardiac Chest Pain' },
-      { pattern: /\b(difficulty breathing|shortness of breath|breathless|struggling to breathe|dyspnea|severe asthma)\b/i, flag: 'Acute Respiratory Distress', sym: 'Severe Dyspnea' },
-      { pattern: /\b(slurred speech|facial droop|one sided weakness|stroke|sudden vision loss|paralysis)\b/i, flag: 'Acute Neurological Deficit / Stroke Protocol', sym: 'Suspected Acute Stroke' },
+      { pattern: /\b(chest|heart attack|angina|tightness in chest|pressure in chest|radiating to arm|radiating to jaw|cardiac|palpitation)\b/i, flag: 'Acute Chest Pain / Suspected ACS', sym: 'Cardiac Chest Discomfort' },
+      { pattern: /\b(difficulty breathing|shortness of breath|breathless|struggling to breathe|dyspnea|severe asthma|suffocating)\b/i, flag: 'Acute Respiratory Distress', sym: 'Severe Dyspnea' },
+      { pattern: /\b(slurred speech|facial droop|one sided weakness|stroke|sudden vision loss|paralysis|syncope)\b/i, flag: 'Acute Neurological Deficit / Stroke Protocol', sym: 'Suspected Acute Stroke' },
       { pattern: /\b(heavy bleeding|uncontrolled bleeding|coughing up blood|hemoptysis|vomiting blood|hematemesis)\b/i, flag: 'Active Severe Hemorrhage', sym: 'Severe Bleeding' },
       { pattern: /\b(severe head injury|major accident|deep laceration|stab wound|gunshot|high voltage burn)\b/i, flag: 'Major Acute Trauma', sym: 'Severe Trauma' },
       { pattern: /\b(severe abdominal pain|excruciating pain|pain 9\/10|pain 10\/10|unbearable pain)\b/i, flag: 'Acute Severe Pain', sym: 'Severe Acute Pain' },
@@ -223,9 +247,19 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => 
         requiresHumanReview = true;
       }
     }
+
+    if (category === 'Cardiac & Chest' && painScore >= 6) {
+      suggestedPriority = 'P2';
+      severity = 'Severe';
+      if (!redFlags.includes('Acute Cardiac Symptom with High Pain')) {
+        redFlags.push('Acute Cardiac Symptom with High Pain');
+      }
+      reason = `Acute cardiac/chest symptoms with VAS ${painScore}/10 pain. Fast-track emergency slot assigned.`;
+      requiresHumanReview = true;
+    }
   }
 
-  // --- 3. Urgent (P3) Detection (If not P1/P2) ---
+  // 5. Urgent (P3) Detection (If not P1/P2)
   if (suggestedPriority !== 'P1' && suggestedPriority !== 'P2') {
     const p3Conditions = [
       { pattern: /\b(high fever|chills|shivering|fever 103|fever 104|temperature high)\b/i, sym: 'High Fever' },
@@ -246,8 +280,11 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => 
     }
   }
 
-  // --- 4. Non-Urgent (P5) Confirmation ---
-  if (isP5Refill && !isPainOrEmergency && suggestedPriority !== 'P1' && suggestedPriority !== 'P2') {
+  // 6. Non-Urgent (P5) Confirmation
+  const isP5Refill = /\b(refill|prescription|renewal|routine checkup|medical certificate|follow up|fitness certificate|general checkup|skin rash mild|routine test|report collection)\b/i.test(text);
+  const isPainOrEmergency = painScore >= 4 || /\b(pain|bleed|breath|unconscious|chest|heart|stroke|fracture|burn|vomit|fever|severe|acute|accident)\b/i.test(text);
+
+  if (isP5Refill && !isPainOrEmergency && suggestedPriority !== 'P1' && suggestedPriority !== 'P2' && suggestedPriority !== 'P3') {
     suggestedPriority = 'P5';
     severity = 'Minimal';
     symptoms.push('Routine Prescription / Administrative Request');
@@ -255,12 +292,21 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => 
     requiresHumanReview = false;
   }
 
-  // --- 5. Less Urgent (P4) Default ---
+  // 7. Less Urgent (P4) Default
   if (suggestedPriority !== 'P1' && suggestedPriority !== 'P2' && suggestedPriority !== 'P3' && suggestedPriority !== 'P5') {
     suggestedPriority = 'P4';
     severity = 'Mild';
     symptoms.push('Mild Symptom / Routine Consultation');
     reason = 'Mild or subacute condition with no immediate red flags. Standard OPD queue allocation.';
+  }
+
+  // 8. Dedicated Emergency Slot Allocation
+  if (suggestedPriority === 'P1') {
+    emergencySlot = 'ER-Bay-01 (Resuscitation Bay)';
+  } else if (suggestedPriority === 'P2') {
+    emergencySlot = 'ER-Bay-02 (Cardiac / Trauma Slot)';
+  } else if (suggestedPriority === 'P3' && (category.includes('Trauma') || category.includes('Cardiac'))) {
+    emergencySlot = 'ER-Bay-03 (Urgent Assessment Slot)';
   }
 
   const uniqueSymptoms = [...new Set(symptoms)];
@@ -272,6 +318,9 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal') => 
     aiSeverity: severity,
     aiRedFlags: uniqueRedFlags,
     aiReason: reason,
+    symptomCategory: category,
+    painScore: painScore,
+    emergencySlot: emergencySlot,
     triageStatus: requiresHumanReview ? 'PENDING_REVIEW' : 'CONFIRMED',
     finalTriagePriority: suggestedPriority
   };
@@ -599,7 +648,9 @@ const handleTokenRegistration = async (req, res) => {
     department, 
     doctorId, 
     problemDescription, 
-    patientReportedUrgency 
+    patientReportedUrgency,
+    painScore,
+    symptomCategory
   } = req.body;
 
   if (!patientName || !patientName.trim()) {
@@ -611,10 +662,9 @@ const handleTokenRegistration = async (req, res) => {
     return res.status(400).json({ success: false, error: 'BAD_REQUEST', message: 'Valid Age between 1 and 120 is required.' });
   }
 
-  // Run AI Clinical Triage NLP Engine
-  // Patients cannot directly assign P1/Emergency; AI analyzes problem description
+  // Run AI Clinical Triage NLP Engine with Real-time Pain Scale & Category
   const rawDesc = (problemDescription || '').trim();
-  const triageResult = evaluateTriage(rawDesc, patientReportedUrgency || 'Normal');
+  const triageResult = evaluateTriage(rawDesc, patientReportedUrgency || 'Normal', painScore, symptomCategory);
 
   try {
     let doc = store.doctors.find(d => d.id === doctorId || d.docId === doctorId);
@@ -634,7 +684,7 @@ const handleTokenRegistration = async (req, res) => {
 
     let estWaitMins = (waitingInDept + 1) * 12;
     if (triageResult.finalTriagePriority === 'P1') estWaitMins = 0;
-    else if (triageResult.finalTriagePriority === 'P2') estWaitMins = Math.min(10, (waitingInDept + 1) * 4);
+    else if (triageResult.finalTriagePriority === 'P2') estWaitMins = Math.min(5, (waitingInDept + 1) * 3);
     else if (triageResult.finalTriagePriority === 'P3') estWaitMins = (waitingInDept + 1) * 8;
 
     const tokenPayload = {
@@ -647,9 +697,12 @@ const handleTokenRegistration = async (req, res) => {
       department: department || doc.department,
       doctor: doc.name,
       doctorId: doc.docId || doc.id || 'doc-1',
-      room: doc.room || 'OPD Room #104',
+      room: triageResult.emergencySlot || doc.room || 'OPD Room #104',
       priority: triageResult.finalTriagePriority,
       problemDescription: rawDesc,
+      painScore: triageResult.painScore,
+      symptomCategory: triageResult.symptomCategory,
+      emergencySlot: triageResult.emergencySlot,
       patientReportedUrgency: patientReportedUrgency || 'Normal',
       aiSuggestedPriority: triageResult.aiSuggestedPriority,
       aiSymptoms: triageResult.aiSymptoms,
@@ -704,7 +757,7 @@ const handleTokenRegistration = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Token ${tokenNum} registered with AI Triage Priority ${triageResult.finalTriagePriority} (${triageResult.aiSeverity}). Est. Wait: ${estWaitMins} mins.`,
+      message: `Token ${tokenNum} registered! AI Priority: ${triageResult.finalTriagePriority} (${triageResult.aiSeverity})${triageResult.emergencySlot ? ` • Assigned Slot: ${triageResult.emergencySlot}` : ''}. Est. Wait: ${estWaitMins} mins.`,
       token: savedToken ? savedToken.toObject() : memToken,
       triage: triageResult
     });
@@ -719,8 +772,8 @@ app.post('/api/tokens', handleTokenRegistration);
 
 // --- AI Triage Live Analysis & Override Endpoints ---
 app.post('/api/triage/analyze', (req, res) => {
-  const { problemDescription, patientReportedUrgency } = req.body;
-  const analysis = evaluateTriage(problemDescription, patientReportedUrgency);
+  const { problemDescription, patientReportedUrgency, painScore, symptomCategory } = req.body;
+  const analysis = evaluateTriage(problemDescription, patientReportedUrgency, painScore, symptomCategory);
   res.json({ success: true, triage: analysis });
 });
 

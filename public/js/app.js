@@ -1346,6 +1346,75 @@ function renderAdminTable() {
   lucide.createIcons();
 }
 
+// --- Real-time Pain Scale & Live Triage Feedback ---
+function updatePainScoreDisplay(val) {
+  const num = parseInt(val, 10) || 0;
+  const valEl = document.getElementById('painScoreVal');
+  if (!valEl) return;
+
+  let text = `${num} / 10 (Minimal)`;
+  let color = '#10b981';
+
+  if (num >= 9) {
+    text = `${num} / 10 (Excruciating / Emergency)`;
+    color = '#ef4444';
+  } else if (num >= 7) {
+    text = `${num} / 10 (Severe Pain)`;
+    color = '#f97316';
+  } else if (num >= 4) {
+    text = `${num} / 10 (Moderate Pain)`;
+    color = '#0ea5e9';
+  }
+
+  valEl.textContent = text;
+  valEl.style.color = color;
+
+  const desc = document.getElementById('inputProblemDesc')?.value;
+  if (desc) handleLiveTriageTyping(desc);
+}
+
+let liveTriageDebounceTimer = null;
+async function handleLiveTriageTyping(text) {
+  clearTimeout(liveTriageDebounceTimer);
+  const card = document.getElementById('triageLiveFeedbackCard');
+  const badge = document.getElementById('liveTriagePriorityBadge');
+  const details = document.getElementById('liveTriageDetails');
+  if (!card) return;
+
+  if (!text || text.trim().length < 3) {
+    card.style.display = 'none';
+    return;
+  }
+
+  liveTriageDebounceTimer = setTimeout(async () => {
+    try {
+      const pain = parseInt(document.getElementById('inputPainScore')?.value, 10) || 3;
+      const cat = document.getElementById('inputSymptomCategory')?.value || '';
+      const res = await api.analyzeTriage(text.trim(), 'Normal', pain, cat);
+      if (res.success && res.triage) {
+        const t = res.triage;
+        card.style.display = 'block';
+        if (badge) {
+          badge.innerHTML = getPriorityBadge(t.aiSuggestedPriority);
+        }
+        if (details) {
+          const redFlagStr = t.aiRedFlags && t.aiRedFlags.length > 0 ? `<strong class="red-text">🚨 Red Flags: ${t.aiRedFlags.join(', ')}</strong><br/>` : '';
+          const slotStr = t.emergencySlot ? `<span class="orange-text font-bold">⚡ Emergency Slot: <strong>${t.emergencySlot}</strong></span><br/>` : '';
+          details.innerHTML = `
+            ${redFlagStr}
+            ${slotStr}
+            <span>Category: <strong>${t.symptomCategory}</strong> • Severity: <strong>${t.aiSeverity}</strong></span><br/>
+            <span><em>${t.aiReason}</em></span>
+          `;
+        }
+        lucide.createIcons();
+      }
+    } catch (e) {
+      console.error('Live triage error:', e);
+    }
+  }, 250);
+}
+
 // --- AI Clinical Triage Review Engine ---
 function renderTriageReviewTable() {
   const tbody = document.getElementById('triageTableBody');
@@ -1368,8 +1437,21 @@ function renderTriageReviewTable() {
   if (p4p5El) p4p5El.textContent = p4p5;
   if (pendingEl) pendingEl.textContent = pending;
 
+  // Update Active Emergency Fast-Track Bays
+  const activeP1 = waitingTokens.find(q => q.finalTriagePriority === 'P1' || q.aiSuggestedPriority === 'P1');
+  const activeP2 = waitingTokens.find(q => q.finalTriagePriority === 'P2' || q.aiSuggestedPriority === 'P2');
+  const activeP3 = waitingTokens.find(q => q.finalTriagePriority === 'P3' || q.aiSuggestedPriority === 'P3');
+
+  const bay1El = document.getElementById('slotErBay1');
+  const bay2El = document.getElementById('slotErBay2');
+  const bay3El = document.getElementById('slotErBay3');
+
+  if (bay1El) bay1El.innerHTML = activeP1 ? `<span class="red-text font-bold">🔴 Occupied: ${activeP1.tokenNumber} (${activeP1.patientName})</span>` : `<span class="cyan-text">🟢 Ready for P1 Life Threat</span>`;
+  if (bay2El) bay2El.innerHTML = activeP2 ? `<span class="orange-text font-bold">🟠 Occupied: ${activeP2.tokenNumber} (${activeP2.patientName})</span>` : `<span class="orange-text">🟢 Ready for P2 Acute Trauma</span>`;
+  if (bay3El) bay3El.innerHTML = activeP3 ? `<span class="green-text font-bold">🟡 Assigned: ${activeP3.tokenNumber} (${activeP3.patientName})</span>` : `<span class="green-text">🟢 Ready for P3 Urgent Care</span>`;
+
   if (appState.queue.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="text-center sub-text padding-md">No patient triage records found in database.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center sub-text padding-md">No patient triage records found in database.</td></tr>`;
     return;
   }
 
@@ -1380,9 +1462,18 @@ function renderTriageReviewTable() {
     const symptoms = q.aiSymptoms || [];
     const isPending = q.triageStatus === 'PENDING_REVIEW';
     const isOverridden = q.triageStatus === 'OVERRIDDEN';
+    const painVal = q.painScore !== undefined ? q.painScore : 3;
+    const catVal = q.symptomCategory || 'General';
+    const emergencySlot = q.emergencySlot || (finalPriority === 'P1' ? 'ER-Bay-01 (Resuscitation Slot)' : (finalPriority === 'P2' ? 'ER-Bay-02 (Cardiac / Trauma Slot)' : ''));
 
     const redFlagHtml = redFlags.map(rf => `<span class="badge-pill red-pill font-mono small-text"><i data-lucide="alert-triangle"></i> ${rf}</span>`).join(' ');
     const symptomHtml = symptoms.map(s => `<span class="badge-pill blue-pill font-mono small-text">${s}</span>`).join(' ');
+
+    const painPill = painVal >= 9 
+      ? `<span class="badge-pill red-pill font-bold">VAS ${painVal}/10 (Critical)</span>` 
+      : (painVal >= 7 
+        ? `<span class="badge-pill orange-pill font-bold">VAS ${painVal}/10 (Severe)</span>` 
+        : `<span class="badge-pill green-pill">VAS ${painVal}/10</span>`);
 
     return `
       <tr>
@@ -1392,23 +1483,27 @@ function renderTriageReviewTable() {
           <span class="sub-text">${q.department} • ${q.doctor}</span>
         </td>
         <td>
-          <div style="max-width: 260px; word-wrap: break-word;">
+          <span class="badge-pill cyan-pill small-text font-bold">${catVal}</span><br/>
+          <div class="margin-t-xs">${painPill}</div>
+        </td>
+        <td>
+          <div style="max-width: 220px; word-wrap: break-word;">
             <em>"${q.problemDescription || 'General outpatient consultation'}"</em>
-            ${q.patientReportedUrgency ? `<br/><small class="sub-text">Reported Urgency: <strong>${q.patientReportedUrgency}</strong></small>` : ''}
           </div>
         </td>
         <td>
-          <div class="flex-column gap-xs" style="max-width: 200px;">
+          <div class="flex-column gap-xs" style="max-width: 190px;">
             ${redFlagHtml || ''}
             ${symptomHtml || '<span class="sub-text">Routine checkup</span>'}
           </div>
         </td>
         <td>
           ${getPriorityBadge(aiPriority)}
-          ${q.aiReason ? `<div class="sub-text small-text margin-t-xs" style="max-width:180px; font-size:11px;">${q.aiReason}</div>` : ''}
+          ${q.aiReason ? `<div class="sub-text small-text margin-t-xs" style="max-width:170px; font-size:11px;">${q.aiReason}</div>` : ''}
         </td>
         <td>
           ${getPriorityBadge(finalPriority)}
+          ${emergencySlot ? `<div class="badge-pill red-pill margin-t-xs font-mono" style="font-size:10px;"><i data-lucide="siren"></i> ${emergencySlot}</div>` : ''}
           ${isOverridden && q.overrideReason ? `<div class="sub-text small-text cyan-text margin-t-xs" style="max-width:160px;">Override: ${q.overrideReason} (by ${q.reviewedBy || 'Staff'})</div>` : ''}
         </td>
         <td>
@@ -1921,6 +2016,8 @@ function initModals() {
       phone: document.getElementById('inputPatientPhone')?.value,
       doctorId: document.getElementById('inputDoctorSelect')?.value,
       problemDescription: document.getElementById('inputProblemDesc')?.value || '',
+      painScore: parseInt(document.getElementById('inputPainScore')?.value, 10) || 3,
+      symptomCategory: document.getElementById('inputSymptomCategory')?.value || 'General & Routine',
       patientReportedUrgency: document.getElementById('inputPatientReportedUrgency')?.value || 'Normal'
     };
 
@@ -1931,7 +2028,8 @@ function initModals() {
         e.target.reset();
         const p = res.token.finalTriagePriority || res.token.priority || 'P4';
         const sev = res.triage?.aiSeverity || 'Moderate';
-        showToast(`Token ${res.token.tokenNumber} generated! AI Triage Priority: ${p} (${sev}). Est. Wait: ${res.token.waitTime || 15} mins.`, 'success');
+        const slotMsg = res.token.emergencySlot ? ` • Emergency Slot: ${res.token.emergencySlot}` : '';
+        showToast(`Token ${res.token.tokenNumber} generated! AI Triage Priority: ${p} (${sev})${slotMsg}. Est. Wait: ${res.token.waitTime || 15} mins.`, 'success');
         await loadAppData();
 
         loadPatientTokenData(res.token.tokenNumber);

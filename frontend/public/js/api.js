@@ -98,10 +98,10 @@ const api = {
   },
 
   // 4b. AI-Assisted Clinical Triage
-  async analyzeTriage(problemDescription, patientReportedUrgency = 'Normal') {
+  async analyzeTriage(problemDescription, patientReportedUrgency = 'Normal', painScore = 3, symptomCategory = '') {
     return request('/triage/analyze', {
       method: 'POST',
-      body: JSON.stringify({ problemDescription, patientReportedUrgency })
+      body: JSON.stringify({ problemDescription, patientReportedUrgency, painScore, symptomCategory })
     });
   },
 

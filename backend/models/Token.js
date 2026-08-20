@@ -70,6 +70,20 @@ const tokenSchema = new mongoose.Schema({
     trim: true,
     default: ''
   },
+  painScore: {
+    type: Number,
+    min: 0,
+    max: 10,
+    default: 3
+  },
+  symptomCategory: {
+    type: String,
+    default: 'General'
+  },
+  emergencySlot: {
+    type: String,
+    default: ''
+  },
   patientReportedUrgency: {
     type: String,
     default: 'Normal'

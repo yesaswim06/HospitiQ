@@ -1099,6 +1099,31 @@
             </div>
           </div>
 
+          <!-- Dedicated Emergency Slots / Fast-Track Bay Strip -->
+          <div class="glass-card padding-md margin-b-lg" style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.06);">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="red-text"><i data-lucide="siren"></i> 🚨 Dedicated Emergency Slots & Fast-Track Bays</h3>
+                <span class="sub-text">Immediate fast-track bays for P1 & P2 life-threat and acute trauma cases.</span>
+              </div>
+              <span class="badge-pill red-pill"><i data-lucide="zap"></i> Emergency Priority Active</span>
+            </div>
+            <div class="stats-grid margin-t-sm" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+              <div class="glass-card padding-sm blue-border" style="background: rgba(0,0,0,0.3);">
+                <span class="sub-text font-mono">ER-Bay-01 (Resuscitation Slot)</span>
+                <div class="font-bold cyan-text margin-t-xs" id="slotErBay1">Ready for P1 Life Threat</div>
+              </div>
+              <div class="glass-card padding-sm orange-border" style="background: rgba(0,0,0,0.3);">
+                <span class="sub-text font-mono">ER-Bay-02 (Cardiac / Trauma Slot)</span>
+                <div class="font-bold orange-text margin-t-xs" id="slotErBay2">Ready for P2 Acute Trauma</div>
+              </div>
+              <div class="glass-card padding-sm green-border" style="background: rgba(0,0,0,0.3);">
+                <span class="sub-text font-mono">ER-Bay-03 (Urgent Assessment Slot)</span>
+                <div class="font-bold green-text margin-t-xs" id="slotErBay3">Ready for P3 Urgent Care</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Triage Review Table -->
           <div class="glass-card table-card">
             <div class="card-header-flex padding-b-sm">
@@ -1110,10 +1135,11 @@
                 <tr>
                   <th>Token #</th>
                   <th>Patient Details</th>
-                  <th>Natural Language Problem Description</th>
+                  <th>Category & Pain (VAS)</th>
+                  <th>Problem Description</th>
                   <th>AI Symptoms & Red Flags</th>
                   <th>AI Suggestion</th>
-                  <th>Final Priority</th>
+                  <th>Final Priority & Emergency Slot</th>
                   <th>Triage Status</th>
                   <th>Actions</th>
                 </tr>
@@ -1514,20 +1540,43 @@
           <label>Select Doctor & OPD Room</label>
           <select id="inputDoctorSelect" class="glass-input" required></select>
         </div>
-        <div class="form-group">
-          <label><i data-lucide="brain-circuit"></i> Describe Problem / Symptoms in Natural Language (AI Clinical Triage)</label>
-          <textarea id="inputProblemDesc" class="glass-input" rows="3" placeholder="Describe symptoms, duration, pain severity, breathing, bleeding, etc. (e.g. Severe chest pain for 20 mins with sweating and difficulty breathing)"></textarea>
-          <small class="sub-text display-block margin-t-xs cyan-text"><i data-lucide="shield-alert"></i> AI Clinical Triage analyzes red flags and suggests P1–P5 priority for staff verification.</small>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label><i data-lucide="crosshair"></i> Primary Symptom Category</label>
+            <select id="inputSymptomCategory" class="glass-input">
+              <option value="General & Routine">General & Routine Checkup</option>
+              <option value="Cardiac & Chest">🫀 Cardiac & Chest Discomfort</option>
+              <option value="Respiratory & Airway">🫁 Respiratory & Shortness of Breath</option>
+              <option value="Neurological & Stroke">🧠 Neurological, Stroke & Head Injury</option>
+              <option value="Trauma, Burns & Bleeding">🩸 Trauma, Burns & Bleeding</option>
+              <option value="Abdominal & Gastrointestinal">🩺 Abdominal & Gastrointestinal Pain</option>
+              <option value="Orthopedic & Fractures">🦴 Orthopedic, Joint & Fractures</option>
+              <option value="Infection & High Fever">🌡️ High Fever & Acute Infection</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i data-lucide="activity"></i> Pain Level (VAS Scale 0–10): <strong id="painScoreVal" class="cyan-text">3 / 10 (Mild)</strong></label>
+            <input type="range" id="inputPainScore" min="0" max="10" value="3" class="glass-slider" oninput="updatePainScoreDisplay(this.value)" />
+          </div>
         </div>
+
         <div class="form-group">
-          <label>Patient Reported Discomfort Level</label>
-          <select id="inputPatientReportedUrgency" class="glass-input">
-            <option value="Normal">Mild / Routine (Standard Follow-up or Mild Symptoms)</option>
-            <option value="Moderate">Moderate Discomfort (Manageable Pain / Discomfort)</option>
-            <option value="Severe">Severe Discomfort (Severe Pain / Acute Illness)</option>
-          </select>
+          <label><i data-lucide="brain-circuit"></i> Describe Problem & Symptoms in Natural Language</label>
+          <textarea id="inputProblemDesc" class="glass-input" rows="3" placeholder="Describe symptoms, duration, pain severity, breathing, bleeding, etc. (e.g. Severe chest pain for 20 mins with sweating and difficulty breathing)" oninput="handleLiveTriageTyping(this.value)"></textarea>
         </div>
-        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check"></i> Run AI Triage & Generate Token Pass</button>
+
+        <!-- Real-Time Live AI Triage Feedback Banner -->
+        <div id="triageLiveFeedbackCard" class="glass-card padding-sm margin-b-sm" style="display:none; background: rgba(14, 165, 233, 0.08); border-left: 4px solid #0ea5e9;">
+          <div class="card-header-flex">
+            <span class="sub-text" style="font-size:12px;"><i data-lucide="cpu"></i> Real-Time AI Triage Forecast:</span>
+            <span id="liveTriagePriorityBadge" class="badge-pill blue-pill font-bold">P4 – Less Urgent</span>
+          </div>
+          <div id="liveTriageDetails" class="small-text margin-t-xs" style="font-size:11px; color:#94a3b8;"></div>
+        </div>
+
+        <button type="submit" class="action-btn glow-btn width-full margin-t-xs"><i data-lucide="check"></i> Run AI Triage & Generate Token Pass</button>
       </form>
     </div>
   </div>
