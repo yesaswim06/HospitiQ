@@ -604,8 +604,26 @@ async function loadPatientTokenData(tokenNumber) {
     if (docEl) docEl.textContent = pt.doctor || 'Dr. Sunita Rao';
     if (roomEl) roomEl.textContent = pt.room || 'OPD Room #104';
     if (waitEl) waitEl.innerHTML = `${pt.waitTime !== undefined ? pt.waitTime : 15} <span class="unit">Mins</span>`;
-    if (aheadEl) aheadEl.innerHTML = `${String(pt.patientsAhead || 0).padStart(2, '0')} <span class="unit">Patients</span>`;
-    if (statusEl) statusEl.textContent = pt.status || 'WAITING';
+    if (aheadEl) aheadEl.innerHTML = `${String(pt.patientsAhead !== undefined ? pt.patientsAhead : 0).padStart(2, '0')} <span class="unit">Patients</span>`;
+    
+    if (statusEl) {
+      if (pt.status === 'IN_CONSULTATION') {
+        statusEl.innerHTML = `<span class="cyan-text font-bold"><i data-lucide="radio"></i> IN CONSULTATION</span>`;
+      } else if (pt.status === 'COMPLETED') {
+        statusEl.innerHTML = `<span class="green-text font-bold"><i data-lucide="check-circle2"></i> COMPLETED</span>`;
+      } else {
+        statusEl.innerHTML = `<span class="orange-text font-bold"><i data-lucide="clock"></i> WAITING IN QUEUE</span>`;
+      }
+    }
+
+    const phoneStrip = document.querySelector('.alert-confirm-strip');
+    if (phoneStrip && pt.phone) {
+      phoneStrip.innerHTML = `
+        <i data-lucide="message-square"></i>
+        <span>Live queue alerts synchronized to: <strong>${pt.phone}</strong> via Instant SMS</span>
+        <span class="badge-pill green-pill margin-l-auto">Alerts Active</span>
+      `;
+    }
 
     const directUrl = `${window.location.origin}/?token=${pt.tokenNumber}`;
     const directUrlEl = document.getElementById('ptDirectUrl');
@@ -627,6 +645,7 @@ async function loadPatientTokenData(tokenNumber) {
         console.warn('QR Code generation warning:', e);
       }
     }
+    lucide.createIcons();
   } else {
     showToast(`No token found matching "${cleanStr}". Please verify your token number.`, 'warning');
   }
@@ -1872,6 +1891,14 @@ function initSearchAndFilters() {
 
   // Export CSV Report
   document.getElementById('exportCsvBtn')?.addEventListener('click', exportCsvReport);
+
+  // Patient Portal Token Search Input
+  const ptSearch = document.getElementById('ptTokenSearchInput');
+  ptSearch?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && ptSearch.value.trim()) {
+      loadPatientTokenData(ptSearch.value.trim());
+    }
+  });
 
   // Print / Export PDF Report
   document.getElementById('printReportBtn')?.addEventListener('click', () => {
