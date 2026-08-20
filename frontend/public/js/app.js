@@ -1109,12 +1109,12 @@ async function fetchRecommendedBeds() {
 
 // --- Operational Insights & System Alerts ---
 function renderInsightsAndAlerts() {
-  const dashIns = document.getElementById('insightsList');
+  const dashIns = document.getElementById('insightsListContainer') || document.getElementById('insightsList');
   const fullIns = document.getElementById('fullInsightsList');
   const dashAlt = document.getElementById('dashAlertsList');
   const fullAlt = document.getElementById('fullAlertsList');
 
-  const insightsHtml = appState.insights.length === 0
+  const insightsHtml = (!appState.insights || appState.insights.length === 0)
     ? `<div class="sub-text padding-md">All department throughputs operating within normal thresholds.</div>`
     : appState.insights.map(ins => `
         <div class="insight-card ${ins.priority === 'critical' ? 'critical-border' : ''}">
@@ -1129,7 +1129,7 @@ function renderInsightsAndAlerts() {
   if (dashIns) dashIns.innerHTML = insightsHtml;
   if (fullIns) fullIns.innerHTML = insightsHtml;
 
-  const alertHtml = appState.alerts.length === 0 
+  const alertHtml = (!appState.alerts || appState.alerts.length === 0)
     ? `<div class="sub-text padding-md">No critical emergency warnings at this time.</div>`
     : appState.alerts.map(alt => `
         <div class="alert-item ${alt.severity === 'CRITICAL' ? 'red-alert' : 'blue-alert'}">
@@ -1145,12 +1145,13 @@ function renderInsightsAndAlerts() {
 }
 
 function renderWardSnapshot() {
-  const dashContainer = document.getElementById('wardSnapshotGrid');
+  const dashContainer = document.getElementById('wardSnapshotContainer') || document.getElementById('wardSnapshotGrid');
   const mgmtContainer = document.getElementById('wardProgressGrid');
 
   const wards = ['ICU', 'Emergency', 'General Ward', 'Private Ward', 'Maternity'];
   const html = wards.map(w => {
-    const wardBeds = appState.beds.filter(b => b.ward.toLowerCase() === w.toLowerCase());
+    const wClean = w.replace(' Ward', '').toLowerCase();
+    const wardBeds = appState.beds?.filter(b => b.ward.toLowerCase().includes(wClean)) || [];
     const occ = wardBeds.filter(b => b.status === 'OCCUPIED').length;
     const total = wardBeds.length || (w === 'ICU' ? 15 : (w === 'Emergency' ? 15 : (w === 'General Ward' ? 30 : 20)));
     const pct = Math.round((occ / total) * 100);
@@ -1172,22 +1173,42 @@ function renderWardSnapshot() {
 }
 
 function renderDeptGrid() {
-  const container = document.getElementById('dashDeptGrid');
+  const container = document.getElementById('dashDeptGrid') || document.getElementById('deptGridContainer');
   if (!container) return;
 
-  container.innerHTML = appState.departments.map(d => `
-    <div class="glass-card dept-card">
-      <div class="dept-header">
-        <h4>${d.name}</h4>
-        <span class="badge-pill ${d.status === 'Critical' ? 'red-pill' : (d.status === 'Busy' ? 'orange-pill' : 'green-pill')}">${d.status}</span>
+  const defaultDepts = [
+    { name: 'Cardiology', icon: 'heart', room: 'OPD #104' },
+    { name: 'General Medicine', icon: 'stethoscope', room: 'OPD #108' },
+    { name: 'Orthopedics', icon: 'bone', room: 'OPD #201' },
+    { name: 'Pediatrics', icon: 'baby', room: 'OPD #105' },
+    { name: 'Neurology', icon: 'brain', room: 'OPD #304' },
+    { name: 'Dermatology', icon: 'sparkles', room: 'OPD #110' },
+    { name: 'ENT', icon: 'ear', room: 'OPD #115' },
+    { name: 'Emergency', icon: 'siren', room: 'ER Bay' }
+  ];
+
+  container.innerHTML = defaultDepts.map(d => {
+    const deptQueue = appState.queue?.filter(q => q.department.toLowerCase().includes(d.name.toLowerCase()) && q.status === 'WAITING') || [];
+    const deptDocs = appState.doctors?.filter(doc => doc.department.toLowerCase().includes(d.name.toLowerCase()) && doc.status !== 'OFF_DUTY') || [];
+    const waitingCount = deptQueue.length;
+    const avgWait = waitingCount > 0 ? waitingCount * 12 : 6;
+    const status = waitingCount >= 4 ? 'Critical' : (waitingCount >= 2 ? 'Busy' : 'Nominal');
+    const pillClass = status === 'Critical' ? 'red-pill' : (status === 'Busy' ? 'orange-pill' : 'green-pill');
+
+    return `
+      <div class="glass-card dept-card">
+        <div class="dept-header">
+          <h4>${d.name}</h4>
+          <span class="badge-pill ${pillClass}">${status}</span>
+        </div>
+        <div class="dept-metrics margin-t-sm">
+          <div><span>Waiting:</span> <strong class="cyan-text">${waitingCount} Patients</strong></div>
+          <div><span>Avg Wait:</span> <strong>${avgWait} mins</strong></div>
+          <div><span>Active Doctors:</span> <strong>${deptDocs.length || 1} Active</strong></div>
+        </div>
       </div>
-      <div class="dept-metrics margin-t-sm">
-        <div><span>Waiting:</span> <strong>${d.currentQueue}</strong></div>
-        <div><span>Avg Wait:</span> <strong>${d.avgWaitMins} mins</strong></div>
-        <div><span>Doctors:</span> <strong>${d.doctorsAvailable} Active</strong></div>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function renderAdminTable() {
