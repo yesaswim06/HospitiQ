@@ -185,7 +185,7 @@ Open **`http://localhost:5000`** in your browser!
 
 | Name | Role |
 | :--- | :--- |
-| **M N YESASWI BHARGAV (TL)** | Team Lead |
+| **M N YESASWI BHARGAV (TL)** | Team Lead/Backend Developer |
 | **RAMCHARAN G** | Frontend Developer |
 | **MANJULA B** | UI/UX Designer |
 | **MANVITHA N** | Graphic Designer |
@@ -196,8 +196,7 @@ Open **`http://localhost:5000`** in your browser!
 
 ## 📧 Support & Contact
 
-- **Customer Care & Support**: `support@hospitiq.org`
-- **24/7 OPD Helpline**: `+91 99000 11223`
+- **Customer Care & Support**: `myselfadmin123@gmail.com`
 - **Official Live Application**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
 - **Official Backend API**: [https://hospitiq.up.railway.app/api](https://hospitiq.up.railway.app/api)
 - **Edition**: Smart India Hackathon 2026 (SIH 2026)
