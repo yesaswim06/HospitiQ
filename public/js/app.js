@@ -111,14 +111,15 @@ function updateThemeIcons() {
 
 // --- Public Landing Page Navigation ---
 function initLandingPage() {
-  const hash = window.location.hash.replace('#', '') || 'home';
-  if (['home', 'features', 'about', 'contact', 'services', 'register', 'login'].includes(hash)) {
+  const allowedRoutes = ['home', 'features', 'about', 'contact', 'services', 'register', 'login', 'user', 'patient', 'doctor', 'admin', 'md'];
+  const hash = (window.location.hash.replace('#', '') || 'home').toLowerCase();
+  if (allowedRoutes.includes(hash)) {
     switchPublicPage(hash, false);
   }
 
   window.addEventListener('hashchange', () => {
-    const currentHash = window.location.hash.replace('#', '');
-    if (['home', 'features', 'about', 'contact', 'services', 'register', 'login'].includes(currentHash)) {
+    const currentHash = (window.location.hash.replace('#', '') || 'home').toLowerCase();
+    if (allowedRoutes.includes(currentHash)) {
       switchPublicPage(currentHash, false);
     }
   });
@@ -143,9 +144,11 @@ function initLandingPage() {
 }
 
 function switchPublicPage(pageName, updateHash = true) {
-  appState.activePublicPage = pageName;
-  if (updateHash && window.location.hash !== `#${pageName}`) {
-    window.location.hash = pageName;
+  const rawPage = (pageName || 'home').toLowerCase();
+  appState.activePublicPage = rawPage;
+
+  if (updateHash && window.location.hash !== `#${rawPage}`) {
+    window.location.hash = rawPage;
   }
 
   const landingWrapper = document.getElementById('publicLandingPage');
@@ -165,19 +168,31 @@ function switchPublicPage(pageName, updateHash = true) {
     view.style.display = 'none';
   });
 
-  const isSubSection = ['features', 'services', 'contact'].includes(pageName);
-  const targetViewId = isSubSection ? 'public-view-home' : `public-view-${pageName}`;
-  const targetView = document.getElementById(targetViewId);
+  const isSubSection = ['features', 'services', 'contact'].includes(rawPage);
+  const isAuthRolePage = ['user', 'patient', 'doctor', 'admin', 'md', 'login'].includes(rawPage);
 
+  let targetViewId = 'public-view-home';
+  if (isAuthRolePage) {
+    targetViewId = 'public-view-login';
+  } else if (!isSubSection) {
+    targetViewId = `public-view-${rawPage}`;
+  }
+
+  const targetView = document.getElementById(targetViewId);
   if (targetView) {
     targetView.classList.add('active');
     targetView.style.display = 'block';
   }
 
+  if (isAuthRolePage) {
+    const targetRole = (rawPage === 'doctor') ? 'doctor' : (rawPage === 'admin' || rawPage === 'md') ? 'admin' : 'user';
+    switchAuthRoleTab(targetRole, false);
+  }
+
   if (isSubSection) {
     let sectionId = 'featuresSection';
-    if (pageName === 'services') sectionId = 'servicesSection';
-    if (pageName === 'contact') sectionId = 'footerSection';
+    if (rawPage === 'services') sectionId = 'servicesSection';
+    if (rawPage === 'contact') sectionId = 'footerSection';
 
     setTimeout(() => {
       const sectionEl = document.getElementById(sectionId);
@@ -307,20 +322,86 @@ function initAuth() {
   });
 }
 
-// Public Page Login Form Submit
-async function handlePublicPageLogin(e) {
+// MTX B2B Role Tab Switchers
+function switchAuthRoleTab(role, updateHash = true) {
+  const raw = (role || 'user').toLowerCase();
+  const normRole = (raw === 'patient' || raw === 'user') ? 'user' : (raw === 'md' || raw === 'admin') ? 'admin' : 'doctor';
+
+  if (updateHash && window.location.hash !== `#${normRole}`) {
+    window.location.hash = normRole;
+  }
+
+  document.querySelectorAll('#public-view-login .mtx-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-auth-tab') === normRole);
+  });
+
+  const pForm = document.getElementById('publicPatientLoginForm');
+  const dForm = document.getElementById('publicDoctorLoginForm');
+  const aForm = document.getElementById('publicAdminLoginForm');
+
+  if (pForm) pForm.style.display = normRole === 'user' ? 'block' : 'none';
+  if (dForm) dForm.style.display = normRole === 'doctor' ? 'block' : 'none';
+  if (aForm) aForm.style.display = normRole === 'admin' ? 'block' : 'none';
+
+  lucide.createIcons();
+}
+
+function switchOverlayAuthTab(role) {
+  const raw = (role || 'user').toLowerCase();
+  const normRole = (raw === 'patient' || raw === 'user') ? 'user' : (raw === 'md' || raw === 'admin') ? 'admin' : 'doctor';
+
+  document.querySelectorAll('#loginScreen .mtx-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-overlay-tab') === normRole);
+  });
+
+  const pForm = document.getElementById('overlayPatientLoginForm');
+  const dForm = document.getElementById('overlayDoctorLoginForm');
+  const aForm = document.getElementById('overlayAdminLoginForm');
+
+  if (pForm) pForm.style.display = normRole === 'user' ? 'block' : 'none';
+  if (dForm) dForm.style.display = normRole === 'doctor' ? 'block' : 'none';
+  if (aForm) aForm.style.display = normRole === 'admin' ? 'block' : 'none';
+
+  lucide.createIcons();
+}
+
+async function handleUnifiedLogin(e, role) {
   e.preventDefault();
-  const activeChip = document.querySelector('#public-view-login .demo-chip.active');
-  const role = activeChip ? activeChip.getAttribute('data-role') : 'Patient';
+  const form = e.target;
+  let credentials = {};
 
   if (role === 'Patient') {
-    const name = (document.getElementById('pageLoginPatientName')?.value || 'tarun').trim();
-    const token = (document.getElementById('pageLoginTokenNumber')?.value || 'A-031').trim();
-    await executeLogin(role, { patientName: name, tokenNumber: token });
+    const mobile = form.querySelector('#pagePtMobile, #overlayPtMobile')?.value || '9900011223';
+    const token = form.querySelector('#pagePtToken, #overlayPtToken')?.value || 'A-024';
+    credentials = {
+      mobileNumber: mobile.trim(),
+      tokenNumber: token.trim(),
+      patientName: 'Patient'
+    };
+  } else if (role === 'Doctor') {
+    const email = form.querySelector('#pageDocEmail, #overlayDocEmail')?.value || 'doctor@hospitiq.org';
+    const password = form.querySelector('#pageDocPassword, #overlayDocPassword')?.value || 'doctor123';
+    credentials = {
+      email: email.trim(),
+      password: password.trim()
+    };
   } else {
-    const email = (document.getElementById('pageLoginEmail')?.value || 'admin@hospitiq.org').trim();
-    await executeLogin(role, { email });
+    // Admin / MD
+    const email = form.querySelector('#pageAdmEmail, #overlayAdmEmail')?.value || 'admin@hospitiq.org';
+    const password = form.querySelector('#pageAdmPassword, #overlayAdmPassword')?.value || 'admin123';
+    credentials = {
+      email: email.trim(),
+      password: password.trim()
+    };
   }
+
+  await executeLogin(role, credentials);
+}
+
+// Public Page Login Form Submit (Compatibility Fallback)
+async function handlePublicPageLogin(e) {
+  e.preventDefault();
+  await handleUnifiedLogin(e, 'Patient');
 }
 
 // Centralized Login Execution with Server-Side Verification
@@ -2028,16 +2109,16 @@ function initModals() {
   // Token Form Submission
   document.getElementById('newTokenForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const cat = document.getElementById('inputSymptomCategory')?.value || 'General & Routine';
     const tokenData = {
       patientName: document.getElementById('inputPatientName')?.value,
       age: document.getElementById('inputPatientAge')?.value,
       gender: document.getElementById('inputPatientGender')?.value,
       phone: document.getElementById('inputPatientPhone')?.value,
-      doctorId: document.getElementById('inputDoctorSelect')?.value,
-      problemDescription: document.getElementById('inputProblemDesc')?.value || '',
+      problemDescription: `Outpatient consultation for ${cat}.`,
       painScore: parseInt(document.getElementById('inputPainScore')?.value, 10) || 3,
-      symptomCategory: document.getElementById('inputSymptomCategory')?.value || 'General & Routine',
-      patientReportedUrgency: document.getElementById('inputPatientReportedUrgency')?.value || 'Normal'
+      symptomCategory: cat,
+      patientReportedUrgency: 'Normal'
     };
 
     try {
@@ -2299,66 +2380,46 @@ function showToast(message, type = 'info') {
 async function handlePublicRegisterSubmit(e) {
   e.preventDefault();
   const patientName = document.getElementById('regName')?.value;
-  const email = document.getElementById('regEmail')?.value;
+  const phone = document.getElementById('regPhone')?.value;
   const age = document.getElementById('regAge')?.value;
   const gender = document.getElementById('regGender')?.value;
-  const phone = document.getElementById('regPhone')?.value;
-  const role = document.getElementById('regRole')?.value;
-  const password = document.getElementById('regPassword')?.value;
+  const email = document.getElementById('regEmail')?.value;
 
   if (!patientName || !patientName.trim()) {
     return showToast('Please enter your full name.', 'warning');
   }
 
+  if (!phone || !phone.trim()) {
+    return showToast('Please enter your 10-digit mobile number.', 'warning');
+  }
+
   try {
-    if (role === 'Patient') {
-      const tokenData = {
-        patientName: patientName.trim(),
-        age: age,
-        gender: gender,
-        phone: phone,
-        department: 'General Medicine',
-        doctorId: 'doc-2', // Dr. Vikram Malhotra (General Medicine)
-        priority: 'Normal'
-      };
+    const tokenData = {
+      patientName: patientName.trim(),
+      age: parseInt(age, 10) || 30,
+      gender: gender || 'Male',
+      phone: phone.trim(),
+      email: email ? email.trim() : '',
+      department: 'General Medicine',
+      problemDescription: 'General outpatient registration & checkup.',
+      painScore: 2,
+      symptomCategory: 'General & Routine',
+      patientReportedUrgency: 'Normal'
+    };
 
-      const res = await api.createToken(tokenData);
-      if (res.success && res.token) {
-        showToast(`Registration successful! Generated Token: ${res.token.tokenNumber}`, 'success');
-        e.target.reset();
-        switchPublicPage('login');
-        const loginNameEl = document.getElementById('pageLoginPatientName');
-        const loginTokenEl = document.getElementById('pageLoginTokenNumber');
-        if (loginNameEl) loginNameEl.value = patientName.trim();
-        if (loginTokenEl) loginTokenEl.value = res.token.tokenNumber;
-      } else {
-        showToast(res.message || 'Error generating patient token.', 'danger');
-      }
-    } else if (role === 'Doctor') {
-      const docData = {
-        name: patientName.trim(),
-        email: email,
-        specialization: 'General Physician',
-        department: 'General Medicine',
-        room: 'OPD Room #105',
-        phone: phone
-      };
-
-      const res = await api.addDoctor(docData);
-      if (res.success) {
-        showToast(`Doctor profile registered successfully!`, 'success');
-        e.target.reset();
-        switchPublicPage('login');
-        const loginEmailEl = document.getElementById('pageLoginEmail');
-        if (loginEmailEl) loginEmailEl.value = email;
-      } else {
-        showToast(res.message || 'Error registering doctor.', 'danger');
-      }
-    } else {
-      // Admin/Staff - register as Admin in local users roster
-      showToast('Staff registration completed. Please use credentials to login.', 'success');
+    const res = await api.createToken(tokenData);
+    if (res.success && res.token) {
+      showToast(`Registration successful! Generated Token: ${res.token.tokenNumber}`, 'success');
       e.target.reset();
       switchPublicPage('login');
+      switchAuthRoleTab('patient');
+
+      const mobileInput = document.getElementById('pagePtMobile');
+      const tokenInput = document.getElementById('pagePtToken');
+      if (mobileInput) mobileInput.value = phone.trim();
+      if (tokenInput) tokenInput.value = res.token.tokenNumber;
+    } else {
+      showToast(res.message || 'Error generating patient token.', 'danger');
     }
   } catch (err) {
     showToast('Failed to complete registration.', 'danger');

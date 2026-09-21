@@ -478,6 +478,154 @@ body {
 
 .back-to-top-btn:hover { background: #0284c7; transform: translateY(-3px); }
 
+/* MTX B2B HEALTHCARE ENTERPRISE LOGIN STYLES */
+.mtx-login-container {
+  max-width: 520px !important;
+  width: 100%;
+  border: 1px solid rgba(14, 165, 233, 0.25) !important;
+}
+
+.mtx-b2b-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.mtx-auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .mtx-auth-tabs {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.mtx-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.65rem 0.4rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-sub);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mtx-tab-btn i {
+  width: 18px;
+  height: 18px;
+}
+
+.mtx-tab-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .mtx-tab-btn:hover {
+  background: #e2e8f0;
+}
+
+.mtx-tab-btn.active {
+  background: var(--bg-card);
+  color: var(--color-cyan);
+  border-color: rgba(14, 165, 233, 0.4);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+[data-theme="light"] .mtx-tab-btn.active {
+  background: #ffffff;
+  color: #0284c7;
+  border-color: #93c5fd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.auth-panel-heading {
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+[data-theme="light"] .auth-panel-heading {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.auth-panel-heading h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+  color: var(--color-cyan);
+}
+
+[data-theme="light"] .auth-panel-heading h4 {
+  color: #0369a1;
+}
+
+.auth-panel-heading p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.demo-cred-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px dashed rgba(148, 163, 184, 0.25);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--text-sub);
+  margin-top: 0.75rem;
+}
+
+.demo-cred-hint code {
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--color-cyan);
+  font-family: monospace;
+}
+
+[data-theme="light"] .demo-cred-hint code {
+  background: #e2e8f0;
+  color: #0284c7;
+}
+
+.info-note-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--text-sub);
+}
+
+[data-theme="light"] .info-note-box {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+
 /* --- DEMO NOTICE BANNER AT BOTTOM --- */
 .demo-notice-banner {
   position: fixed;

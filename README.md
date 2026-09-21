@@ -12,7 +12,7 @@
   <a href="https://hospiti-q.vercel.app/"><img src="https://img.shields.io/badge/Frontend-hospiti--q.vercel.app-brightgreen.svg?style=for-the-badge&logo=vercel" alt="Vercel Live Web App" /></a>
   <a href="https://hospitiq.up.railway.app/api/stats"><img src="https://img.shields.io/badge/Backend%20API-hospitiq.up.railway.app-blue.svg?style=for-the-badge&logo=railway" alt="Railway Live REST API" /></a>
   <a href="https://mongodb.com/"><img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-forestgreen.svg?style=for-the-badge&logo=mongodb" alt="MongoDB Atlas" /></a>
-  <img src="https://img.shields.io/badge/SIH-2026%20Project-orange.svg?style=for-the-badge" alt="SIH 2026 Project" />
+  <img src="https://img.shields.io/badge/MTX-B2B%20Project-blueviolet.svg?style=for-the-badge" alt="MTX B2B Healthcare Project" />
 </p>
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
@@ -181,22 +181,21 @@ Open **`http://localhost:5000`** in your browser!
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
-## 👥 SIH 2026 Innovation Team
+## 👥 MTX Healthcare Innovation Team
 
 | Name | Role |
 | :--- | :--- |
-| **M N YESASWI BHARGAV (TL)** | Team Lead/Backend Developer |
-| **RAMCHARAN G** | Frontend Developer |
+| **M N YESASWI BHARGAV (TL)** | Team Lead / Backend Lead |
+| **TARUN KUMAR N** | Frontend Developer |
+| **CHARAN TEJA M** | Backend Developer |
 | **MANJULA B** | UI/UX Designer |
 | **MANVITHA N** | Graphic Designer |
-| **SUPRIYA A** | Healthcare Researcher |
-| **CHARAN TEJA M** | Technology Researcher |
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
 ## 📧 Support & Contact
 
-- **Customer Care & Support**: `myselfadmin123@gmail.com`
+- **Customer Care & Support**: `support@hospitiq.org` / `myselfadmin123@gmail.com`
 - **Official Live Application**: [https://hospiti-q.vercel.app/](https://hospiti-q.vercel.app/)
 - **Official Backend API**: [https://hospitiq.up.railway.app/api](https://hospitiq.up.railway.app/api)
-- **Edition**: Smart India Hackathon 2026 (SIH 2026)
+- **Project**: MTX B2B Healthcare Project (2026)
