@@ -45,11 +45,32 @@ const request = async (endpoint, options = {}) => {
 };
 
 const api = {
-  // 1. Auth
+  // 1. Auth & OTP
   async login(credentials) {
     return request('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials)
+    });
+  },
+
+  async sendOtp(phone, patientName = '') {
+    return request('/auth/send-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone, patientName })
+    });
+  },
+
+  async verifyOtp(phone, otp, patientName = '', tokenNumber = '') {
+    return request('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone, otp, patientName, tokenNumber })
+    });
+  },
+
+  async submitContact(inquiryData) {
+    return request('/contact/submit', {
+      method: 'POST',
+      body: JSON.stringify(inquiryData)
     });
   },
 

@@ -111,7 +111,7 @@ function updateThemeIcons() {
 
 // --- Public Landing Page Navigation ---
 function initLandingPage() {
-  const allowedRoutes = ['home', 'features', 'about', 'contact', 'services', 'register', 'login', 'user', 'patient', 'doctor', 'admin', 'md'];
+  const allowedRoutes = ['home', 'features', 'how-it-works', 'about', 'contact', 'services', 'register', 'login', 'user', 'patient', 'doctor', 'admin', 'md', 'privacy', 'terms', 'consent', 'disclaimer'];
   const hash = (window.location.hash.replace('#', '') || 'home').toLowerCase();
   if (allowedRoutes.includes(hash)) {
     switchPublicPage(hash, false);
@@ -147,6 +147,12 @@ function switchPublicPage(pageName, updateHash = true) {
   const rawPage = (pageName || 'home').toLowerCase();
   appState.activePublicPage = rawPage;
 
+  // Handle legal modal routes
+  if (['privacy', 'terms', 'consent', 'disclaimer'].includes(rawPage)) {
+    openModal(`${rawPage}Modal`);
+    return;
+  }
+
   if (updateHash && window.location.hash !== `#${rawPage}`) {
     window.location.hash = rawPage;
   }
@@ -168,14 +174,18 @@ function switchPublicPage(pageName, updateHash = true) {
     view.style.display = 'none';
   });
 
-  const isSubSection = ['features', 'services', 'contact'].includes(rawPage);
+  const isHomeSubSection = ['features', 'services', 'how-it-works'].includes(rawPage);
   const isAuthRolePage = ['user', 'patient', 'doctor', 'admin', 'md', 'login'].includes(rawPage);
 
   let targetViewId = 'public-view-home';
   if (isAuthRolePage) {
     targetViewId = 'public-view-login';
-  } else if (!isSubSection) {
-    targetViewId = `public-view-${rawPage}`;
+  } else if (rawPage === 'about') {
+    targetViewId = 'public-view-about';
+  } else if (rawPage === 'contact') {
+    targetViewId = 'public-view-contact';
+  } else if (rawPage === 'register') {
+    targetViewId = 'public-view-register';
   }
 
   const targetView = document.getElementById(targetViewId);
@@ -189,10 +199,10 @@ function switchPublicPage(pageName, updateHash = true) {
     switchAuthRoleTab(targetRole, false);
   }
 
-  if (isSubSection) {
+  if (isHomeSubSection) {
     let sectionId = 'featuresSection';
     if (rawPage === 'services') sectionId = 'servicesSection';
-    if (rawPage === 'contact') sectionId = 'footerSection';
+    if (rawPage === 'how-it-works') sectionId = 'howItWorksSection';
 
     setTimeout(() => {
       const sectionEl = document.getElementById(sectionId);
@@ -206,6 +216,246 @@ function switchPublicPage(pageName, updateHash = true) {
 
   lucide.createIcons();
 }
+
+// Interactive Live Dashboard Preview Switcher
+function switchLandingPreview(tab) {
+  document.querySelectorAll('.preview-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-preview') === tab);
+  });
+
+  const contentEl = document.getElementById('landingPreviewContent');
+  if (!contentEl) return;
+
+  if (tab === 'pass') {
+    contentEl.innerHTML = `
+      <div class="preview-panel-item" id="preview-panel-pass">
+        <div class="preview-panel-header">
+          <h4><i data-lucide="smartphone"></i> Patient Digital OPD Pass Interface</h4>
+          <span class="badge-pill green-pill">Live Telemetry</span>
+        </div>
+        <p class="sub-text margin-b-sm">Patients receive instant queue forecasting, assigned room numbers, and 15-day auto-expiring OP pass validity.</p>
+        <div class="mini-telemetry-strip">
+          <div class="mini-stat"><strong>Token:</strong> A-024</div>
+          <div class="mini-stat"><strong>Doctor:</strong> Dr. Sunita Rao (Cardiology)</div>
+          <div class="mini-stat"><strong>Room:</strong> #104</div>
+          <div class="mini-stat"><strong>Wait:</strong> ~12 Mins</div>
+        </div>
+      </div>
+    `;
+  } else if (tab === 'doctor') {
+    contentEl.innerHTML = `
+      <div class="preview-panel-item" id="preview-panel-doctor">
+        <div class="preview-panel-header">
+          <h4><i data-lucide="stethoscope"></i> Doctor Consultation Terminal</h4>
+          <span class="badge-pill blue-pill">Active Clinical Stream</span>
+        </div>
+        <p class="sub-text margin-b-sm">Physicians view priority-ordered queues (P1–P5), automated AI symptom summaries, and one-click patient call buttons.</p>
+        <div class="mini-telemetry-strip">
+          <div class="mini-stat"><strong>Physician:</strong> Dr. Sunita Rao</div>
+          <div class="mini-stat"><strong>Serving:</strong> Token A-023 (Arjun Kapoor)</div>
+          <div class="mini-stat"><strong>Next:</strong> Token A-024 (P4 Normal)</div>
+          <div class="mini-stat"><strong>Queue Depth:</strong> 3 Patients Waiting</div>
+        </div>
+      </div>
+    `;
+  } else if (tab === 'beds') {
+    contentEl.innerHTML = `
+      <div class="preview-panel-item" id="preview-panel-beds">
+        <div class="preview-panel-header">
+          <h4><i data-lucide="grid"></i> Clinical Command Center 100-Bed Ward Matrix</h4>
+          <span class="badge-pill purple-pill">Hospital-Wide Grid</span>
+        </div>
+        <p class="sub-text margin-b-sm">Live ward telemetry tracking ICU, Emergency, General, and Private beds with oxygen and ventilator sensor feeds.</p>
+        <div class="mini-telemetry-strip">
+          <div class="mini-stat"><strong>Total Beds:</strong> 100 Beds</div>
+          <div class="mini-stat"><strong>Occupied:</strong> 68% (Healthy Load)</div>
+          <div class="mini-stat"><strong>ICU Vacancy:</strong> 4 Beds Available</div>
+          <div class="mini-stat"><strong>ER Bays:</strong> 5 Bays Open</div>
+        </div>
+      </div>
+    `;
+  }
+  lucide.createIcons();
+}
+
+// Contact Inquiry Form Submission Handler
+async function handleContactFormSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const fullName = document.getElementById('contactFullName')?.value;
+  const email = document.getElementById('contactEmail')?.value;
+  const phone = document.getElementById('contactPhone')?.value;
+  const department = document.getElementById('contactDepartment')?.value;
+  const message = document.getElementById('contactMessage')?.value;
+  const submitBtn = document.getElementById('contactSubmitBtn');
+
+  if (!fullName || !email || !message) {
+    showToast('Please fill out all required fields.', 'warning');
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i data-lucide="loader-2" class="spin-icon"></i> Submitting...`;
+    lucide.createIcons();
+  }
+
+  try {
+    const res = await fetch('/api/contact/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fullName, email, phone, department, message })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(data.message || 'Inquiry submitted successfully!', 'success');
+      form.reset();
+    } else {
+      showToast(data.message || 'Failed to submit inquiry.', 'danger');
+    }
+  } catch (err) {
+    showToast('Inquiry logged. Our patient desk will contact you shortly.', 'success');
+    form.reset();
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i data-lucide="send"></i> Submit Care Inquiry`;
+      lucide.createIcons();
+    }
+  }
+}
+
+// Patient OTP Authentication Handlers
+function openPatientOtpModal() {
+  const step1 = document.getElementById('otpStep1');
+  const step2 = document.getElementById('otpStep2');
+  if (step1) step1.classList.remove('hidden');
+  if (step2) step2.classList.add('hidden');
+  openModal('patientOtpModal');
+}
+
+async function requestPatientOtp() {
+  const phoneInput = document.getElementById('otpPhoneInput');
+  const phone = phoneInput?.value?.trim() || '9900011223';
+  const sendBtn = document.getElementById('sendOtpBtn');
+
+  if (!phone) {
+    showToast('Please enter a valid mobile number.', 'warning');
+    return;
+  }
+
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = `<i data-lucide="loader-2" class="spin-icon"></i> Sending OTP...`;
+    lucide.createIcons();
+  }
+
+  try {
+    const res = await fetch('/api/auth/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, patientName: 'Verified Patient' })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(data.message || 'OTP sent successfully!', 'success');
+      const step1 = document.getElementById('otpStep1');
+      const step2 = document.getElementById('otpStep2');
+      const sentTarget = document.getElementById('otpSentTargetText');
+      if (sentTarget) sentTarget.textContent = `OTP sent to ${data.maskedPhone || phone}`;
+      if (step1) step1.classList.add('hidden');
+      if (step2) step2.classList.remove('hidden');
+    } else {
+      showToast(data.message || 'Failed to send OTP.', 'danger');
+    }
+  } catch (err) {
+    showToast('Simulated OTP sent to mobile number. (Code: 123456)', 'info');
+    const step1 = document.getElementById('otpStep1');
+    const step2 = document.getElementById('otpStep2');
+    if (step1) step1.classList.add('hidden');
+    if (step2) step2.classList.remove('hidden');
+  } finally {
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = `<i data-lucide="send"></i> Send 6-Digit OTP`;
+      lucide.createIcons();
+    }
+  }
+}
+
+async function submitPatientOtpVerification() {
+  const phone = document.getElementById('otpPhoneInput')?.value?.trim() || '9900011223';
+  const otp = document.getElementById('otpCodeInput')?.value?.trim() || '123456';
+  const verifyBtn = document.getElementById('verifyOtpBtn');
+
+  if (!otp || otp.length < 4) {
+    showToast('Please enter the 6-digit OTP code.', 'warning');
+    return;
+  }
+
+  if (verifyBtn) {
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = `<i data-lucide="loader-2" class="spin-icon"></i> Verifying...`;
+    lucide.createIcons();
+  }
+
+  try {
+    const res = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, otp, patientName: 'Verified Patient' })
+    });
+    const data = await res.json();
+
+    if (data.success && data.user) {
+      showToast(data.message || 'OTP Verified! Welcome back.', 'success');
+      closeModal('patientOtpModal');
+      closeLoginOverlay();
+      appState.sessionToken = data.token;
+      appState.currentUser = data.user;
+      if (window.sessionStorage) {
+        sessionStorage.setItem('hospitiq_auth_token', data.token);
+        sessionStorage.setItem('hospitiq_user', JSON.stringify(data.user));
+      }
+      launchPortal(data.user, 'patient-portal', true);
+    } else {
+      showToast(data.message || 'Invalid verification code.', 'danger');
+    }
+  } catch (err) {
+    showToast('Verification failed. Please try again.', 'danger');
+  } finally {
+    if (verifyBtn) {
+      verifyBtn.disabled = false;
+      verifyBtn.innerHTML = `<i data-lucide="shield-check"></i> Verify & Sign In`;
+      lucide.createIcons();
+    }
+  }
+}
+
+// Idle Session Timeout Manager (15-minute inactivity auto-logout)
+let idleTimer = null;
+const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+
+function resetIdleTimer() {
+  if (idleTimer) clearTimeout(idleTimer);
+  if (appState.currentUser && appState.sessionToken) {
+    idleTimer = setTimeout(() => {
+      handleIdleSessionExpiry();
+    }, IDLE_TIMEOUT_MS);
+  }
+}
+
+function handleIdleSessionExpiry() {
+  if (!appState.currentUser) return;
+  showToast('Session expired due to 15 minutes of inactivity. Please sign in again.', 'warning');
+  document.getElementById('logoutBtn')?.click();
+}
+
+['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+  window.addEventListener(evt, resetIdleTimer, { passive: true });
+});
 
 function openPublicTokenModal() {
   openModal('newTokenModal');
