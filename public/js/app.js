@@ -1389,7 +1389,7 @@ function renderDeptGrid() {
     { name: 'Neurology', icon: 'brain', room: 'OPD #304' },
     { name: 'Dermatology', icon: 'sparkles', room: 'OPD #110' },
     { name: 'ENT', icon: 'ear', room: 'OPD #115' },
-    { name: 'Emergency', icon: 'siren', room: 'ER Bay' }
+    { name: 'Emergency', icon: 'alert-octagon', room: 'ER Bay' }
   ];
 
   container.innerHTML = defaultDepts.map(d => {
@@ -1603,7 +1603,7 @@ function renderTriageReviewTable() {
         </td>
         <td>
           ${getPriorityBadge(finalPriority)}
-          ${emergencySlot ? `<div class="badge-pill red-pill margin-t-xs font-mono" style="font-size:10px;"><i data-lucide="siren"></i> ${emergencySlot}</div>` : ''}
+          ${emergencySlot ? `<div class="badge-pill red-pill margin-t-xs font-mono" style="font-size:10px;"><i data-lucide="alert-octagon"></i> ${emergencySlot}</div>` : ''}
           ${isOverridden && q.overrideReason ? `<div class="sub-text small-text cyan-text margin-t-xs" style="max-width:160px;">Override: ${q.overrideReason} (by ${q.reviewedBy || 'Staff'})</div>` : ''}
         </td>
         <td>
