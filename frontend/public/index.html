@@ -1638,25 +1638,18 @@
           <span>Specialist doctor and OPD consultation room are automatically assigned based on your symptom category and AI triage urgency.</span>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label><i data-lucide="crosshair"></i> Primary Symptom Category</label>
-            <select id="inputSymptomCategory" class="glass-input" onchange="updatePainScoreDisplay(document.getElementById('inputPainScore')?.value || 3)">
-              <option value="General & Routine">General & Routine Checkup</option>
-              <option value="Cardiac & Chest">🫀 Cardiac & Chest Discomfort</option>
-              <option value="Respiratory & Airway">🫁 Respiratory & Shortness of Breath</option>
-              <option value="Neurological & Stroke">🧠 Neurological, Stroke & Head Injury</option>
-              <option value="Trauma, Burns & Bleeding">🩸 Trauma, Burns & Bleeding</option>
-              <option value="Abdominal & Gastrointestinal">🩺 Abdominal & Gastrointestinal Pain</option>
-              <option value="Orthopedic & Fractures">🦴 Orthopedic, Joint & Fractures</option>
-              <option value="Infection & High Fever">🌡️ High Fever & Acute Infection</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label><i data-lucide="activity"></i> Pain Level (VAS Scale 0–10): <strong id="painScoreVal" class="cyan-text">3 / 10 (Mild)</strong></label>
-            <input type="range" id="inputPainScore" min="0" max="10" value="3" class="glass-slider" oninput="updatePainScoreDisplay(this.value)" />
-          </div>
+        <div class="form-group">
+          <label><i data-lucide="crosshair"></i> Primary Symptom Category</label>
+          <select id="inputSymptomCategory" class="glass-input">
+            <option value="General & Routine">General & Routine Checkup</option>
+            <option value="Cardiac & Chest">🫀 Cardiac & Chest Discomfort</option>
+            <option value="Respiratory & Airway">🫁 Respiratory & Shortness of Breath</option>
+            <option value="Neurological & Stroke">🧠 Neurological, Stroke & Head Injury</option>
+            <option value="Trauma, Burns & Bleeding">🩸 Trauma, Burns & Bleeding</option>
+            <option value="Abdominal & Gastrointestinal">🩺 Abdominal & Gastrointestinal Issues</option>
+            <option value="Orthopedic & Fractures">🦴 Orthopedic, Joint & Fractures</option>
+            <option value="Infection & High Fever">🌡️ High Fever & Acute Infection</option>
+          </select>
         </div>
 
         <button type="submit" class="action-btn glow-btn width-full margin-t-xs"><i data-lucide="ticket"></i> Generate OPD Token Pass</button>
