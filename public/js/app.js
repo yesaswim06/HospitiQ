@@ -106,6 +106,11 @@ function updateThemeIcons() {
     if (icon) icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
   });
 
+  const logoSrc = isDark ? 'images/hospitiq_brand_logo_dark.png' : 'images/hospitiq_brand_logo_light.png';
+  document.querySelectorAll('.navbar-brand-img, .sidebar-brand-img, .login-brand-logo-img, .login-brand-logo img').forEach(img => {
+    img.src = logoSrc;
+  });
+
   lucide.createIcons();
 }
 
