@@ -185,11 +185,11 @@ Open **`http://localhost:5000`** in your browser!
 
 | Name | Role |
 | :--- | :--- |
-| **M N YESASWI BHARGAV (TL)** | Team Lead / Backend Lead |
-| **TARUN KUMAR N** | Frontend Developer |
-| **CHARAN TEJA M** | Backend Developer |
-| **MANJULA B** | UI/UX Designer |
-| **MANVITHA N** | Graphic Designer |
+| **MANJULA B (TL)** | Team Leader / Healthcare Lead |
+| **TARUN KUMAR N** | Backend Developer |
+| **CHARAN TEJA M** | Frontend Developer |
+| **M N YESASWI BHARGAV** | Database Architect |
+| **MANVITHA N** | DevOps & Cloud Engineer |
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%" />
 
