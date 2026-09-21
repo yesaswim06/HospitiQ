@@ -341,7 +341,18 @@ body {
 .about-team-main-title { font-size: 2.5rem; font-weight: 800; }
 .about-team-subtitle { font-size: 1.1rem; font-weight: 600; color: var(--color-blue); }
 
-.team-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.story-narrative-container { max-width: 1100px; margin: 0 auto; }
+.story-card { padding: 2rem; border-radius: var(--radius-lg); background: var(--glass-card-bg); border: 1px solid var(--glass-border); line-height: 1.7; }
+.story-card-header { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+.story-card-header h3 { font-size: 1.4rem; font-weight: 800; }
+.story-text { font-size: 1rem; color: var(--text-main); line-height: 1.75; }
+
+.story-pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.story-pillar-card { padding: 1.5rem; border-radius: var(--radius-md); background: var(--glass-card-bg); border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 0.5rem; }
+.story-pillar-card h4 { font-size: 1.1rem; font-weight: 700; }
+.pillar-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.25rem; font-size: 1.3rem; }
+
+.team-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
 .team-card { padding: 1.75rem; display: flex; flex-direction: column; gap: 1rem; border-radius: var(--radius-lg); background: var(--glass-card-bg); border: 1px solid var(--glass-border); transition: transform 0.3s ease, border-color 0.3s ease; }
 .team-card:hover { transform: translateY(-4px); border-color: var(--color-blue); }
 
@@ -676,16 +687,6 @@ body {
 .logo-cross-small { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; color: white; }
 .brand { display: flex; align-items: center; gap: 0.6rem; }
 .sidebar-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; }
-
-/* BRAND LOGO STYLES (MATCHES BACKGROUND SEAMLESSLY) */
-.navbar-brand-img { height: 38px; width: auto; object-fit: contain; transition: all var(--transition-normal); filter: drop-shadow(0 2px 8px rgba(14, 165, 233, 0.3)); }
-.sidebar-brand-img { height: 36px; width: auto; max-width: 175px; object-fit: contain; transition: all var(--transition-normal); filter: drop-shadow(0 2px 8px rgba(14, 165, 233, 0.3)); }
-.login-brand-logo { display: flex; justify-content: center; align-items: center; margin-bottom: 0.5rem; }
-.login-brand-logo-img { height: 48px; width: auto; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(14, 165, 233, 0.35)); }
-
-[data-theme="light"] .navbar-brand-img,
-[data-theme="light"] .sidebar-brand-img,
-[data-theme="light"] .login-brand-logo-img { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08)); }
 
 .glass-sidebar.collapsed .sidebar-brand-text,
 .glass-sidebar.collapsed .nav-section-label,
