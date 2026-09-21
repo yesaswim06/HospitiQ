@@ -106,48 +106,63 @@ const memoryStore = {
 };
 
 let isConnected = false;
+let connectingPromise = null;
 
 const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) {
+  if (mongoose.connection.readyState === 1) {
     isConnected = true;
-    return;
+    return true;
+  }
+  if (connectingPromise) {
+    return connectingPromise;
   }
   if (!MONGODB_URI) {
     console.error('❌ MONGODB_URI environment variable is missing.');
     isConnected = false;
-    return;
+    return false;
   }
-  try {
-    await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000
-    });
-    isConnected = true;
-    console.log('✅ MongoDB Atlas connected successfully for HOSPITIQ.');
 
-    // Ensure 15-day TTL and composite indexes are synchronized with MongoDB Atlas
+  connectingPromise = (async () => {
     try {
-      await Token.syncIndexes();
-      await Patient.syncIndexes();
-      console.log('✅ MongoDB Atlas 15-Day OP TTL & Search Indexes synchronized.');
-    } catch (e) {
-      console.warn('Index sync warning:', e.message);
-    }
+      await mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 3000,
+        socketTimeoutMS: 30000,
+        maxPoolSize: 20,
+        minPoolSize: 5,
+        family: 4
+      });
+      isConnected = true;
+      console.log('✅ MongoDB Atlas connected successfully for HOSPITIQ (Fast Pool Active).');
 
-    // Auto-seed if collections are empty
-    const tokenCount = await Token.countDocuments();
-    if (tokenCount === 0) {
-      console.log('ℹ️  Auto-initializing MongoDB Atlas collections with seed data...');
-      await Doctor.insertMany(memoryStore.doctors.map(d => ({ ...d, docId: d.id })));
-      await User.insertMany(memoryStore.users);
-      await Bed.insertMany(memoryStore.beds);
-      await Admission.insertMany(memoryStore.admissions);
-      await Token.insertMany(memoryStore.queue);
-      console.log('✅ MongoDB Atlas collections initialized.');
+      // Asynchronously initialize indexes and seed data without blocking API requests
+      setImmediate(async () => {
+        try {
+          const tokenCount = await Token.estimatedDocumentCount();
+          if (tokenCount === 0) {
+            console.log('ℹ️  Auto-initializing MongoDB Atlas collections with seed data...');
+            await Doctor.insertMany(memoryStore.doctors.map(d => ({ ...d, docId: d.id })));
+            await User.insertMany(memoryStore.users);
+            await Bed.insertMany(memoryStore.beds);
+            await Admission.insertMany(memoryStore.admissions);
+            await Token.insertMany(memoryStore.queue);
+            console.log('✅ MongoDB Atlas collections initialized.');
+          }
+        } catch (e) {
+          console.warn('Background seed/count notice:', e.message);
+        }
+      });
+
+      return true;
+    } catch (err) {
+      isConnected = false;
+      console.error('❌ MongoDB Atlas connection failed:', err.message);
+      return false;
+    } finally {
+      connectingPromise = null;
     }
-  } catch (err) {
-    isConnected = false;
-    console.error('❌ MongoDB Atlas connection failed:', err.message);
-  }
+  })();
+
+  return connectingPromise;
 };
 
 const isDBConnected = () => isConnected && mongoose.connection.readyState === 1;

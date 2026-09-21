@@ -97,23 +97,44 @@ const requireRoles = (allowedRoles = []) => {
 
 app.use(authenticateUser);
 
-// Ensure Database connection is active for API routes in serverless lifecycle
+// Ensure Database connection is initiated without blocking requests
 const ensureDbConnection = async (req, res, next) => {
   if (req.path.startsWith('/api')) {
     if (!isDBConnected()) {
-      await connectDB();
-    }
-    if (!isDBConnected()) {
-      return res.status(503).json({
-        success: false,
-        error: 'DATABASE_ERROR',
-        message: 'Unable to connect to hospital database. Please ensure MongoDB Atlas Network Access allows connections (0.0.0.0/0).'
-      });
+      connectDB().catch(() => {});
     }
   }
   next();
 };
 app.use(ensureDbConnection);
+
+// --- High Performance Server-Side Cache Engine ---
+const serverCache = {
+  data: new Map(),
+  get(key) {
+    const entry = this.data.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiry) {
+      this.data.delete(key);
+      return null;
+    }
+    return entry.value;
+  },
+  set(key, value, ttlMs = 4000) {
+    this.data.set(key, { value, expiry: Date.now() + ttlMs });
+  },
+  invalidate(pattern = null) {
+    if (!pattern) {
+      this.data.clear();
+      return;
+    }
+    for (const key of this.data.keys()) {
+      if (key.includes(pattern)) {
+        this.data.delete(key);
+      }
+    }
+  }
+};
 
 // Rate Limiter
 const rateLimitMap = new Map();
@@ -516,6 +537,9 @@ app.get('/api/patient/:tokenNumber', rateLimiter, async (req, res) => {
 // ==============================================================================
 
 app.get('/api/stats', async (req, res) => {
+  const cached = serverCache.get('stats');
+  if (cached) return res.json(cached);
+
   try {
     let queueList = store.queue;
     let bedList = store.beds;
@@ -535,7 +559,7 @@ app.get('/api/stats', async (req, res) => {
     const availBeds = bedList.filter(b => b.status === 'AVAILABLE').length;
     const icuAvail = bedList.filter(b => b.ward === 'ICU' && b.status === 'AVAILABLE').length;
 
-    res.json({
+    const result = {
       success: true,
       opd: {
         totalToday: queueList.length,
@@ -560,7 +584,10 @@ app.get('/api/stats', async (req, res) => {
         icuBedsAvailable: icuAvail,
         criticalAlerts: emergWaiting.length > 0 ? 1 : 0
       }
-    });
+    };
+
+    serverCache.set('stats', result, 4000);
+    res.json(result);
   } catch (err) {
     console.error('Stats error:', err);
     res.status(500).json({ success: false, error: 'SERVER_ERROR', message: 'Unable to calculate dashboard stats.' });
@@ -568,6 +595,9 @@ app.get('/api/stats', async (req, res) => {
 });
 
 app.get('/api/capacity', async (req, res) => {
+  const cached = serverCache.get('capacity');
+  if (cached) return res.json(cached);
+
   try {
     let bedList = store.beds;
     let queueList = store.queue;
@@ -591,14 +621,17 @@ app.get('/api/capacity', async (req, res) => {
     const waitingCount = queueList.length;
     const opdLoadPercent = Math.min(100, Math.round((waitingCount / 15) * 100));
 
-    res.json({
+    const result = {
       success: true,
       opdLoadPercent,
       bedOccupancyPercent: bedOccPercent,
       icuOccupancyPercent: icuOccPercent,
       emergencyCapacityPercent: emgOccPercent,
       overallStatus: icuOccPercent > 85 ? 'Critical' : (bedOccPercent > 75 ? 'High Load' : 'Normal')
-    });
+    };
+
+    serverCache.set('capacity', result, 4000);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: 'Unable to compute capacity matrix.' });
   }
@@ -609,6 +642,9 @@ app.get('/api/capacity', async (req, res) => {
 // ==============================================================================
 
 app.get('/api/queue', async (req, res) => {
+  const cached = serverCache.get('queue');
+  if (cached) return res.json(cached);
+
   try {
     let queueData = [];
 
@@ -631,7 +667,9 @@ app.get('/api/queue', async (req, res) => {
       return 0;
     });
 
-    res.json({ success: true, queue: sorted });
+    const result = { success: true, queue: sorted };
+    serverCache.set('queue', result, 4000);
+    res.json(result);
   } catch (err) {
     console.error('Queue fetch error:', err);
     res.status(500).json({ success: false, error: 'SERVER_ERROR', message: 'Unable to fetch OPD queue.' });
@@ -760,6 +798,8 @@ const handleTokenRegistration = async (req, res) => {
     store.queue.unshift(memToken);
     if (doc) doc.patientsWaiting = (doc.patientsWaiting || 0) + 1;
 
+    serverCache.invalidate();
+
     res.status(201).json({
       success: true,
       message: `Token ${tokenNum} registered! AI Priority: ${triageResult.finalTriagePriority} (${triageResult.aiSeverity})${triageResult.emergencySlot ? ` • Assigned Slot: ${triageResult.emergencySlot}` : ''}. Valid for 15 days (Expires: ${tokenPayload.opExpiryDate}). Est. Wait: ${estWaitMins} mins.`,
@@ -795,6 +835,7 @@ const cleanupExpiredOPData = async () => {
 
       if (delTokens.deletedCount > 0 || delPatients.deletedCount > 0) {
         console.log(`[Auto-Purge] Automatically erased ${delTokens.deletedCount} expired OP tokens and ${delPatients.deletedCount} expired OP patient records (> 15 days validity expired).`);
+        serverCache.invalidate();
       }
     }
 
@@ -866,6 +907,8 @@ app.post('/api/triage/override/:id', requireRoles(['Doctor', 'Admin']), async (r
       Object.assign(memToken, updateData);
     }
 
+    serverCache.invalidate();
+
     res.json({ success: true, message: `Triage priority updated to ${finalTriagePriority}.`, token: memToken });
   } catch (err) {
     console.error('Triage override error:', err);
@@ -919,6 +962,8 @@ app.post('/api/queue/call-next', requireRoles(['Doctor', 'Admin']), async (req, 
         match.status = 'IN_CONSULTATION';
         match.waitTime = 0;
       }
+
+      serverCache.invalidate();
 
       res.json({
         success: true,
@@ -984,6 +1029,8 @@ app.put('/api/queue/:id/status', requireRoles(['Doctor', 'Admin']), async (req, 
       }
     }
 
+    serverCache.invalidate();
+
     if (tokenItem || memItem) {
       res.json({
         success: true,
@@ -1004,12 +1051,21 @@ app.put('/api/queue/:id/status', requireRoles(['Doctor', 'Admin']), async (req, 
 // ==============================================================================
 
 app.get('/api/doctors', async (req, res) => {
+  const cached = serverCache.get('doctors');
+  if (cached) return res.json(cached);
+
   try {
     if (isDBConnected()) {
       const docList = await Doctor.find().lean();
-      if (docList.length > 0) return res.json({ success: true, doctors: docList });
+      if (docList.length > 0) {
+        const result = { success: true, doctors: docList };
+        serverCache.set('doctors', result, 4000);
+        return res.json(result);
+      }
     }
-    res.json({ success: true, doctors: store.doctors });
+    const result = { success: true, doctors: store.doctors };
+    serverCache.set('doctors', result, 4000);
+    res.json(result);
   } catch (err) {
     res.json({ success: true, doctors: store.doctors });
   }
@@ -1058,6 +1114,8 @@ app.post('/api/doctors', requireRoles(['Admin']), async (req, res) => {
     store.doctors.push(memDoc);
     store.users.push({ id: `usr-${docId}`, name: memDoc.name, role: 'Doctor', email: memDoc.email, department: memDoc.department });
 
+    serverCache.invalidate();
+
     res.status(201).json({
       success: true,
       message: `Doctor ${newDocData.name} registered and login created.`,
@@ -1090,6 +1148,8 @@ app.put('/api/doctors/:id', requireRoles(['Admin']), async (req, res) => {
       if (phone) memDoc.phone = phone;
     }
 
+    serverCache.invalidate();
+
     res.json({ success: true, message: 'Doctor profile updated.' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error updating doctor.' });
@@ -1106,6 +1166,8 @@ app.delete('/api/doctors/:id', requireRoles(['Admin']), async (req, res) => {
     if (idx !== -1) {
       store.doctors.splice(idx, 1);
     }
+
+    serverCache.invalidate();
 
     res.json({ success: true, message: 'Doctor removed from roster.' });
   } catch (err) {
@@ -1132,6 +1194,8 @@ app.put('/api/doctors/:id/status', requireRoles(['Doctor', 'Admin']), async (req
     const memDoc = store.doctors.find(d => d.id === req.params.id || d.docId === req.params.id || d.name === req.params.id);
     if (memDoc) memDoc.status = status;
 
+    serverCache.invalidate();
+
     res.json({ success: true, message: `Doctor status updated to ${status}` });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error updating doctor status.' });
@@ -1143,12 +1207,21 @@ app.put('/api/doctors/:id/status', requireRoles(['Doctor', 'Admin']), async (req
 // ==============================================================================
 
 app.get('/api/beds', async (req, res) => {
+  const cached = serverCache.get('beds');
+  if (cached) return res.json(cached);
+
   try {
     if (isDBConnected()) {
       const beds = await Bed.find().lean();
-      if (beds.length > 0) return res.json({ success: true, beds });
+      if (beds.length > 0) {
+        const result = { success: true, beds };
+        serverCache.set('beds', result, 4000);
+        return res.json(result);
+      }
     }
-    res.json({ success: true, beds: store.beds });
+    const result = { success: true, beds: store.beds };
+    serverCache.set('beds', result, 4000);
+    res.json(result);
   } catch (err) {
     res.json({ success: true, beds: store.beds });
   }
@@ -1257,6 +1330,8 @@ app.put('/api/beds/:id/admit', requireRoles(['Doctor', 'Admin']), async (req, re
       });
     }
 
+    serverCache.invalidate();
+
     res.json({ success: true, message: `Patient admitted to bed successfully.` });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error admitting patient.' });
@@ -1295,6 +1370,8 @@ app.put('/api/beds/:id/discharge', requireRoles(['Doctor', 'Admin']), async (req
       }
     }
 
+    serverCache.invalidate();
+
     res.json({ success: true, message: 'Patient discharged. Bed is now Available.' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error discharging patient.' });
@@ -1302,12 +1379,21 @@ app.put('/api/beds/:id/discharge', requireRoles(['Doctor', 'Admin']), async (req
 });
 
 app.get('/api/admissions', async (req, res) => {
+  const cached = serverCache.get('admissions');
+  if (cached) return res.json(cached);
+
   try {
     if (isDBConnected()) {
       const adms = await Admission.find().sort({ createdAt: -1 }).lean();
-      if (adms.length > 0) return res.json({ success: true, admissions: adms });
+      if (adms.length > 0) {
+        const result = { success: true, admissions: adms };
+        serverCache.set('admissions', result, 4000);
+        return res.json(result);
+      }
     }
-    res.json({ success: true, admissions: store.admissions });
+    const result = { success: true, admissions: store.admissions };
+    serverCache.set('admissions', result, 4000);
+    res.json(result);
   } catch (err) {
     res.json({ success: true, admissions: store.admissions });
   }
@@ -1334,6 +1420,7 @@ app.post('/api/emergency/siren', requireRoles(['Doctor', 'Admin']), async (req, 
     }
 
     store.alerts.unshift(alertData);
+    serverCache.invalidate();
 
     res.json({
       success: true,
@@ -1348,6 +1435,9 @@ app.post('/api/emergency/siren', requireRoles(['Doctor', 'Admin']), async (req, 
 
 
 app.get('/api/insights', async (req, res) => {
+  const cached = serverCache.get('insights');
+  if (cached) return res.json(cached);
+
   try {
     let bedList = store.beds;
     let queueList = store.queue;
@@ -1452,11 +1542,14 @@ app.get('/api/insights', async (req, res) => {
       });
     }
 
-    res.json({
+    const result = {
       success: true,
       insights: dynamicInsights,
       alerts: dynamicAlerts
-    });
+    };
+
+    serverCache.set('insights', result, 4000);
+    res.json(result);
   } catch (err) {
     res.json({ success: true, insights: [], alerts: [] });
   }
@@ -1465,12 +1558,21 @@ app.get('/api/insights', async (req, res) => {
 app.get('/api/departments', (req, res) => res.json({ success: true, departments: store.departments }));
 
 app.get('/api/patients', async (req, res) => {
+  const cached = serverCache.get('patients');
+  if (cached) return res.json(cached);
+
   try {
     if (isDBConnected()) {
       const pts = await Token.find().sort({ createdAt: -1 }).lean();
-      if (pts.length > 0) return res.json({ success: true, patients: pts });
+      if (pts.length > 0) {
+        const result = { success: true, patients: pts };
+        serverCache.set('patients', result, 4000);
+        return res.json(result);
+      }
     }
-    res.json({ success: true, patients: store.queue });
+    const result = { success: true, patients: store.queue };
+    serverCache.set('patients', result, 4000);
+    res.json(result);
   } catch (err) {
     res.json({ success: true, patients: store.queue });
   }

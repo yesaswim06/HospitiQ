@@ -74,9 +74,37 @@
 }
 
 /* Reset & Base Setup */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE 10+ and Edge */
+}
 
-html { scroll-behavior: smooth; }
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+div::-webkit-scrollbar,
+section::-webkit-scrollbar,
+table::-webkit-scrollbar,
+tbody::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+html { 
+  scroll-behavior: smooth; 
+  color-scheme: dark;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
 
 body {
   font-family: var(--font-sans);
@@ -90,6 +118,62 @@ body {
   text-rendering: optimizeLegibility;
   transition: background-color var(--transition-normal), color var(--transition-normal);
   padding-bottom: 40px;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* ==========================================================================
+   HIGH-CONTRAST ACCESSIBLE FORM SELECT & OPTION STYLING
+   ========================================================================== */
+select,
+.glass-input select,
+select.glass-input,
+select.glass-input-compact {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
+}
+
+select option,
+select optgroup {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  font-size: 0.92rem;
+  padding: 10px 14px;
+}
+
+select option:hover,
+select option:focus,
+select option:checked,
+select option:active {
+  background-color: #0ea5e9 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] select,
+[data-theme="light"] .glass-input select,
+[data-theme="light"] select.glass-input,
+[data-theme="light"] select.glass-input-compact {
+  background-color: #ffffff !important;
+  color: #090d16 !important;
+  border-color: rgba(203, 213, 225, 0.9) !important;
+}
+
+[data-theme="light"] select option,
+[data-theme="light"] select optgroup {
+  background-color: #ffffff !important;
+  color: #090d16 !important;
+}
+
+[data-theme="light"] select option:hover,
+[data-theme="light"] select option:focus,
+[data-theme="light"] select option:checked,
+[data-theme="light"] select option:active {
+  background-color: #0ea5e9 !important;
+  color: #ffffff !important;
 }
 
 .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; overflow: hidden; }
