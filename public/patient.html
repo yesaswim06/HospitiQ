@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HOSPITIQ — Patient OPD Portal</title>
+  <meta name="description" content="HOSPITIQ Patient OPD Portal: Live token pass, QR queue tracking, and real-time wait telemetry." />
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- QRCode JS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <link rel="icon" type="image/png" href="images/hospitiq_brand_logo.png">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page-role="Patient">
+
+  <!-- Dynamic Backdrop Animation Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- APPLICATION SHELL -->
+  <div class="app-layout" id="appShell">
+    
+    <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="glass-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="brand" title="Return to HOSPITIQ Home">
+          <img src="images/hospitiq_brand_logo.png" alt="HOSPITIQ" class="sidebar-brand-img" style="height: 36px; border-radius: 8px; background: #ffffff; padding: 2px 6px; object-fit: contain; max-width: 170px;" />
+        </a>
+        <button class="sidebar-toggle-btn" id="sidebarCollapseBtn" title="Toggle Sidebar">
+          <i data-lucide="chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">PATIENT SERVICES</div>
+        <button class="side-link active patient-role-link" data-view="patient-portal"><i data-lucide="ticket"></i> <span>My OPD Token Pass</span></button>
+        <button class="side-link" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> <span>Book New Token</span></button>
+        <a href="index.html" class="side-link"><i data-lucide="home"></i> <span>Main Hospital Portal</span></a>
+        <a href="doctor.html" class="side-link"><i data-lucide="stethoscope"></i> <span>Doctor Portal</span></a>
+        <a href="admin.html" class="side-link"><i data-lucide="shield-check"></i> <span>Admin Command</span></a>
+      </nav>
+
+      <!-- SIDEBAR USER FOOTER -->
+      <div class="sidebar-user-footer">
+        <div class="user-avatar-circle" id="userAvatar" title="Patient Profile">P</div>
+        <div class="user-info-text sidebar-user-info">
+          <span class="user-name" id="userNameLabel">Ramesh Verma</span>
+          <span class="user-role-badge" id="userRoleBadge">OPD Patient</span>
+        </div>
+        <button class="logout-icon-btn" id="logoutBtn" title="Return to Home"><i data-lucide="log-out"></i></button>
+      </div>
+    </aside>
+
+    <!-- MAIN RIGHT CONTENT WRAPPER -->
+    <div class="main-wrapper">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="glass-header">
+        <div class="header-left">
+          <button class="mobile-hamburger" id="mobileHamburger"><i data-lucide="menu"></i></button>
+          <div class="hospital-branch-selector desktop-only" title="Hospital Location">
+            <i data-lucide="building-2"></i>
+            <span class="font-bold cyan-text" style="font-size: 0.85rem; letter-spacing: 0.2px;">HOSPITIQ Central Hospital (Main Campus)</span>
+          </div>
+        </div>
+
+        <div class="header-center desktop-only">
+          <div class="global-search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="ptHeaderSearchInput" placeholder="Enter Token # (e.g. A-024, A-105)..." class="glass-input" onchange="loadPatientTokenData(this.value)" />
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="action-btn emergency-header-btn small-btn" id="triggerEmergencyModeBtn" title="Activate Hospital Emergency Siren Mode">
+            <i data-lucide="alert-octagon" class="emergency-btn-icon"></i> 
+            <span>Emergency Siren</span>
+          </button>
+          
+          <div class="live-clock-box desktop-only">
+            <i data-lucide="clock"></i>
+            <span id="liveTimeClock">10:42 AM</span>
+          </div>
+
+          <button class="icon-round-btn" id="themeToggleBtn" title="Switch Light/Dark Theme">
+            <i data-lucide="sun" id="themeIcon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW PANELS CONTAINER -->
+      <main class="content-container">
+        
+        <!-- PATIENT PORTAL VIEW -->
+        <section id="view-patient-portal" class="view-panel active">
+          <div class="view-header">
+            <div>
+              <h1>Patient Token & Live Wait Status</h1>
+              <p>Real-time queue tracking, consultation room allocation, and QR code pass.</p>
+            </div>
+            <div class="action-row">
+              <input type="text" id="ptTokenSearchInput" placeholder="Lookup Token # (e.g. A-024, A-105)" class="glass-input width-auto" onchange="loadPatientTokenData(this.value)" />
+              <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="user-plus"></i> Book New Token</button>
+            </div>
+          </div>
+
+          <div class="glass-card patient-portal-card margin-b-lg">
+            <div class="patient-hero-header text-center">
+              <span class="badge-pill cyan-pill margin-b-xs"><i data-lucide="ticket"></i> Active OPD Pass</span>
+              <h1 class="patient-token-display font-mono gradient-text" id="ptTokenNum">A-024</h1>
+              <h2 id="ptName">Patient: Ramesh Verma (Age: 44, Male)</h2>
+              <div class="patient-meta-row margin-t-xs">
+                <span><i data-lucide="stethoscope"></i> Department: <strong id="ptDept">General Medicine</strong></span> • 
+                <span><i data-lucide="user"></i> Doctor: <strong id="ptDoctor">Dr. Rajesh Sharma</strong></span> • 
+                <span><i data-lucide="door-open"></i> Room: <strong id="ptRoom">OPD Room #101</strong></span>
+              </div>
+            </div>
+
+            <div class="patient-wait-grid margin-t-md">
+              <div class="wait-box blue-border">
+                <span class="sub-text">Estimated Wait Time</span>
+                <div class="wait-val font-mono" id="ptWaitTime">15 <span class="unit">Mins</span></div>
+              </div>
+              <div class="wait-box orange-border">
+                <span class="sub-text">Patients Ahead of You</span>
+                <div class="wait-val font-mono" id="ptAheadCount">02 <span class="unit">Patients</span></div>
+              </div>
+              <div class="wait-box green-border">
+                <span class="sub-text">Token Status</span>
+                <div class="wait-val green-text" id="ptStatus">WAITING IN QUEUE</div>
+              </div>
+            </div>
+
+            <div class="alert-confirm-strip margin-t-md">
+              <i data-lucide="message-square"></i>
+              <span>Live queue updates synchronized to: <strong id="ptAlertPhone">99000 11223</strong> via Instant SMS</span>
+              <span class="badge-pill green-pill margin-l-auto">Alerts Active</span>
+            </div>
+
+            <div class="qr-code-section text-center margin-t-lg">
+              <h4>Contactless Digital Token Pass</h4>
+              <p class="sub-text margin-b-sm">Show this QR code at the OPD entrance terminal or doctor consultation desk.</p>
+              <div class="qr-code-box" id="ptQrCodeContainer"></div>
+              <small class="sub-text display-block margin-t-xs">Scan link: <span class="font-mono cyan-text" id="ptDirectUrl">https://hospiti-q.vercel.app/?token=A-024</span></small>
+              <div class="margin-t-sm">
+                <span class="badge-pill green-pill font-mono" id="ptValidityBadge"><i data-lucide="shield-check"></i> OP Valid for 15 Days • Patient Data Auto-Erased After Expiry</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PATIENTS WHO ARE WAITING QUEUE LIST -->
+          <div class="glass-card margin-b-lg">
+            <div class="card-header-flex">
+              <h3><i data-lucide="users"></i> Live Department Queue & Patients in Line</h3>
+              <span class="badge-pill cyan-pill" id="ptQueueDeptBadge">Live OPD Telemetry</span>
+            </div>
+            <p class="sub-text margin-b-md">Live order of patients scheduled for consultation today. Your current position is highlighted below.</p>
+            
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Position</th>
+                    <th>Token #</th>
+                    <th>Patient Name</th>
+                    <th>Assigned Doctor & Room</th>
+                    <th>Est. Wait</th>
+                    <th>Priority</th>
+                    <th>Live Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ptWaitingQueueTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL: GENERATE TOKEN / PATIENT REGISTRATION -->
+  <div class="modal-overlay" id="newTokenModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="ticket"></i> Patient Registration & OPD Token Pass</h3>
+        <button class="close-btn" id="closeNewTokenModal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="newTokenForm">
+        <div class="form-group">
+          <label>Patient Full Name</label>
+          <input type="text" id="inputPatientName" required placeholder="e.g. Ramesh Verma" class="glass-input" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="inputPatientAge" min="1" max="120" required placeholder="42" class="glass-input" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="inputPatientGender" class="glass-input">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="text" id="inputPatientPhone" placeholder="e.g. 9900011223" class="glass-input" />
+        </div>
+
+        <div class="info-note-box margin-b-sm">
+          <i data-lucide="sparkles"></i>
+          <span>Specialist doctor and OPD consultation room are automatically assigned based on your symptom category and AI triage urgency.</span>
+        </div>
+
+        <div class="form-group">
+          <label><i data-lucide="crosshair"></i> Primary Symptom Category</label>
+          <select id="inputSymptomCategory" class="glass-input">
+            <option value="General & Routine">General & Routine Checkup</option>
+            <option value="Cardiac & Chest">🫀 Cardiac & Chest Discomfort</option>
+            <option value="Respiratory & Airway">🫁 Respiratory & Shortness of Breath</option>
+            <option value="Neurological & Stroke">🧠 Neurological, Stroke & Head Injury</option>
+            <option value="Trauma, Burns & Bleeding">🩸 Trauma, Burns & Bleeding</option>
+            <option value="Abdominal & Gastrointestinal">🩺 Abdominal & Gastrointestinal Issues</option>
+            <option value="Orthopedic & Fractures">🦴 Orthopedic, Joint & Fractures</option>
+            <option value="Infection & High Fever">🌡️ High Fever & Acute Infection</option>
+          </select>
+        </div>
+
+        <button type="submit" class="action-btn glow-btn width-full margin-t-xs"><i data-lucide="ticket"></i> Generate OPD Token Pass</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

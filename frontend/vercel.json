@@ -1,7 +1,17 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "rewrites": [
+    { "source": "/patient", "destination": "/public/patient.html" },
+    { "source": "/user", "destination": "/public/patient.html" },
+    { "source": "/doctor", "destination": "/public/doctor.html" },
+    { "source": "/admin", "destination": "/public/admin.html" }
+  ],
   "routes": [
+    { "src": "/patient", "dest": "/public/patient.html" },
+    { "src": "/user", "dest": "/public/patient.html" },
+    { "src": "/doctor", "dest": "/public/doctor.html" },
+    { "src": "/admin", "dest": "/public/admin.html" },
     {
       "src": "/(.*)",
       "dest": "/public/$1"

@@ -1578,10 +1578,38 @@ app.get('/api/patients', async (req, res) => {
   }
 });
 
+// Direct Role Routes
+const fs = require('fs');
+
+const resolveHtmlFile = (filename) => {
+  const publicPath = path.join(__dirname, '../public', filename);
+  const frontPath = path.join(__dirname, '../frontend/public', filename);
+  if (fs.existsSync(publicPath)) return publicPath;
+  if (fs.existsSync(frontPath)) return frontPath;
+  return null;
+};
+
+app.get(['/patient', '/user'], (req, res) => {
+  const file = resolveHtmlFile('patient.html') || resolveHtmlFile('index.html');
+  if (file) return res.sendFile(file);
+  res.send('HOSPITIQ Patient Portal Online');
+});
+
+app.get('/doctor', (req, res) => {
+  const file = resolveHtmlFile('doctor.html') || resolveHtmlFile('index.html');
+  if (file) return res.sendFile(file);
+  res.send('HOSPITIQ Doctor Terminal Online');
+});
+
+app.get('/admin', (req, res) => {
+  const file = resolveHtmlFile('admin.html') || resolveHtmlFile('index.html');
+  if (file) return res.sendFile(file);
+  res.send('HOSPITIQ Admin Command Center Online');
+});
+
 // SPA Wildcard Route
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
-    const fs = require('fs');
     const frontPath = path.join(__dirname, '../frontend/public/index.html');
     const rootPath = path.join(__dirname, '../public/index.html');
     if (fs.existsSync(frontPath)) {

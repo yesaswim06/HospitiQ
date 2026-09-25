@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HOSPITIQ — Doctor Consultation Terminal</title>
+  <meta name="description" content="HOSPITIQ Doctor Consultation Terminal: OPD room queue, priority triage telemetry, bed availability, and patient admissions." />
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- QRCode JS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <link rel="icon" type="image/png" href="images/hospitiq_brand_logo.png">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page-role="Doctor">
+
+  <!-- Dynamic Backdrop Animation Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- APPLICATION SHELL -->
+  <div class="app-layout" id="appShell">
+    
+    <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="glass-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="brand" title="Return to HOSPITIQ Home">
+          <img src="images/hospitiq_brand_logo.png" alt="HOSPITIQ" class="sidebar-brand-img" style="height: 36px; border-radius: 8px; background: #ffffff; padding: 2px 6px; object-fit: contain; max-width: 170px;" />
+        </a>
+        <button class="sidebar-toggle-btn" id="sidebarCollapseBtn" title="Toggle Sidebar">
+          <i data-lucide="chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">DOCTOR PORTAL</div>
+        <button class="side-link active" data-view="doctor-portal"><i data-lucide="stethoscope"></i> <span>Consultation Terminal</span></button>
+
+        <div class="nav-section-label">CLINICAL OPERATIONS</div>
+        <button class="side-link" data-view="opd-queue"><i data-lucide="ticket"></i> <span>Live OPD Queue</span> <span class="badge-count red" id="sideQueueBadge">24</span></button>
+        <button class="side-link" data-view="triage-review"><i data-lucide="brain-circuit"></i> <span>AI Triage Review</span> <span class="badge-count orange" id="sideTriageBadge">0</span></button>
+
+        <div class="nav-section-label">INPATIENT & BEDS</div>
+        <button class="side-link" data-view="bed-mgmt"><i data-lucide="bed"></i> <span>Bed Availability</span> <span class="badge-count green" id="sideBedBadge">32</span></button>
+        <button class="side-link" data-view="bed-map"><i data-lucide="grid"></i> <span>Ward Layout Matrix</span></button>
+        <button class="side-link" data-view="admissions"><i data-lucide="user-plus"></i> <span>Inpatient Admissions</span></button>
+
+        <div class="nav-section-label">PORTAL NAVIGATION</div>
+        <a href="index.html" class="side-link"><i data-lucide="home"></i> <span>Main Hospital Portal</span></a>
+        <a href="patient.html" class="side-link"><i data-lucide="user"></i> <span>Patient Portal</span></a>
+        <a href="admin.html" class="side-link"><i data-lucide="shield-check"></i> <span>Admin Command</span></a>
+      </nav>
+
+      <!-- SIDEBAR USER FOOTER -->
+      <div class="sidebar-user-footer">
+        <div class="user-avatar-circle" id="userAvatar" title="Physician Profile">D</div>
+        <div class="user-info-text sidebar-user-info">
+          <span class="user-name" id="userNameLabel">Dr. Sunita Rao</span>
+          <span class="user-role-badge" id="userRoleBadge">Attending Physician</span>
+        </div>
+        <button class="logout-icon-btn" id="logoutBtn" title="Return to Home"><i data-lucide="log-out"></i></button>
+      </div>
+    </aside>
+
+    <!-- MAIN RIGHT CONTENT WRAPPER -->
+    <div class="main-wrapper">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="glass-header">
+        <div class="header-left">
+          <button class="mobile-hamburger" id="mobileHamburger"><i data-lucide="menu"></i></button>
+          <div class="hospital-branch-selector desktop-only" title="Hospital Location">
+            <i data-lucide="building-2"></i>
+            <span class="font-bold cyan-text" style="font-size: 0.85rem; letter-spacing: 0.2px;">HOSPITIQ Central Hospital (Main Campus)</span>
+          </div>
+        </div>
+
+        <div class="header-center desktop-only">
+          <div class="global-search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="globalSearchInput" placeholder="Search Token #, Patient Name, Doctor, or Bed ID..." class="glass-input" />
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="action-btn emergency-header-btn small-btn" id="triggerEmergencyModeBtn" title="Activate Hospital Emergency Siren Mode">
+            <i data-lucide="alert-octagon" class="emergency-btn-icon"></i> 
+            <span>Emergency Siren</span>
+          </button>
+          
+          <div class="live-clock-box desktop-only">
+            <i data-lucide="clock"></i>
+            <span id="liveTimeClock">10:42 AM</span>
+          </div>
+
+          <div class="header-dropdown-wrapper" style="position: relative;">
+            <button class="icon-round-btn" id="notifBellBtn" title="System Alerts">
+              <i data-lucide="bell"></i>
+              <span class="notif-count-badge" id="notifCount">2</span>
+            </button>
+            <div class="dropdown-card glass-card hidden" id="notifDropdown">
+              <div class="dropdown-title card-header-flex padding-a-md">
+                <strong>Hospital Alerts</strong>
+                <button class="text-btn small-text" id="clearNotifBtn">Clear</button>
+              </div>
+              <div class="notif-list-mini padding-a-md" id="notifMiniList"></div>
+            </div>
+          </div>
+
+          <button class="icon-round-btn" id="themeToggleBtn" title="Switch Light/Dark Theme">
+            <i data-lucide="sun" id="themeIcon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW PANELS CONTAINER -->
+      <main class="content-container">
+        
+        <!-- DOCTOR PORTAL VIEW -->
+        <section id="view-doctor-portal" class="view-panel active">
+          <div class="view-header">
+            <div>
+              <h1>Doctor Consultation Terminal</h1>
+              <p>Room-specific patient roster categorized by emergency priority level and vital signs.</p>
+            </div>
+            <div class="action-row">
+              <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> + Register New Patient</button>
+            </div>
+          </div>
+
+          <div class="glass-card doctor-now-card margin-b-lg">
+            <div class="card-header-flex">
+              <div>
+                <h3><i data-lucide="stethoscope"></i> My OPD Room Terminal (#104 — Cardiology)</h3>
+                <span class="sub-text">Attending: Dr. Sunita Rao (Cardiology)</span>
+              </div>
+              <div class="action-row align-center">
+                <label class="sub-text">Doctor Status:</label>
+                <select id="doctorLiveStatusSelect" class="glass-input-compact" onchange="updateMyDoctorStatus(this.value)">
+                  <option value="AVAILABLE">🟢 Available</option>
+                  <option value="CONSULTING" selected>🟠 In Consultation</option>
+                  <option value="ON_BREAK">🔵 On Break</option>
+                  <option value="OFFLINE">🔴 Offline</option>
+                </select>
+              </div>
+            </div>
+            <div class="serving-hero-body text-center">
+              <div class="serving-label-sub">CURRENTLY CONSULTING PATIENT</div>
+              <div class="serving-big-token gradient-text" id="docCurrentToken">A-024</div>
+              <div class="serving-patient-name" id="docCurrentPatient">Ramesh Verma (Age: 44, Male)</div>
+              <div class="triage-vitals-pills margin-t-sm">
+                <span class="vitals-chip"><i data-lucide="heart"></i> Pulse: 78 bpm</span>
+                <span class="vitals-chip"><i data-lucide="activity"></i> BP: 120/80</span>
+                <span class="vitals-chip"><i data-lucide="thermometer"></i> Temp: 98.6°F</span>
+                <span class="badge-pill red-pill"><i data-lucide="alert-circle"></i> High Priority</span>
+              </div>
+            </div>
+            <div class="serving-action-bar">
+              <button class="action-btn glow-btn width-full" onclick="callPatientToken('doc-1')"><i data-lucide="skip-forward"></i> Call Next Patient</button>
+              <button class="glass-btn success-btn width-full" onclick="completeConsultationCurrentDoctor()"><i data-lucide="check-circle"></i> ✓ Mark Complete & Close Sheet</button>
+            </div>
+          </div>
+
+          <div class="glass-card table-card">
+            <div class="card-header-flex padding-a-md">
+              <h3><i data-lucide="users"></i> Room Queue by Patient Priority</h3>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Token #</th>
+                  <th>Patient Name</th>
+                  <th>Priority Category</th>
+                  <th>Vitals Chips</th>
+                  <th>Est Wait</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="doctorQueueBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- LIVE OPD QUEUE -->
+        <section id="view-opd-queue" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Live OPD Queue Management</h1>
+              <p>Real-time token dispatching, priority triage, and smart wait-time forecasting.</p>
+            </div>
+            <button class="action-btn glow-btn" id="openNewTokenModalBtn" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> Generate Token</button>
+          </div>
+
+          <div class="glass-card filter-bar-card margin-b-md">
+            <div class="search-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="queueSearchInput" placeholder="Search Token #, Patient, Doctor..." class="glass-input" />
+            </div>
+            <div class="filter-controls">
+              <select id="queueDeptFilter" class="glass-input">
+                <option value="all">All Departments</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="Emergency">Emergency</option>
+              </select>
+
+              <select id="queueStatusFilter" class="glass-input">
+                <option value="all">All Statuses</option>
+                <option value="Waiting">Waiting</option>
+                <option value="In Consultation">In Consultation</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="glass-card table-card">
+            <table class="data-table" id="queueTable">
+              <thead>
+                <tr>
+                  <th>Token #</th>
+                  <th>Patient Name</th>
+                  <th>Department</th>
+                  <th>Assigned Doctor</th>
+                  <th>Est. Wait</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="queueTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- AI TRIAGE REVIEW -->
+        <section id="view-triage-review" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>🤖 AI Clinical Triage & Staff Review Terminal</h1>
+              <p>Natural language symptom analysis, automated P1–P5 urgency suggestions, and authorized staff verification.</p>
+            </div>
+            <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> + New Patient Triage</button>
+          </div>
+
+          <div class="stats-grid margin-b-lg">
+            <div class="stat-card red-glow">
+              <div class="stat-icon red-icon"><i data-lucide="alert-triangle"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Immediate / Emergency (P1-P2)</span>
+                <h2 class="stat-value" id="triageP1P2Count">0</h2>
+                <span class="stat-subtext red-text">Critical Attention Required</span>
+              </div>
+            </div>
+
+            <div class="stat-card orange-glow">
+              <div class="stat-icon orange-icon"><i data-lucide="clock"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Urgent (P3)</span>
+                <h2 class="stat-value" id="triageP3Count">0</h2>
+                <span class="stat-subtext orange-text">Target: &lt; 30 Mins</span>
+              </div>
+            </div>
+
+            <div class="stat-card blue-glow">
+              <div class="stat-icon blue-icon"><i data-lucide="user-check"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Less / Non-Urgent (P4-P5)</span>
+                <h2 class="stat-value" id="triageP4P5Count">0</h2>
+                <span class="stat-subtext cyan-text">Standard Queue Allocation</span>
+              </div>
+            </div>
+
+            <div class="stat-card purple-glow">
+              <div class="stat-icon purple-icon"><i data-lucide="shield-alert"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Pending Human Review</span>
+                <h2 class="stat-value font-mono" id="triagePendingCount">0</h2>
+                <span class="stat-subtext font-mono">Triage Verification Needed</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card padding-md margin-b-lg" style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.06);">
+            <div class="card-header-flex">
+              <div>
+                <h3 class="red-text"><i data-lucide="shield-alert"></i> Dedicated Emergency Slots & Fast-Track Bays</h3>
+                <span class="sub-text">Immediate fast-track bays for P1 & P2 life-threat and acute trauma cases.</span>
+              </div>
+              <span class="badge-pill red-pill"><i data-lucide="zap"></i> Emergency Priority Active</span>
+            </div>
+            <div class="stats-grid margin-t-sm" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+              <div class="glass-card padding-sm blue-border" style="background: rgba(0,0,0,0.3);">
+                <span class="sub-text font-mono">ER-Bay-01 (Resuscitation Slot)</span>
+                <div class="font-bold cyan-text margin-t-xs" id="slotErBay1">Ready for P1 Life Threat</div>
+              </div>
+              <div class="glass-card padding-sm orange-border" style="background: rgba(0,0,0,0.3);">
+                <span class="sub-text font-mono">ER-Bay-02 (Cardiac / Trauma Slot)</span>
+                <div class="font-bold orange-text margin-t-xs" id="slotErBay2">Ready for P2 Acute Trauma</div>
+              </div>
+              <div class="glass-card padding-sm green-border" style="background: rgba(0,0,0,0.3);">
+                <span class="sub-text font-mono">ER-Bay-03 (Urgent Assessment Slot)</span>
+                <div class="font-bold green-text margin-t-xs" id="slotErBay3">Ready for P3 Urgent Care</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card table-card">
+            <div class="card-header-flex padding-b-sm">
+              <h3><i data-lucide="list-checks"></i> Real-Time AI Triage Assessment Queue</h3>
+              <span class="badge-pill cyan-pill">Source of Truth: MongoDB Atlas</span>
+            </div>
+            <table class="data-table" id="triageTable">
+              <thead>
+                <tr>
+                  <th>Token #</th>
+                  <th>Patient Details</th>
+                  <th>Category & Pain (VAS)</th>
+                  <th>Problem Description</th>
+                  <th>AI Symptoms & Red Flags</th>
+                  <th>AI Suggestion</th>
+                  <th>Final Priority & Emergency Slot</th>
+                  <th>Triage Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="triageTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- BED MANAGEMENT -->
+        <section id="view-bed-mgmt" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Hospital Bed Availability Dashboard</h1>
+              <p>Ward-wise capacity metrics, occupied bed ratios, and emergency bed admissions.</p>
+            </div>
+            <button class="action-btn glow-btn" id="openReserveBedModalBtn" onclick="openRecommendBedModal()"><i data-lucide="plus"></i> Reserve Emergency Bed</button>
+          </div>
+
+          <div class="ward-progress-grid margin-b-lg" id="wardProgressGrid">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <div class="glass-card table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Bed ID</th>
+                  <th>Ward Category</th>
+                  <th>Status</th>
+                  <th>Patient Occupant</th>
+                  <th>Attending Doctor</th>
+                  <th>Admission Date</th>
+                  <th>Features</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bedMgmtTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- BED MAP -->
+        <section id="view-bed-map" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Interactive Hospital Bed Layout Map</h1>
+              <p>Visual map of individual bed cards. Click any bed card to inspect occupant details or execute patient discharge.</p>
+            </div>
+            <div class="bed-map-legend">
+              <span class="legend-item"><span class="dot available-dot"></span> Available</span>
+              <span class="legend-item"><span class="dot occupied-dot"></span> Occupied</span>
+              <span class="legend-item"><span class="dot reserved-dot"></span> Reserved</span>
+              <span class="legend-item"><span class="dot cleaning-dot"></span> Cleaning</span>
+            </div>
+          </div>
+
+          <div class="ward-filter-tabs margin-b-md" id="bedMapTabs">
+            <button class="ward-tab-btn active" data-ward="all">All Wards</button>
+            <button class="ward-tab-btn" data-ward="General Ward">General Ward</button>
+            <button class="ward-tab-btn" data-ward="ICU">ICU Ward</button>
+            <button class="ward-tab-btn" data-ward="Emergency">Emergency</button>
+            <button class="ward-tab-btn" data-ward="Private Ward">Private Ward</button>
+          </div>
+
+          <div class="bed-map-grid" id="bedMapGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- INPATIENT ADMISSIONS -->
+        <section id="view-admissions" class="view-panel">
+          <div class="view-header">
+            <div>
+              <h1>Hospital Inpatient Admissions Directory</h1>
+              <p>Active patient admissions, ward bed assignments, attending physicians, and discharge management.</p>
+            </div>
+            <div class="action-row">
+              <button class="action-btn glow-btn" onclick="openRecommendBedModal()"><i data-lucide="sparkles"></i> Bed Recommend Engine</button>
+              <button class="glass-btn" onclick="openAdmitPatientModal()"><i data-lucide="user-plus"></i> New Ward Admission</button>
+            </div>
+          </div>
+
+          <div class="glass-card table-card">
+            <div class="card-header-flex padding-a-md">
+              <h3><i data-lucide="user-plus"></i> Active Admitted Patients Roster</h3>
+              <span class="badge-pill green-pill">14 Active Admissions</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Admission ID</th>
+                  <th>Patient Name</th>
+                  <th>Ward Category</th>
+                  <th>Bed Number</th>
+                  <th>Attending Doctor</th>
+                  <th>Diagnosis / Reason</th>
+                  <th>Admission Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admissionsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <!-- MODAL 1: SMART BED RECOMMENDATION ENGINE -->
+  <div class="modal-overlay" id="recommendBedModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="sparkles"></i> Smart Bed Recommendation Engine</h3>
+        <button class="close-btn" id="closeRecommendBedModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Select Target Ward Requirement</label>
+          <select id="recWardSelect" class="glass-input">
+            <option value="ICU">ICU Ward (Critical)</option>
+            <option value="General Ward">General Ward</option>
+            <option value="Emergency">Emergency Bay</option>
+            <option value="Private Ward">Private Ward</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="recVentilatorCheck" checked />
+            <span>Require Mechanical Ventilator Support</span>
+          </label>
+          <label class="checkbox-label margin-t-xs">
+            <input type="checkbox" id="recOxygenCheck" checked />
+            <span>Require High-Flow Oxygen Outlet</span>
+          </label>
+        </div>
+
+        <button class="glass-btn width-full margin-b-md" onclick="fetchRecommendedBeds()"><i data-lucide="cpu"></i> Calculate Best Matched Beds</button>
+
+        <div class="rec-results-list" id="recResultsContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: GENERATE TOKEN / PATIENT REGISTRATION -->
+  <div class="modal-overlay" id="newTokenModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="ticket"></i> Patient Registration & OPD Token Pass</h3>
+        <button class="close-btn" id="closeNewTokenModal"><i data-lucide="x"></i></button>
+      </div>
+      <form id="newTokenForm">
+        <div class="form-group">
+          <label>Patient Full Name</label>
+          <input type="text" id="inputPatientName" required placeholder="e.g. Ramesh Verma" class="glass-input" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="inputPatientAge" min="1" max="120" required placeholder="42" class="glass-input" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="inputPatientGender" class="glass-input">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="text" id="inputPatientPhone" placeholder="e.g. 9900011223" class="glass-input" />
+        </div>
+
+        <div class="info-note-box margin-b-sm">
+          <i data-lucide="sparkles"></i>
+          <span>Specialist doctor and OPD consultation room are automatically assigned based on your symptom category and AI triage urgency.</span>
+        </div>
+
+        <div class="form-group">
+          <label><i data-lucide="crosshair"></i> Primary Symptom Category</label>
+          <select id="inputSymptomCategory" class="glass-input">
+            <option value="General & Routine">General & Routine Checkup</option>
+            <option value="Cardiac & Chest">🫀 Cardiac & Chest Discomfort</option>
+            <option value="Respiratory & Airway">🫁 Respiratory & Shortness of Breath</option>
+            <option value="Neurological & Stroke">🧠 Neurological, Stroke & Head Injury</option>
+            <option value="Trauma, Burns & Bleeding">🩸 Trauma, Burns & Bleeding</option>
+            <option value="Abdominal & Gastrointestinal">🩺 Abdominal & Gastrointestinal Issues</option>
+            <option value="Orthopedic & Fractures">🦴 Orthopedic, Joint & Fractures</option>
+            <option value="Infection & High Fever">🌡️ High Fever & Acute Infection</option>
+          </select>
+        </div>
+
+        <button type="submit" class="action-btn glow-btn width-full margin-t-xs"><i data-lucide="ticket"></i> Generate OPD Token Pass</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: STAFF OVERRIDE TRIAGE PRIORITY -->
+  <div class="modal-overlay" id="overrideTriageModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="shield-check"></i> Staff Clinical Triage Override</h3>
+        <button class="close-btn" id="closeOverrideTriageModal" onclick="closeModal('overrideTriageModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="overrideTriageForm">
+        <input type="hidden" id="overrideTokenId" />
+        <div class="form-group">
+          <label>Patient & Token Information</label>
+          <input type="text" id="overridePatientInfo" class="glass-input" readonly />
+        </div>
+        <div class="form-group">
+          <label>Problem Description as Reported</label>
+          <div id="overrideProblemDesc" class="sub-text padding-xs glass-input" style="min-height: 48px; background: rgba(0,0,0,0.2);"></div>
+        </div>
+        <div class="form-group">
+          <label>AI Suggested Priority & Rationale</label>
+          <input type="text" id="overrideAiSuggestion" class="glass-input" readonly />
+        </div>
+        <div class="form-group">
+          <label>Select Authorized Final Priority</label>
+          <select id="overridePrioritySelect" class="glass-input" required>
+            <option value="P1">🚨 P1 – Immediate (Resuscitation / Airway / Arrest)</option>
+            <option value="P2">⚠️ P2 – Emergency (Severe Chest Pain / Acute Dyspnea)</option>
+            <option value="P3">🟡 P3 – Urgent (Moderate Acute Pain / High Fever)</option>
+            <option value="P4">🔵 P4 – Less Urgent (Mild Symptoms / Standard OPD)</option>
+            <option value="P5">⚪ P5 – Non-Urgent (Routine Refill / Follow-up)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Clinical Override Justification / Reason</label>
+          <input type="text" id="overrideReasonInput" required placeholder="e.g. Vitals evaluated by Triage Nurse; stable SpO2 at 99%." class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Reviewing Staff Name / Credentials</label>
+          <input type="text" id="overrideReviewedBy" required placeholder="e.g. Dr. Sunita Rao (Cardiology)" class="glass-input" />
+        </div>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check-circle2"></i> Confirm Final Triage Priority</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: BED DETAILS & DISCHARGE ACTION -->
+  <div class="modal-overlay" id="bedDetailsModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="bed"></i> Bed Record & Patient Details</h3>
+        <button class="close-btn" id="closeBedDetailsModal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="bed-modal-body" id="bedModalContent"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIT PATIENT TO WARD -->
+  <div class="modal-overlay" id="admitPatientModal">
+    <div class="glass-card modal-card">
+      <div class="modal-header">
+        <h3><i data-lucide="hospital"></i> Admit Patient to Ward</h3>
+        <button class="close-btn" id="closeAdmitPatientModal" onclick="closeModal('admitPatientModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="admitPatientForm">
+        <div class="form-group">
+          <label>Patient Full Name</label>
+          <input type="text" id="admitPatientName" required placeholder="e.g. Kiran Sharma" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Target Hospital Ward</label>
+          <select id="admitWardSelect" class="glass-input" onchange="populateAvailableBedsForWard()">
+            <option value="ICU">ICU Ward (Critical Care)</option>
+            <option value="Emergency">Emergency Bay</option>
+            <option value="General Ward" selected>General Ward</option>
+            <option value="Private Ward">Private Ward</option>
+            <option value="Semi-Private">Semi-Private Ward</option>
+            <option value="Pediatric">Pediatric Ward</option>
+            <option value="Maternity">Maternity Ward</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Select Available Bed</label>
+          <select id="admitBedSelect" class="glass-input" required>
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Attending Doctor</label>
+          <select id="admitDoctorSelect" class="glass-input">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Diagnosis / Reason for Admission</label>
+          <input type="text" id="admitDiagnosisInput" required placeholder="e.g. Post-operative Monitoring, Acute Observation" class="glass-input" />
+        </div>
+        <button type="submit" class="action-btn glow-btn width-full margin-t-sm"><i data-lucide="check-circle"></i> Confirm Ward Admission</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

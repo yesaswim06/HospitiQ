@@ -42,6 +42,9 @@
       </div>
 
       <nav class="landing-nav-links">
+        <a href="patient.html" class="landing-nav-item"><i data-lucide="user"></i> Patient Page</a>
+        <a href="doctor.html" class="landing-nav-item"><i data-lucide="stethoscope"></i> Doctor Page</a>
+        <a href="admin.html" class="landing-nav-item"><i data-lucide="shield-check"></i> Admin Page</a>
         <a href="#features" class="landing-nav-item" onclick="switchPublicPage('features')">Features</a>
         <a href="#about" class="landing-nav-item" onclick="switchPublicPage('about')">About Us</a>
         <a href="#contact" class="landing-nav-item" onclick="switchPublicPage('contact')">Contact Us</a>
@@ -710,12 +713,9 @@
       <header class="glass-header">
         <div class="header-left">
           <button class="mobile-hamburger" id="mobileHamburger"><i data-lucide="menu"></i></button>
-          <div class="hospital-branch-selector desktop-only">
+          <div class="hospital-branch-selector desktop-only" title="Hospital Location">
             <i data-lucide="building-2"></i>
-            <select id="hospitalBranchSelect" class="glass-input-compact">
-              <option value="main">HOSPITIQ Central Hospital (Main Campus)</option>
-              <option value="north">HOSPITIQ City Annex (North Wing)</option>
-            </select>
+            <span class="font-bold cyan-text" style="font-size: 0.85rem; letter-spacing: 0.2px;">HOSPITIQ Central Hospital (Main Campus)</span>
           </div>
         </div>
 

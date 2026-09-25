@@ -53,11 +53,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadAppData();
   await checkDirectUrlAccess();
 
-  // If user has existing active session, restore portal
-  if (appState.sessionToken && appState.currentUser) {
-    const defaultView = appState.currentUser.role === 'Patient' ? 'patient-portal' 
-      : (appState.currentUser.role === 'Doctor' ? 'doctor-portal' : 'dashboard');
-    launchPortal(appState.currentUser, defaultView, false);
+  const pageRole = document.body.getAttribute('data-page-role');
+  const path = window.location.pathname.toLowerCase();
+
+  if (pageRole === 'Patient' || path.endsWith('/patient') || path.endsWith('/patient.html') || path.endsWith('/user') || path.endsWith('/user.html')) {
+    const defaultPatient = (appState.currentUser && appState.currentUser.role === 'Patient')
+      ? appState.currentUser
+      : { name: 'Ramesh Verma', role: 'Patient', tokenNumber: 'A-024', department: 'General Medicine', phone: '9900011223' };
+    await launchPortal(defaultPatient, 'patient-portal', false);
+  } else if (pageRole === 'Doctor' || path.endsWith('/doctor') || path.endsWith('/doctor.html')) {
+    const defaultDoctor = (appState.currentUser && appState.currentUser.role === 'Doctor')
+      ? appState.currentUser
+      : { name: 'Dr. Sunita Rao', role: 'Doctor', email: 'doctor@hospitiq.org', department: 'Cardiology', docId: 'doc-1' };
+    await launchPortal(defaultDoctor, 'doctor-portal', false);
+  } else if (pageRole === 'Admin' || path.endsWith('/admin') || path.endsWith('/admin.html')) {
+    const defaultAdmin = (appState.currentUser && appState.currentUser.role === 'Admin')
+      ? appState.currentUser
+      : { name: 'Dr. Rajesh Sharma', role: 'Admin', email: 'admin@hospitiq.org', department: 'Hospital Administration' };
+    await launchPortal(defaultAdmin, 'dashboard', false);
+  } else {
+    // If user has existing active session, restore portal
+    if (appState.sessionToken && appState.currentUser) {
+      const defaultView = appState.currentUser.role === 'Patient' ? 'patient-portal' 
+        : (appState.currentUser.role === 'Doctor' ? 'doctor-portal' : 'dashboard');
+      launchPortal(appState.currentUser, defaultView, false);
+    }
   }
 
   // Start Real-Time Live Sync Polling (Every 6 seconds)
@@ -304,6 +324,13 @@ function initAuth() {
     if (window.sessionStorage) {
       sessionStorage.removeItem('hospitiq_auth_token');
       sessionStorage.removeItem('hospitiq_user');
+    }
+
+    const pageRole = document.body.getAttribute('data-page-role');
+    const path = window.location.pathname.toLowerCase();
+    if (pageRole || path.includes('patient') || path.includes('user') || path.includes('doctor') || path.includes('admin')) {
+      window.location.href = 'index.html';
+      return;
     }
 
     const shell = document.getElementById('appShell');
