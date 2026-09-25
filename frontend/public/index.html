@@ -54,7 +54,7 @@
         <button class="icon-round-btn" id="landingThemeBtn" title="Switch Light/Dark Theme">
           <i data-lucide="sun" id="landingThemeIcon"></i>
         </button>
-        <button class="action-btn glow-btn small-btn" onclick="switchPublicPage('login')">
+        <button class="action-btn glow-btn small-btn" onclick="openLoginOverlay()">
           <i data-lucide="log-in"></i> Sign In
         </button>
       </div>
@@ -283,7 +283,7 @@
       </section>
     </div>
 
-    <!-- PAGE VIEW 3: DEDICATED SEPARATE LOGIN PAGE (/#login - MTX B2B HEALTHCARE MODEL) -->
+    <!-- PAGE VIEW 3: DEDICATED SEPARATE LOGIN PAGE (/#login) -->
     <div class="public-page-view" id="public-view-login">
       <section class="landing-section flex-center-section">
         <div class="glass-card login-card public-page-card mtx-login-container">
@@ -292,134 +292,52 @@
           </div>
           <div class="login-header text-center">
             <div class="mtx-b2b-badge margin-b-xs">
-              <span class="badge-pill purple-pill"><i data-lucide="building-2"></i> MTX B2B Healthcare Project</span>
+              <span class="badge-pill purple-pill"><i data-lucide="building-2"></i> HOSPITIQ Access Portal</span>
             </div>
             <div class="login-brand-logo margin-b-xs">
               <img src="images/hospitiq_brand_logo.png" alt="HOSPITIQ" style="height: 48px; border-radius: 8px; background: #ffffff; padding: 2px 8px; object-fit: contain;" />
             </div>
-            <p class="brand-tagline">Secure Role-Based Healthcare Management & Consultation Platform</p>
+            <h2>Sign In to HOSPITIQ</h2>
+            <p class="brand-tagline">Select your role to access your dedicated healthcare terminal</p>
           </div>
 
-          <!-- 3 SEPARATE LOGIN UI TABS (USER, DOCTOR, ADMIN) -->
-          <div class="mtx-auth-tabs margin-t-md">
-            <button type="button" class="mtx-tab-btn active" data-auth-tab="user" onclick="switchAuthRoleTab('user')">
-              <i data-lucide="user"></i>
-              <span>User</span>
-            </button>
-            <button type="button" class="mtx-tab-btn" data-auth-tab="doctor" onclick="switchAuthRoleTab('doctor')">
-              <i data-lucide="stethoscope"></i>
-              <span>Doctor</span>
-            </button>
-            <button type="button" class="mtx-tab-btn" data-auth-tab="admin" onclick="switchAuthRoleTab('admin')">
-              <i data-lucide="shield-check"></i>
-              <span>Admin</span>
-            </button>
+          <!-- 3 SEPARATE ROLE LOGIN CARDS -->
+          <div class="role-login-cards-grid margin-t-md">
+            <a href="patient.html" class="glass-card role-login-choice-card cyan-glow">
+              <div class="role-choice-icon cyan-icon"><i data-lucide="user"></i></div>
+              <div class="role-choice-info">
+                <h4>Patient Login</h4>
+                <p>Access your OPD Token Pass, Live Queue Position & Status</p>
+                <span class="role-choice-btn">Proceed to Patient Portal <i data-lucide="arrow-right"></i></span>
+              </div>
+            </a>
+
+            <a href="doctor.html" class="glass-card role-login-choice-card blue-glow">
+              <div class="role-choice-icon blue-icon"><i data-lucide="stethoscope"></i></div>
+              <div class="role-choice-info">
+                <h4>Doctor Login</h4>
+                <p>Consultation Terminal, Call Patient & AI Triage Review</p>
+                <span class="role-choice-btn">Proceed to Doctor Terminal <i data-lucide="arrow-right"></i></span>
+              </div>
+            </a>
+
+            <a href="admin.html" class="glass-card role-login-choice-card purple-glow">
+              <div class="role-choice-icon purple-icon"><i data-lucide="shield-check"></i></div>
+              <div class="role-choice-info">
+                <h4>Admin Login</h4>
+                <p>Hospital Command Center, 100-Bed Matrix & Doctor Roster</p>
+                <span class="role-choice-btn">Proceed to Admin Command <i data-lucide="arrow-right"></i></span>
+              </div>
+            </a>
           </div>
 
-          <!-- FORM 1: USER / PATIENT LOGIN -->
-          <form id="publicPatientLoginForm" class="login-form auth-role-panel active margin-t-md" onsubmit="handleUnifiedLogin(event, 'Patient')">
-            <div class="auth-panel-heading">
-              <h4><i data-lucide="user"></i> User / Patient Login</h4>
-              <p class="sub-text">Enter your Mobile Number or OPD Token # to view live queue pass.</p>
-            </div>
-
-            <div class="form-group">
-              <label>Mobile Number</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="phone"></i>
-                <input type="text" id="pagePtMobile" class="glass-input" placeholder="e.g. 9900011223 or 9876543210" value="9900011223" />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>OPD Token # (Optional if using Mobile Number)</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="ticket"></i>
-                <input type="text" id="pagePtToken" class="glass-input" placeholder="e.g. A-024 or A-031" value="A-024" />
-              </div>
-            </div>
-
-            <div class="demo-cred-hint">
-              <i data-lucide="info"></i> <span><strong>User Demo:</strong> Mobile: <code>9900011223</code> | Token: <code>A-024</code></span>
-            </div>
-
-            <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-              <i data-lucide="log-in"></i> Sign In as User
-            </button>
-            <a href="patient.html" class="glass-btn width-full margin-t-xs text-center" style="display: flex; justify-content: center; text-decoration: none;">
-              <i data-lucide="external-link"></i> Open Dedicated Patient Page (Direct URL)
-            </a>
-          </form>
-
-          <!-- FORM 2: DOCTOR LOGIN -->
-          <form id="publicDoctorLoginForm" class="login-form auth-role-panel margin-t-md" style="display: none;" onsubmit="handleUnifiedLogin(event, 'Doctor')">
-            <div class="auth-panel-heading">
-              <h4><i data-lucide="stethoscope"></i> Doctor Login</h4>
-              <p class="sub-text">Access consultation room queue, vitals, and patient calling terminal.</p>
-            </div>
-
-            <div class="form-group">
-              <label>Doctor Official Email / ID</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="mail"></i>
-                <input type="email" id="pageDocEmail" class="glass-input" placeholder="doctor@hospitiq.org" value="doctor@hospitiq.org" required />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Doctor Security Password</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="lock"></i>
-                <input type="password" id="pageDocPassword" class="glass-input" placeholder="••••••••" value="doctor123" required />
-              </div>
-            </div>
-
-            <div class="demo-cred-hint">
-              <i data-lucide="info"></i> <span><strong>Doctor Demo:</strong> <code>doctor@hospitiq.org</code> / Pass: <code>doctor123</code></span>
-            </div>
-
-            <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-              <i data-lucide="stethoscope"></i> Sign In as Doctor
-            </button>
-            <a href="doctor.html" class="glass-btn width-full margin-t-xs text-center" style="display: flex; justify-content: center; text-decoration: none;">
-              <i data-lucide="external-link"></i> Open Dedicated Doctor Page (Direct URL)
-            </a>
-          </form>
-
-          <!-- FORM 3: ADMIN LOGIN -->
-          <form id="publicAdminLoginForm" class="login-form auth-role-panel margin-t-md" style="display: none;" onsubmit="handleUnifiedLogin(event, 'Admin')">
-            <div class="auth-panel-heading">
-              <h4><i data-lucide="shield-check"></i> Hospital Admin & MD Login</h4>
-              <p class="sub-text">Medical Director overview, 100-bed management, AI insights & roster.</p>
-            </div>
-
-            <div class="form-group">
-              <label>Medical Director / Admin Email</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="shield"></i>
-                <input type="email" id="pageAdmEmail" class="glass-input" placeholder="admin@hospitiq.org" value="admin@hospitiq.org" required />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Admin Security Password</label>
-              <div class="input-icon-wrapper">
-                <i data-lucide="lock"></i>
-                <input type="password" id="pageAdmPassword" class="glass-input" placeholder="••••••••" value="admin123" required />
-              </div>
-            </div>
-
-            <div class="demo-cred-hint">
-              <i data-lucide="info"></i> <span><strong>Admin Demo:</strong> <code>admin@hospitiq.org</code> / Pass: <code>admin123</code></span>
-            </div>
-
-            <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-              <i data-lucide="shield-check"></i> Sign In as Admin
-            </button>
-            <a href="admin.html" class="glass-btn width-full margin-t-xs text-center" style="display: flex; justify-content: center; text-decoration: none;">
-              <i data-lucide="external-link"></i> Open Dedicated Admin Page (Direct URL)
-            </a>
-          </form>
+          <div class="login-footer text-center margin-t-lg">
+            <p class="sub-text">Need to register a new patient? <a href="#register" class="cyan-text" onclick="switchPublicPage('register')">Register Patient</a></p>
+            <small class="sub-text display-block margin-t-xs">MTX B2B Healthcare System • Support: support@hospitiq.org</small>
+          </div>
+        </div>
+      </section>
+    </div>
 
           <div class="login-footer text-center margin-t-md">
             <p class="sub-text">New User? <a href="#register" class="cyan-text" onclick="switchPublicPage('register')">Register Mobile Number</a></p>
@@ -562,125 +480,56 @@
     </a>
   </div>
 
-  <!-- LOGIN OVERLAY SCREEN (MTX B2B 3 SEPARATE ROLES: PATIENT, DOCTOR, MD / ADMIN) -->
+  <!-- LOGIN OVERLAY SCREEN (ROLE SELECTION: PATIENT, DOCTOR, ADMIN) -->
   <div class="login-overlay" id="loginScreen">
     <div class="glass-card login-card mtx-login-container">
       <div class="login-header text-center">
         <div class="mtx-b2b-badge margin-b-xs">
-          <span class="badge-pill purple-pill"><i data-lucide="building-2"></i> MTX B2B Healthcare Project</span>
+          <span class="badge-pill purple-pill"><i data-lucide="building-2"></i> HOSPITIQ Access Portal</span>
         </div>
         <div class="login-brand-logo margin-b-xs">
           <img src="images/hospitiq_brand_logo.png" alt="HOSPITIQ" style="height: 48px; border-radius: 8px; background: #ffffff; padding: 2px 8px; object-fit: contain;" />
         </div>
-        <p class="brand-tagline">"Smarter Queues. Better Care."</p>
+        <h2>Sign In to HOSPITIQ</h2>
+        <p class="brand-tagline">Select your account role to proceed to your dedicated portal page</p>
       </div>
 
-      <!-- 3 SEPARATE LOGIN UI TABS (USER, DOCTOR, ADMIN) -->
-      <div class="mtx-auth-tabs margin-t-md">
-        <button type="button" class="mtx-tab-btn active" data-overlay-tab="user" onclick="switchOverlayAuthTab('user')">
-          <i data-lucide="user"></i>
-          <span>User</span>
-        </button>
-        <button type="button" class="mtx-tab-btn" data-overlay-tab="doctor" onclick="switchOverlayAuthTab('doctor')">
-          <i data-lucide="stethoscope"></i>
-          <span>Doctor</span>
-        </button>
-        <button type="button" class="mtx-tab-btn" data-overlay-tab="admin" onclick="switchOverlayAuthTab('admin')">
-          <i data-lucide="shield-check"></i>
-          <span>Admin</span>
-        </button>
+      <!-- 3 SEPARATE ROLE LOGIN CARDS -->
+      <div class="role-login-cards-grid margin-t-md">
+        <a href="patient.html" class="glass-card role-login-choice-card cyan-glow">
+          <div class="role-choice-icon cyan-icon"><i data-lucide="user"></i></div>
+          <div class="role-choice-info">
+            <h4>Patient Login</h4>
+            <p>Access your OPD Token Pass, Live Queue Position & Status</p>
+            <span class="role-choice-btn">Proceed to Patient Portal <i data-lucide="arrow-right"></i></span>
+          </div>
+        </a>
+
+        <a href="doctor.html" class="glass-card role-login-choice-card blue-glow">
+          <div class="role-choice-icon blue-icon"><i data-lucide="stethoscope"></i></div>
+          <div class="role-choice-info">
+            <h4>Doctor Login</h4>
+            <p>Consultation Terminal, Call Patient & AI Triage Review</p>
+            <span class="role-choice-btn">Proceed to Doctor Terminal <i data-lucide="arrow-right"></i></span>
+          </div>
+        </a>
+
+        <a href="admin.html" class="glass-card role-login-choice-card purple-glow">
+          <div class="role-choice-icon purple-icon"><i data-lucide="shield-check"></i></div>
+          <div class="role-choice-info">
+            <h4>Admin Login</h4>
+            <p>Hospital Command Center, 100-Bed Matrix & Doctor Roster</p>
+            <span class="role-choice-btn">Proceed to Admin Command <i data-lucide="arrow-right"></i></span>
+          </div>
+        </a>
       </div>
 
-      <!-- OVERLAY FORM 1: USER / PATIENT -->
-      <form id="overlayPatientLoginForm" class="login-form overlay-auth-panel active margin-t-md" onsubmit="handleUnifiedLogin(event, 'Patient')">
-        <div class="auth-panel-heading">
-          <h4><i data-lucide="user"></i> User / Patient Login</h4>
-          <p class="sub-text">Enter your Mobile Number or OPD Token # to view live queue pass.</p>
-        </div>
-        <div class="form-group">
-          <label>Mobile Number</label>
-          <div class="input-icon-wrapper">
-            <i data-lucide="phone"></i>
-            <input type="text" id="overlayPtMobile" class="glass-input" placeholder="e.g. 9900011223 or 9876543210" value="9900011223" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>OPD Token # (Optional if using Mobile Number)</label>
-          <div class="input-icon-wrapper">
-            <i data-lucide="ticket"></i>
-            <input type="text" id="overlayPtToken" class="glass-input" placeholder="e.g. A-024 or A-031" value="A-024" />
-          </div>
-        </div>
-        <div class="demo-cred-hint">
-          <i data-lucide="info"></i> <span><strong>User Demo:</strong> Mobile: <code>9900011223</code> | Token: <code>A-024</code></span>
-        </div>
-        <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-          <i data-lucide="log-in"></i> Sign In as User
-        </button>
-      </form>
-
-      <!-- OVERLAY FORM 2: DOCTOR -->
-      <form id="overlayDoctorLoginForm" class="login-form overlay-auth-panel margin-t-md" style="display: none;" onsubmit="handleUnifiedLogin(event, 'Doctor')">
-        <div class="auth-panel-heading">
-          <h4><i data-lucide="stethoscope"></i> Doctor Login</h4>
-          <p class="sub-text">Access consultation room queue, vitals, and patient calling terminal.</p>
-        </div>
-        <div class="form-group">
-          <label>Doctor Official Email / ID</label>
-          <div class="input-icon-wrapper">
-            <i data-lucide="mail"></i>
-            <input type="email" id="overlayDocEmail" class="glass-input" placeholder="doctor@hospitiq.org" value="doctor@hospitiq.org" required />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Doctor Security Password</label>
-          <div class="input-icon-wrapper">
-            <i data-lucide="lock"></i>
-            <input type="password" id="overlayDocPassword" class="glass-input" placeholder="••••••••" value="doctor123" required />
-          </div>
-        </div>
-        <div class="demo-cred-hint">
-          <i data-lucide="info"></i> <span><strong>Doctor Demo:</strong> <code>doctor@hospitiq.org</code> / Pass: <code>doctor123</code></span>
-        </div>
-        <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-          <i data-lucide="stethoscope"></i> Sign In as Doctor
-        </button>
-      </form>
-
-      <!-- OVERLAY FORM 3: ADMIN -->
-      <form id="overlayAdminLoginForm" class="login-form overlay-auth-panel margin-t-md" style="display: none;" onsubmit="handleUnifiedLogin(event, 'Admin')">
-        <div class="auth-panel-heading">
-          <h4><i data-lucide="shield-check"></i> Hospital Admin & MD Login</h4>
-          <p class="sub-text">Medical Director overview, 100-bed management, AI insights & roster.</p>
-        </div>
-        <div class="form-group">
-          <label>Medical Director / Admin Email</label>
-          <div class="input-icon-wrapper">
-            <i data-lucide="shield"></i>
-            <input type="email" id="overlayAdmEmail" class="glass-input" placeholder="admin@hospitiq.org" value="admin@hospitiq.org" required />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Admin Password</label>
-          <div class="input-icon-wrapper">
-            <i data-lucide="lock"></i>
-            <input type="password" id="overlayAdmPassword" class="glass-input" placeholder="••••••••" value="admin123" required />
-          </div>
-        </div>
-        <div class="demo-cred-hint">
-          <i data-lucide="info"></i> <span><strong>Admin Demo:</strong> <code>admin@hospitiq.org</code> / Pass: <code>admin123</code></span>
-        </div>
-        <button type="submit" class="action-btn glow-btn width-full margin-t-md">
-          <i data-lucide="shield-check"></i> Sign In as Admin
-        </button>
-      </form>
-
-      <button type="button" class="text-btn small-text width-full margin-t-sm" onclick="closeLoginOverlay()">
+      <button type="button" class="text-btn small-text width-full margin-t-md" onclick="closeLoginOverlay()">
         <i data-lucide="arrow-left"></i> Return to Public Home Page
       </button>
 
       <div class="login-footer text-center margin-t-sm">
-        <small class="sub-text">MTX B2B Support: support@hospitiq.org</small>
+        <small class="sub-text">Support: support@hospitiq.org</small>
       </div>
     </div>
   </div>
