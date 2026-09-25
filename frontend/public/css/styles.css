@@ -1051,3 +1051,93 @@ select option:active {
   .action-row { width: 100%; }
   .action-row button { flex: 1; }
 }
+
+/* Dedicated Role Portals Navigation Cards */
+.dedicated-portals-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.dedicated-portal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.15rem;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--text-primary);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.dedicated-portal-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dedicated-portal-card.cyan-glow:hover {
+  border-color: rgba(14, 165, 233, 0.6);
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.2);
+}
+
+.dedicated-portal-card.blue-glow:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+}
+
+.dedicated-portal-card.purple-glow:hover {
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.2);
+}
+
+.portal-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.portal-card-info h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.portal-card-info p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin-bottom: 0.75rem;
+}
+
+.portal-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-cyan);
+  transition: gap 0.2s ease;
+}
+
+.dedicated-portal-card:hover .portal-launch-btn {
+  gap: 0.55rem;
+  color: #38bdf8;
+}
+
+@media (max-width: 900px) {
+  .dedicated-portals-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

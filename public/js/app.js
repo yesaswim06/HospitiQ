@@ -133,12 +133,39 @@ function updateThemeIcons() {
 function initLandingPage() {
   const allowedRoutes = ['home', 'features', 'about', 'contact', 'services', 'register', 'login', 'user', 'patient', 'doctor', 'admin', 'md'];
   const hash = (window.location.hash.replace('#', '') || 'home').toLowerCase();
+  
+  // Direct separate page navigation for roles
+  if (hash === 'patient' || hash === 'user') {
+    window.location.href = 'patient.html';
+    return;
+  }
+  if (hash === 'doctor') {
+    window.location.href = 'doctor.html';
+    return;
+  }
+  if (hash === 'admin' || hash === 'md') {
+    window.location.href = 'admin.html';
+    return;
+  }
+
   if (allowedRoutes.includes(hash)) {
     switchPublicPage(hash, false);
   }
 
   window.addEventListener('hashchange', () => {
     const currentHash = (window.location.hash.replace('#', '') || 'home').toLowerCase();
+    if (currentHash === 'patient' || currentHash === 'user') {
+      window.location.href = 'patient.html';
+      return;
+    }
+    if (currentHash === 'doctor') {
+      window.location.href = 'doctor.html';
+      return;
+    }
+    if (currentHash === 'admin' || currentHash === 'md') {
+      window.location.href = 'admin.html';
+      return;
+    }
     if (allowedRoutes.includes(currentHash)) {
       switchPublicPage(currentHash, false);
     }
@@ -449,6 +476,13 @@ async function executeLogin(role, credentials) {
       }
 
       showToast(`Welcome, ${res.user.name} (${res.user.role})!`, 'success');
+
+      const targetPage = role === 'Patient' ? 'patient.html' : (role === 'Doctor' ? 'doctor.html' : 'admin.html');
+      const isDedicatedPage = document.body.getAttribute('data-page-role');
+      if (!isDedicatedPage) {
+        window.location.href = targetPage;
+        return;
+      }
 
       const targetView = role === 'Patient' ? 'patient-portal' 
         : (role === 'Doctor' ? 'doctor-portal' : 'dashboard');
