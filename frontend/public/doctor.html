@@ -145,7 +145,7 @@
 
           <form id="doctorGateLoginForm" class="login-form" style="max-width: 520px; margin: 0 auto;" onsubmit="handleDoctorGateLogin(event)">
             <div class="form-group">
-              <label>Doctor Account Email / ID</label>
+              <label>Doctor Account Email / ID <span class="blue-text">*</span></label>
               <div class="input-icon-wrapper">
                 <i data-lucide="mail"></i>
                 <input type="text" id="gateDocIdentifier" required placeholder="e.g. doctor@hospitiq.org or Dr. Sunita Rao" class="glass-input" />
@@ -153,29 +153,32 @@
             </div>
 
             <div class="form-group">
-              <label>Access PIN / Passcode (Optional for Demo)</label>
+              <label>Physician Access PIN / Password <span class="blue-text">*</span></label>
               <div class="input-icon-wrapper">
                 <i data-lucide="lock"></i>
-                <input type="password" id="gateDocPin" placeholder="••••••••" class="glass-input" />
+                <input type="password" id="gateDocPin" required placeholder="Enter doctor password (e.g. doctor123)" class="glass-input has-pwd-toggle" />
+                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('gateDocPin', this)" title="Show / Hide Password">
+                  <i data-lucide="eye"></i>
+                </button>
               </div>
             </div>
 
-            <div class="demo-cred-hint" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2);">
-              <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">
-                <i data-lucide="key" style="width: 16px; height: 16px;"></i> <span>Select Attending Physician Roster (Click to Auto-fill):</span>
+            <div class="demo-cred-hint" style="margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25);">
+              <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.82rem; margin-bottom: 8px;" class="blue-text">
+                <i data-lucide="key" style="width: 15px; height: 15px;"></i> <span>Select Attending Physician (Click to Auto-fill):</span>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='doctor@hospitiq.org';">
-                  🩺 Dr. Sunita Rao (Cardiology)
+                <button type="button" class="demo-cred-btn blue-badge-btn" onclick="document.getElementById('gateDocIdentifier').value='doctor@hospitiq.org'; document.getElementById('gateDocPin').value='doctor123'; if (window.showToast) showToast('Dr. Sunita Rao credentials filled!', 'info');">
+                  <i data-lucide="stethoscope" style="width: 14px; height: 14px;"></i> <span>Dr. Sunita Rao (Cardiology) &bull; doctor123</span>
                 </button>
-                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='vikram@hospitiq.org';">
-                  🩺 Dr. Vikram Malhotra (General Medicine)
+                <button type="button" class="demo-cred-btn blue-badge-btn" onclick="document.getElementById('gateDocIdentifier').value='vikram@hospitiq.org'; document.getElementById('gateDocPin').value='doctor123'; if (window.showToast) showToast('Dr. Vikram Malhotra credentials filled!', 'info');">
+                  <i data-lucide="stethoscope" style="width: 14px; height: 14px;"></i> <span>Dr. Vikram Malhotra (General Med) &bull; doctor123</span>
                 </button>
-                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='ananya@hospitiq.org';">
-                  🩺 Dr. Ananya Reddy (Orthopedics)
+                <button type="button" class="demo-cred-btn blue-badge-btn" onclick="document.getElementById('gateDocIdentifier').value='ananya@hospitiq.org'; document.getElementById('gateDocPin').value='doctor123'; if (window.showToast) showToast('Dr. Ananya Reddy credentials filled!', 'info');">
+                  <i data-lucide="stethoscope" style="width: 14px; height: 14px;"></i> <span>Dr. Ananya Reddy (Orthopedics) &bull; doctor123</span>
                 </button>
-                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='priya@hospitiq.org';">
-                  🩺 Dr. Priya Patel (Neurology)
+                <button type="button" class="demo-cred-btn blue-badge-btn" onclick="document.getElementById('gateDocIdentifier').value='priya@hospitiq.org'; document.getElementById('gateDocPin').value='doctor123'; if (window.showToast) showToast('Dr. Priya Patel credentials filled!', 'info');">
+                  <i data-lucide="stethoscope" style="width: 14px; height: 14px;"></i> <span>Dr. Priya Patel (Neurology) &bull; doctor123</span>
                 </button>
               </div>
             </div>

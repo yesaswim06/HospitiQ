@@ -2788,13 +2788,34 @@ function showDoctorActiveTerminal() {
   lucide.createIcons();
 }
 
+// --- Password Visibility Toggle Helper (Show / Hide) ---
+function togglePasswordVisibility(inputId, btnEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isPwd = input.type === 'password';
+  input.type = isPwd ? 'text' : 'password';
+  
+  if (btnEl) {
+    btnEl.setAttribute('title', isPwd ? 'Hide password' : 'Show password');
+    btnEl.innerHTML = isPwd ? '<i data-lucide="eye-off"></i>' : '<i data-lucide="eye"></i>';
+    if (window.lucide && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;
+
 async function handleDoctorGateLogin(e) {
   e.preventDefault();
   const identifier = document.getElementById('gateDocIdentifier')?.value?.trim();
   const pin = document.getElementById('gateDocPin')?.value?.trim();
 
   if (!identifier) {
-    showToast('Please enter your doctor account email or name.', 'warning');
+    showToast('Please enter your doctor account email or ID.', 'warning');
+    return;
+  }
+  if (!pin) {
+    showToast('Please enter your physician PIN / password.', 'warning');
     return;
   }
 
@@ -2809,7 +2830,7 @@ async function handleDoctorGateLogin(e) {
       showDoctorActiveTerminal();
       await launchPortal(res.user, 'doctor-portal', true);
     } else {
-      showToast(res.message || 'Invalid doctor credentials.', 'danger');
+      showToast(res.message || 'Invalid doctor credentials. Please check your email/password.', 'danger');
     }
   } catch (err) {
     console.error('Doctor login error:', err);
@@ -2888,7 +2909,11 @@ async function handleAdminGateLogin(e) {
   const pin = document.getElementById('gateAdmPin')?.value?.trim();
 
   if (!identifier) {
-    showToast('Please enter your administrator email.', 'warning');
+    showToast('Please enter your administrator access email.', 'warning');
+    return;
+  }
+  if (!pin) {
+    showToast('Please enter your security master password.', 'warning');
     return;
   }
 
@@ -2903,7 +2928,7 @@ async function handleAdminGateLogin(e) {
       showAdminActiveCommand();
       await launchPortal(res.user, 'dashboard', true);
     } else {
-      showToast(res.message || 'Invalid administrator credentials.', 'danger');
+      showToast(res.message || 'Invalid administrator credentials. Please check your credentials.', 'danger');
     }
   } catch (err) {
     console.error('Admin login error:', err);

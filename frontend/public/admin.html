@@ -152,7 +152,7 @@
 
           <form id="adminGateLoginForm" class="login-form" style="max-width: 520px; margin: 0 auto;" onsubmit="handleAdminGateLogin(event)">
             <div class="form-group">
-              <label>Administrator Email / ID</label>
+              <label>Administrator Email / ID <span class="purple-text">*</span></label>
               <div class="input-icon-wrapper">
                 <i data-lucide="mail"></i>
                 <input type="text" id="gateAdmIdentifier" required placeholder="admin@hospitiq.org" class="glass-input" />
@@ -160,20 +160,23 @@
             </div>
 
             <div class="form-group">
-              <label>Security Key / Master Password (Optional for Demo)</label>
+              <label>Security Key / Master Password <span class="purple-text">*</span></label>
               <div class="input-icon-wrapper">
                 <i data-lucide="lock"></i>
-                <input type="password" id="gateAdmPin" placeholder="••••••••" class="glass-input" />
+                <input type="password" id="gateAdmPin" required placeholder="Enter administrator password (e.g. admin123)" class="glass-input has-pwd-toggle" />
+                <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('gateAdmPin', this)" title="Show / Hide Password">
+                  <i data-lucide="eye"></i>
+                </button>
               </div>
             </div>
 
-            <div class="demo-cred-hint" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.2);">
-              <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">
-                <i data-lucide="key" style="width: 16px; height: 16px;"></i> <span>Administrator Demo Credentials (Click to Auto-fill):</span>
+            <div class="demo-cred-hint" style="margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25);">
+              <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.82rem; margin-bottom: 8px;" class="purple-text">
+                <i data-lucide="key" style="width: 15px; height: 15px;"></i> <span>Administrator Demo Credentials (Click to Auto-fill):</span>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <button type="button" class="badge-pill purple-pill" style="cursor: pointer; border: 1px solid rgba(168, 85, 247, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateAdmIdentifier').value='admin@hospitiq.org';">
-                  🛡️ Admin Command (<code>admin@hospitiq.org</code>)
+                <button type="button" class="demo-cred-btn purple-badge-btn" onclick="document.getElementById('gateAdmIdentifier').value='admin@hospitiq.org'; document.getElementById('gateAdmPin').value='admin123'; if (window.showToast) showToast('Admin credentials filled!', 'info');">
+                  <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> <span>admin@hospitiq.org &bull; Pass: admin123</span>
                 </button>
               </div>
             </div>

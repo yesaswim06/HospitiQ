@@ -328,16 +328,33 @@
             </a>
           </div>
 
-          <div class="login-footer text-center margin-t-lg">
-            <p class="sub-text">Need to register a new patient? <a href="#register" class="cyan-text" onclick="switchPublicPage('register')">Register Patient</a></p>
-            <small class="sub-text display-block margin-t-xs">MTX B2B Healthcare System • Support: support@hospitiq.org</small>
+          <!-- QUICK CREDENTIALS REFERENCE -->
+          <div class="credentials-reference-card">
+            <div class="credentials-ref-title">
+              <i data-lucide="key" style="width: 15px; height: 15px;"></i>
+              <span>System Login Credentials Reference:</span>
+            </div>
+            <div class="credentials-ref-grid">
+              <div class="cred-ref-item patient-ref">
+                <span class="cred-ref-role"><i data-lucide="user" style="width: 13px; height: 13px;"></i> Patient</span>
+                <div class="cred-val-line">Mobile: <code>9900011223</code></div>
+                <div class="cred-val-line">Token: <code>A-024</code> / Reg</div>
+              </div>
+              <div class="cred-ref-item doctor-ref">
+                <span class="cred-ref-role"><i data-lucide="stethoscope" style="width: 13px; height: 13px;"></i> Doctor</span>
+                <div class="cred-val-line">Email: <code>doctor@hospitiq.org</code></div>
+                <div class="cred-val-line">Pass: <code>doctor123</code> (Dr. Rao)</div>
+              </div>
+              <div class="cred-ref-item admin-ref">
+                <span class="cred-ref-role"><i data-lucide="shield-check" style="width: 13px; height: 13px;"></i> Admin</span>
+                <div class="cred-val-line">Email: <code>admin@hospitiq.org</code></div>
+                <div class="cred-val-line">Pass: <code>admin123</code> (Admin)</div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
-    </div>
 
           <div class="login-footer text-center margin-t-md">
-            <p class="sub-text">New User? <a href="#register" class="cyan-text" onclick="switchPublicPage('register')">Register Mobile Number</a></p>
+            <p class="sub-text">Need to register a new patient? <a href="#register" class="cyan-text" onclick="switchPublicPage('register')">Register Patient</a></p>
             <small class="sub-text display-block margin-t-xs">MTX B2B Healthcare System • Support: support@hospitiq.org</small>
           </div>
         </div>
@@ -522,14 +539,27 @@
       </div>
 
       <!-- QUICK CREDENTIALS REFERENCE -->
-      <div style="margin-top: 16px; padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.8rem;">
-        <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 6px;" class="cyan-text">
-          <i data-lucide="key" style="width: 14px; height: 14px;"></i> System Login Credentials Reference:
+      <div class="credentials-reference-card">
+        <div class="credentials-ref-title">
+          <i data-lucide="key" style="width: 15px; height: 15px;"></i>
+          <span>System Login Credentials Reference:</span>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; line-height: 1.4; color: #cbd5e1;">
-          <div><strong class="cyan-text">Patient:</strong> Mobile: <code>9900011223</code> / Token: <code>A-024</code> (or new registration)</div>
-          <div><strong class="blue-text">Doctor:</strong> Email: <code>doctor@hospitiq.org</code> (Dr. Sunita Rao)</div>
-          <div><strong class="purple-text">Admin:</strong> Email: <code>admin@hospitiq.org</code> (Hospital Admin)</div>
+        <div class="credentials-ref-grid">
+          <div class="cred-ref-item patient-ref">
+            <span class="cred-ref-role"><i data-lucide="user" style="width: 13px; height: 13px;"></i> Patient</span>
+            <div class="cred-val-line">Mobile: <code>9900011223</code></div>
+            <div class="cred-val-line">Token: <code>A-024</code> / Reg</div>
+          </div>
+          <div class="cred-ref-item doctor-ref">
+            <span class="cred-ref-role"><i data-lucide="stethoscope" style="width: 13px; height: 13px;"></i> Doctor</span>
+            <div class="cred-val-line">Email: <code>doctor@hospitiq.org</code></div>
+            <div class="cred-val-line">Pass: <code>doctor123</code> (Dr. Rao)</div>
+          </div>
+          <div class="cred-ref-item admin-ref">
+            <span class="cred-ref-role"><i data-lucide="shield-check" style="width: 13px; height: 13px;"></i> Admin</span>
+            <div class="cred-val-line">Email: <code>admin@hospitiq.org</code></div>
+            <div class="cred-val-line">Pass: <code>admin123</code> (Admin)</div>
+          </div>
         </div>
       </div>
 
