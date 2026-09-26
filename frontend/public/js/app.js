@@ -1735,8 +1735,8 @@ function renderTriageReviewTable() {
     const catVal = q.symptomCategory || 'General';
     const emergencySlot = q.emergencySlot || (finalPriority === 'P1' ? 'ER-Bay-01 (Resuscitation Slot)' : (finalPriority === 'P2' ? 'ER-Bay-02 (Cardiac / Trauma Slot)' : ''));
 
-    const redFlagHtml = redFlags.map(rf => `<span class="badge-pill red-pill font-mono small-text"><i data-lucide="alert-triangle"></i> ${rf}</span>`).join(' ');
-    const symptomHtml = symptoms.map(s => `<span class="badge-pill blue-pill font-mono small-text">${s}</span>`).join(' ');
+    const redFlagHtml = redFlags.map(rf => `<div class="badge-pill red-pill font-mono small-text margin-b-xs" style="font-size: 11px; white-space: normal; text-align: left; line-height: 1.25;"><i data-lucide="alert-triangle"></i> ${rf}</div>`).join('');
+    const symptomHtml = symptoms.map(s => `<div class="badge-pill blue-pill font-mono small-text margin-b-xs" style="font-size: 11px; white-space: normal; text-align: left; line-height: 1.25;">${s}</div>`).join('');
 
     const painPill = painVal >= 9 
       ? `<span class="badge-pill red-pill font-bold">VAS ${painVal}/10 (Critical)</span>` 
@@ -1746,42 +1746,46 @@ function renderTriageReviewTable() {
 
     return `
       <tr>
-        <td><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
-        <td>
+        <td style="min-width: 90px;"><strong class="font-mono gradient-text">${q.tokenNumber}</strong></td>
+        <td style="min-width: 170px;">
           <strong>${q.patientName}</strong> (${q.age || 30} yrs, ${q.gender || 'Male'})<br/>
           <span class="sub-text">${q.department} • ${q.doctor}</span>
         </td>
-        <td>
-          <span class="badge-pill cyan-pill small-text font-bold">${catVal}</span><br/>
+        <td style="min-width: 140px;">
+          <span class="badge-pill cyan-pill small-text font-bold">${catVal}</span>
           <div class="margin-t-xs">${painPill}</div>
         </td>
-        <td>
-          <div style="max-width: 220px; word-wrap: break-word;">
+        <td style="min-width: 190px; max-width: 240px;">
+          <div style="word-break: break-word; white-space: normal; line-height: 1.4;">
             <em>"${q.problemDescription || 'General outpatient consultation'}"</em>
           </div>
         </td>
-        <td>
-          <div class="flex-column gap-xs" style="max-width: 190px;">
+        <td style="min-width: 210px; max-width: 250px;">
+          <div style="display: flex; flex-direction: column; gap: 0.35rem; align-items: flex-start; width: 100%;">
             ${redFlagHtml || ''}
-            ${symptomHtml || '<span class="sub-text">Routine checkup</span>'}
+            ${symptomHtml || '<span class="sub-text small-text">Routine checkup</span>'}
           </div>
         </td>
-        <td>
-          ${getPriorityBadge(aiPriority)}
-          ${q.aiReason ? `<div class="sub-text small-text margin-t-xs" style="max-width:170px; font-size:11px;">${q.aiReason}</div>` : ''}
+        <td style="min-width: 170px; max-width: 200px;">
+          <div style="display: flex; flex-direction: column; gap: 0.35rem; align-items: flex-start;">
+            ${getPriorityBadge(aiPriority)}
+            ${q.aiReason ? `<div class="sub-text small-text margin-t-xs" style="font-size: 11px; line-height: 1.35; white-space: normal;">${q.aiReason}</div>` : ''}
+          </div>
         </td>
-        <td>
-          ${getPriorityBadge(finalPriority)}
-          ${emergencySlot ? `<div class="badge-pill red-pill margin-t-xs font-mono" style="font-size:10px;"><i data-lucide="alert-octagon"></i> ${emergencySlot}</div>` : ''}
-          ${isOverridden && q.overrideReason ? `<div class="sub-text small-text cyan-text margin-t-xs" style="max-width:160px;">Override: ${q.overrideReason} (by ${q.reviewedBy || 'Staff'})</div>` : ''}
+        <td style="min-width: 200px; max-width: 240px;">
+          <div style="display: flex; flex-direction: column; gap: 0.35rem; align-items: flex-start;">
+            ${getPriorityBadge(finalPriority)}
+            ${emergencySlot ? `<div class="badge-pill red-pill margin-t-xs font-mono" style="font-size: 10.5px; line-height: 1.3; white-space: normal; text-align: left;"><i data-lucide="alert-octagon"></i> ${emergencySlot}</div>` : ''}
+            ${isOverridden && q.overrideReason ? `<div class="sub-text small-text cyan-text margin-t-xs" style="font-size: 11px; line-height: 1.35; white-space: normal;">Override: ${q.overrideReason} (by ${q.reviewedBy || 'Staff'})</div>` : ''}
+          </div>
         </td>
-        <td>
+        <td style="min-width: 130px;">
           <span class="badge-pill ${isPending ? 'orange-pill' : 'green-pill'}">
-            ${isPending ? '⚠️ PENDING REVIEW' : (isOverridden ? 'VERIFIED (OVERRIDDEN)' : 'VERIFIED')}
+            ${isPending ? '⚠️ PENDING' : (isOverridden ? 'OVERRIDDEN' : 'VERIFIED')}
           </span>
         </td>
-        <td>
-          <div class="action-row">
+        <td style="min-width: 150px;">
+          <div class="action-row" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
             ${isPending ? `<button class="action-btn glow-btn small-btn" onclick="confirmTriagePriority('${q.tokenNumber || q.id}')" title="Confirm AI Recommendation"><i data-lucide="check"></i> Confirm</button>` : ''}
             <button class="glass-btn small-btn" onclick="openOverrideTriageModal('${q.tokenNumber || q.id}')" title="Override Priority Level"><i data-lucide="edit-3"></i> Override</button>
           </div>
