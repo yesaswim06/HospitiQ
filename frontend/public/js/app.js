@@ -591,11 +591,28 @@ function filterSidebarForRole(role) {
 // URL Parameter Direct Access Handler
 async function checkDirectUrlAccess() {
   const urlParams = new URLSearchParams(window.location.search);
-  const secParam = urlParams.get('sec') || urlParams.get('secToken');
+  const registerParam = urlParams.get('register') || urlParams.get('reg') || (urlParams.get('action') === 'register');
+  const tokenParam = urlParams.get('token') || urlParams.get('t') || urlParams.get('sec') || urlParams.get('secToken');
+  const phoneParam = urlParams.get('phone') || urlParams.get('mobile');
 
-  if (secParam) {
+  // 1. If scanned from a Hospital Registration QR Code -> Auto open registration modal
+  if (registerParam) {
+    setTimeout(() => {
+      if (typeof openNewTokenModal === 'function') {
+        openNewTokenModal();
+      } else if (typeof openPublicTokenModal === 'function') {
+        openPublicTokenModal();
+      }
+      showToast('Scan successful! Please complete your OPD registration.', 'success');
+    }, 350);
+    return;
+  }
+
+  // 2. If scanned from an Active Patient Token Pass QR Code -> Auto load pass
+  const lookupVal = tokenParam || phoneParam;
+  if (lookupVal) {
     try {
-      const res = await api.getPatientToken(secParam.trim());
+      const res = await api.getPatientToken(lookupVal.trim());
       if (res.success && res.patientToken) {
         const user = {
           name: res.patientToken.patientName,
@@ -605,10 +622,50 @@ async function checkDirectUrlAccess() {
         };
         await launchPortal(user, 'patient-portal');
         await loadPatientTokenData(res.patientToken.tokenNumber);
+      } else {
+        // Local queue fallback
+        const pt = appState.queue?.find(q => 
+          (q.tokenNumber && q.tokenNumber.toUpperCase() === lookupVal.toUpperCase()) ||
+          (q.phone && q.phone.replace(/\D/g, '') === lookupVal.replace(/\D/g, ''))
+        );
+        if (pt) {
+          const user = { name: pt.patientName, role: 'Patient', tokenNumber: pt.tokenNumber, id: pt.id };
+          await launchPortal(user, 'patient-portal');
+          await loadPatientTokenData(pt.tokenNumber);
+        }
       }
     } catch (err) {
       console.error('Direct URL lookup error:', err);
     }
+  }
+}
+
+// Function to open Hospital Scan-to-Register QR Standee Modal
+function openScanToRegisterModal() {
+  const modal = document.getElementById('scanToRegisterModal');
+  if (modal) {
+    const regUrl = `${window.location.origin}/patient.html?register=true`;
+    const regUrlEl = document.getElementById('regQrTargetUrl');
+    if (regUrlEl) regUrlEl.textContent = regUrl;
+
+    const qrContainer = document.getElementById('hospitalRegQrContainer');
+    if (qrContainer) {
+      qrContainer.innerHTML = '';
+      try {
+        new QRCode(qrContainer, {
+          text: regUrl,
+          width: 190,
+          height: 190,
+          colorDark: '#0ea5e9',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } catch (e) {
+        console.warn('Scan-to-Register QR generation warning:', e);
+      }
+    }
+    openModal('scanToRegisterModal');
+    if (window.lucide) lucide.createIcons();
   }
 }
 
@@ -840,7 +897,7 @@ async function loadPatientTokenData(tokenNumber) {
       `;
     }
 
-    const directUrl = `${window.location.origin}/?token=${pt.tokenNumber}`;
+    const directUrl = `${window.location.origin}/patient.html?token=${encodeURIComponent(pt.tokenNumber)}`;
     const directUrlEl = document.getElementById('ptDirectUrl');
     if (directUrlEl) directUrlEl.textContent = directUrl;
 

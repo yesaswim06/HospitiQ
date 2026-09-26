@@ -1123,6 +1123,37 @@
     </div>
   </div>
 
+  <!-- MODAL: FAST SCAN-TO-REGISTER QR STANDEE -->
+  <div class="modal-overlay" id="scanToRegisterModal">
+    <div class="glass-card modal-card text-center" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i data-lucide="qr-code"></i> Hospital Entrance Scan-to-Register QR</h3>
+        <button class="close-btn" onclick="closeModal('scanToRegisterModal')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="padding-b-sm">
+        <p class="sub-text margin-b-md">Scan this QR code with any smartphone camera at the hospital entrance or OPD kiosk to immediately open the <strong>Patient OPD Registration Form</strong> on your phone.</p>
+        
+        <div style="background: #ffffff; padding: 16px; border-radius: 20px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin: 0 auto 1rem auto;">
+          <div id="hospitalRegQrContainer" style="display: flex; justify-content: center; align-items: center; min-width: 190px; min-height: 190px;"></div>
+        </div>
+        
+        <div class="info-note-box margin-b-md text-left">
+          <i data-lucide="sparkles"></i>
+          <span>Direct URL: <strong class="cyan-text font-mono" id="regQrTargetUrl">patient.html?register=true</strong></span>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <button class="action-btn glow-btn" onclick="openNewTokenModal(); closeModal('scanToRegisterModal');">
+            <i data-lucide="user-plus"></i> Open Form Directly
+          </button>
+          <button class="glass-btn" onclick="window.print()">
+            <i data-lucide="printer"></i> Print QR Standee
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
