@@ -192,22 +192,26 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal', raw
   let emergencySlot = '';
 
   // 1. Evaluate Clinical Category from NLP if not explicitly selected
-  if (/\b(chest|heart|angina|cardiac|palpitation|pressure in chest|stent)\b/i.test(text)) {
-    category = 'Cardiac & Chest';
-  } else if (/\b(breath|dyspnea|asthma|wheezing|cough|choking|airway|stridor|oxygen|suffocating)\b/i.test(text)) {
-    category = 'Respiratory & Airway';
-  } else if (/\b(stroke|unconscious|slurred speech|paralysis|facial droop|seizure|headache|faint|syncope|vertigo)\b/i.test(text)) {
-    category = 'Neurological & Stroke';
-  } else if (/\b(bleed|blood|cut|stab|accident|burn|trauma|wound|laceration|fall|injury|hemorrhage)\b/i.test(text)) {
-    category = 'Trauma, Burns & Bleeding';
-  } else if (/\b(stomach|abdomen|vomit|diarrhea|nausea|cramp|appendix|gallbladder|gastric|acid)\b/i.test(text)) {
-    category = 'Abdominal & Gastrointestinal';
-  } else if (/\b(fracture|bone|dislocation|sprain|joint|knee|ankle|cannot walk|swelling|wrist)\b/i.test(text)) {
-    category = 'Orthopedic & Fractures';
-  } else if (/\b(fever|chills|infection|cold|flu|shivering|temperature|covid|dengue)\b/i.test(text)) {
-    category = 'Infection & High Fever';
-  } else if (/\b(refill|prescription|renewal|routine checkup|medical certificate|follow up|fitness|report)\b/i.test(text)) {
-    category = 'General & Prescription Refill';
+  if (!rawCategory || !rawCategory.trim()) {
+    if (/\b(chest|heart|angina|cardiac|palpitation|pressure in chest|stent)\b/i.test(text)) {
+      category = 'Cardiac & Chest';
+    } else if (/\b(breath|dyspnea|asthma|wheezing|cough|choking|airway|stridor|oxygen|suffocating)\b/i.test(text)) {
+      category = 'Respiratory & Airway';
+    } else if (/\b(stroke|unconscious|slurred speech|paralysis|facial droop|seizure|headache|faint|syncope|vertigo)\b/i.test(text)) {
+      category = 'Neurological & Stroke';
+    } else if (/\b(bleed|blood|cut|stab|accident|burn|trauma|wound|laceration|fall|injury|hemorrhage)\b/i.test(text)) {
+      category = 'Trauma, Burns & Bleeding';
+    } else if (/\b(stomach|abdomen|vomit|diarrhea|nausea|cramp|appendix|gallbladder|gastric|acid)\b/i.test(text)) {
+      category = 'Abdominal & Gastrointestinal';
+    } else if (/\b(fracture|bone|dislocation|sprain|joint|knee|ankle|cannot walk|swelling|wrist)\b/i.test(text)) {
+      category = 'Orthopedic & Fractures';
+    } else if (/\b(fever|chills|infection|cold|flu|shivering|temperature|covid|dengue)\b/i.test(text)) {
+      category = 'Infection & High Fever';
+    } else if (/\b(refill|prescription|renewal|routine checkup|medical certificate|follow up|fitness|report)\b/i.test(text)) {
+      category = 'General & Prescription Refill';
+    }
+  } else {
+    category = rawCategory.trim();
   }
 
   // 2. Visual Analog Pain Scale (VAS 1-10) Real-time Integration
@@ -811,20 +815,56 @@ const handleTokenRegistration = async (req, res) => {
   const triageResult = evaluateTriage(rawDesc, patientReportedUrgency || 'Normal', painScore, symptomCategory);
 
   try {
-    let doc = store.doctors.find(d => d.id === doctorId || d.docId === doctorId);
-    if (isDBConnected() && !doc) {
-      doc = await Doctor.findOne({ $or: [{ docId: doctorId }, { _id: mongoose.isValidObjectId(doctorId) ? doctorId : null }] }).lean();
+    // Resolve clinical department and attending specialist doctor from symptom category
+    let targetDept = department;
+    if (!targetDept || targetDept === 'General') {
+      const cat = triageResult.symptomCategory;
+      if (cat === 'Cardiac & Chest') targetDept = 'Cardiology';
+      else if (cat === 'Neurological & Stroke') targetDept = 'Neurology';
+      else if (cat === 'Orthopedic & Fractures') targetDept = 'Orthopedics';
+      else if (cat === 'Pediatrics') targetDept = 'Pediatrics';
+      else if (cat === 'Dermatology') targetDept = 'Dermatology';
+      else if (cat === 'ENT') targetDept = 'ENT';
+      else if (cat === 'Trauma, Burns & Bleeding') targetDept = 'Emergency';
+      else targetDept = 'General Medicine';
+    }
+
+    let doc = null;
+    if (doctorId) {
+      doc = store.doctors.find(d => d.id === doctorId || d.docId === doctorId);
+      if (isDBConnected() && !doc) {
+        doc = await Doctor.findOne({ $or: [{ docId: doctorId }, { _id: mongoose.isValidObjectId(doctorId) ? doctorId : null }] }).lean();
+      }
+    }
+    
+    // If no specific doctor was given or doctor doesn't match department, find specialist for this department
+    if (!doc && targetDept) {
+      doc = store.doctors.find(d => d.department && d.department.toLowerCase() === targetDept.toLowerCase());
+      if (isDBConnected() && !doc) {
+        doc = await Doctor.findOne({ department: new RegExp(`^${targetDept}$`, 'i') }).lean();
+      }
     }
     if (!doc) doc = store.doctors[0];
 
-    const deptCode = department ? department.charAt(0).toUpperCase() : 'A';
+    // Generate intelligent department token code
+    let deptCode = 'A';
+    if (targetDept === 'Cardiology') deptCode = 'A';
+    else if (targetDept === 'General Medicine') deptCode = 'B';
+    else if (targetDept === 'Orthopedics') deptCode = 'O';
+    else if (targetDept === 'Neurology') deptCode = 'N';
+    else if (targetDept === 'Pediatrics') deptCode = 'P';
+    else if (targetDept === 'Dermatology') deptCode = 'D';
+    else if (targetDept === 'ENT') deptCode = 'E';
+    else if (targetDept === 'Emergency') deptCode = 'EM';
+    else deptCode = targetDept.charAt(0).toUpperCase();
+
     const totalCount = isDBConnected() ? await Token.countDocuments() : store.queue.length;
     const tokenNum = `${deptCode}-${String(totalCount + 101).padStart(3, '0')}`;
     const secToken = `sec_${generateSecureTokenKey()}`;
 
     const waitingInDept = isDBConnected() 
-      ? await Token.countDocuments({ status: 'WAITING', department: department || doc.department })
-      : store.queue.filter(q => q.status === 'WAITING' && q.department === (department || doc.department)).length;
+      ? await Token.countDocuments({ status: 'WAITING', department: targetDept || doc.department })
+      : store.queue.filter(q => q.status === 'WAITING' && q.department === (targetDept || doc.department)).length;
 
     let estWaitMins = (waitingInDept + 1) * 12;
     if (triageResult.finalTriagePriority === 'P1') estWaitMins = 0;
@@ -838,7 +878,7 @@ const handleTokenRegistration = async (req, res) => {
       age: parsedAge,
       gender: gender || 'Male',
       phone: phone || '+91 99000 11223',
-      department: department || doc.department,
+      department: targetDept || doc.department,
       doctor: doc.name,
       doctorId: doc.docId || doc.id || 'doc-1',
       room: triageResult.emergencySlot || doc.room || 'OPD Room #104',

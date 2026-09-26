@@ -1369,6 +1369,17 @@ select option:active {
   .content-container { padding: 1rem; }
 
   .stats-grid, .capacity-gauges-grid, .ward-snapshot-grid, .dashboard-grid-2, .settings-grid-2 { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; gap: 0.75rem; }
+  .login-card { padding: 1.5rem 1.25rem !important; max-width: 100% !important; }
+  .credentials-ref-grid { grid-template-columns: 1fr !important; }
+  .role-login-choice-card { padding: 0.95rem 1.1rem !important; gap: 0.85rem !important; }
+  .role-choice-icon { width: 42px !important; height: 42px !important; font-size: 1.15rem !important; }
+  .mtx-auth-tabs { flex-direction: column; gap: 0.4rem; width: 100%; }
+  .mtx-tab-btn { width: 100%; justify-content: center; }
+  .demo-cred-hint { flex-direction: column; align-items: stretch; }
+  .demo-cred-btn { width: 100%; justify-content: flex-start; }
+  .toast-container { right: 1rem; left: 1rem; bottom: 3rem; }
+  .toast { min-width: unset; width: 100%; }
   .serving-action-bar { flex-direction: column; }
   .serving-big-token { font-size: 2.8rem; }
   .patient-token-display { font-size: 3rem; }

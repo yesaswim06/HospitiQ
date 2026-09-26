@@ -816,8 +816,8 @@ async function loadPatientTokenData(tokenNumber) {
     if (tokenEl) tokenEl.textContent = pt.tokenNumber;
     if (nameEl) nameEl.textContent = `Patient: ${pt.patientName} (Age: ${pt.age || 30}, ${pt.gender || 'Male'})`;
     if (deptEl) deptEl.textContent = pt.department || 'General Medicine';
-    if (docEl) docEl.textContent = pt.doctor || 'Dr. Sunita Rao';
-    if (roomEl) roomEl.textContent = pt.room || 'OPD Room #104';
+    if (docEl) docEl.textContent = pt.doctor || (pt.department === 'Cardiology' ? 'Dr. Sunita Rao' : (pt.department === 'Orthopedics' ? 'Dr. Ananya Reddy' : (pt.department === 'Neurology' ? 'Dr. Priya Patel' : (pt.department === 'Pediatrics' ? 'Dr. Hrishikesh Deshmukh' : (pt.department === 'Dermatology' ? 'Dr. Suresh Menon' : (pt.department === 'ENT' ? 'Dr. Meera Nambiar' : 'Dr. Vikram Malhotra'))))));
+    if (roomEl) roomEl.textContent = pt.room || (pt.department === 'Cardiology' ? 'OPD Room #104' : (pt.department === 'Orthopedics' ? 'OPD Room #201' : (pt.department === 'Neurology' ? 'OPD Room #304' : (pt.department === 'Pediatrics' ? 'OPD Room #105' : (pt.department === 'Dermatology' ? 'OPD Room #110' : (pt.department === 'ENT' ? 'OPD Room #115' : 'OPD Room #108'))))));
     if (waitEl) waitEl.innerHTML = `${pt.waitTime !== undefined ? pt.waitTime : 15} <span class="unit">Mins</span>`;
     if (aheadEl) aheadEl.innerHTML = `${String(pt.patientsAhead !== undefined ? pt.patientsAhead : 0).padStart(2, '0')} <span class="unit">Patients</span>`;
     
@@ -2681,12 +2681,24 @@ async function handlePatientGateRegister(e) {
     return;
   }
 
+  let department = 'General Medicine';
+  let doctorId = 'doc-2';
+  if (symptomCategory === 'Cardiac & Chest') { department = 'Cardiology'; doctorId = 'doc-1'; }
+  else if (symptomCategory === 'Neurological & Stroke') { department = 'Neurology'; doctorId = 'doc-5'; }
+  else if (symptomCategory === 'Orthopedic & Fractures') { department = 'Orthopedics'; doctorId = 'doc-3'; }
+  else if (symptomCategory === 'Pediatrics') { department = 'Pediatrics'; doctorId = 'doc-4'; }
+  else if (symptomCategory === 'Dermatology') { department = 'Dermatology'; doctorId = 'doc-6'; }
+  else if (symptomCategory === 'ENT') { department = 'ENT'; doctorId = 'doc-7'; }
+  else if (symptomCategory === 'Trauma, Burns & Bleeding') { department = 'Emergency'; doctorId = 'doc-3'; }
+
   try {
     const res = await api.createToken({
       patientName: name,
       age,
       gender,
       phone,
+      department,
+      doctorId,
       symptomCategory,
       problemDescription: `Outpatient consultation for ${symptomCategory}.`,
       painScore: 2,
