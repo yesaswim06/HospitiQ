@@ -858,10 +858,56 @@ select option:active {
 .glass-sidebar { width: 260px; border-radius: 0; border-top: none; border-bottom: none; border-left: none; display: flex; flex-direction: column; justify-content: space-between; position: fixed; top: 0; left: 0; height: 100vh; z-index: 200; transition: transform var(--transition-normal), width var(--transition-normal); }
 .glass-sidebar.collapsed { width: 80px; }
 
-.sidebar-header { padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); }
+.sidebar-header { 
+  height: 70px;
+  padding: 0 1.25rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  border-bottom: 1px solid var(--glass-border);
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
 .logo-cross-small { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; color: white; }
-.brand { display: flex; align-items: center; gap: 0.6rem; }
-.sidebar-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; }
+.brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+.sidebar-brand-img {
+  height: 38px;
+  width: auto;
+  max-width: 165px;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 2px 8px;
+  object-fit: contain;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  display: block;
+  transition: all var(--transition-normal);
+}
+.sidebar-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 6px; transition: all var(--transition-fast); }
+.sidebar-toggle-btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--text-main); }
+
+.glass-sidebar.collapsed .sidebar-header {
+  padding: 0 0.5rem;
+  justify-content: center;
+  gap: 0.25rem;
+}
+.glass-sidebar.collapsed .sidebar-brand-img {
+  max-width: 36px !important;
+  width: 36px !important;
+  height: 34px !important;
+  padding: 2px 4px !important;
+  object-fit: cover !important;
+  object-position: left !important;
+  border-radius: 6px !important;
+}
+.glass-sidebar.collapsed .sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.glass-sidebar.collapsed .sidebar-toggle-btn i {
+  transform: rotate(180deg);
+}
 
 .glass-sidebar.collapsed .sidebar-brand-text,
 .glass-sidebar.collapsed .nav-section-label,
