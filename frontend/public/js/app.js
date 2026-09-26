@@ -133,6 +133,9 @@ function updateThemeIcons() {
 
 // --- Public Landing Page Navigation ---
 function initLandingPage() {
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (!landingWrapper) return; // Dedicated portal pages (patient.html, doctor.html, admin.html) do not have publicLandingPage
+
   const allowedRoutes = ['home', 'features', 'about', 'contact', 'services', 'register', 'login', 'user', 'patient', 'doctor', 'admin', 'md'];
   const hash = (window.location.hash.replace('#', '') || 'home').toLowerCase();
   
@@ -2548,6 +2551,17 @@ function openAdmitPatientModal() {
 
 // --- Patient Portal Gate Controls & Identity Verification ---
 function showPatientAuthGate() {
+  const appShell = document.getElementById('appShell');
+  if (appShell) {
+    appShell.classList.remove('hidden');
+    appShell.style.display = 'flex';
+  }
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (landingWrapper) {
+    landingWrapper.classList.add('hidden');
+    landingWrapper.style.display = 'none';
+  }
+
   const gate = document.getElementById('patientAuthGate');
   const pass = document.getElementById('patientActivePass');
   if (gate) gate.style.display = 'block';
@@ -2563,6 +2577,17 @@ function showPatientAuthGate() {
 }
 
 function showPatientActivePass() {
+  const appShell = document.getElementById('appShell');
+  if (appShell) {
+    appShell.classList.remove('hidden');
+    appShell.style.display = 'flex';
+  }
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (landingWrapper) {
+    landingWrapper.classList.add('hidden');
+    landingWrapper.style.display = 'none';
+  }
+
   const gate = document.getElementById('patientAuthGate');
   const pass = document.getElementById('patientActivePass');
   if (gate) gate.style.display = 'none';
