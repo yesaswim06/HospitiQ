@@ -57,10 +57,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const path = window.location.pathname.toLowerCase();
 
   if (pageRole === 'Patient' || path.endsWith('/patient') || path.endsWith('/patient.html') || path.endsWith('/user') || path.endsWith('/user.html')) {
-    const defaultPatient = (appState.currentUser && appState.currentUser.role === 'Patient')
-      ? appState.currentUser
-      : { name: 'Ramesh Verma', role: 'Patient', tokenNumber: 'A-024', department: 'General Medicine', phone: '9900011223' };
-    await launchPortal(defaultPatient, 'patient-portal', false);
+    if (appState.currentUser && appState.currentUser.role === 'Patient' && appState.currentUser.tokenNumber) {
+      await launchPortal(appState.currentUser, 'patient-portal', false);
+      await loadPatientTokenData(appState.currentUser.tokenNumber);
+    } else {
+      showPatientAuthGate();
+    }
   } else if (pageRole === 'Doctor' || path.endsWith('/doctor') || path.endsWith('/doctor.html')) {
     const defaultDoctor = (appState.currentUser && appState.currentUser.role === 'Doctor')
       ? appState.currentUser
@@ -680,8 +682,11 @@ function switchView(viewId) {
   renderAllViews();
   if (viewId === 'analytics') renderAnalyticsCharts();
   if (viewId === 'patient-portal') {
-    const activeTok = appState.currentUser?.tokenNumber || (appState.queue && appState.queue[0]?.tokenNumber) || 'A-024';
-    loadPatientTokenData(activeTok);
+    if (appState.currentUser && appState.currentUser.role === 'Patient' && appState.currentUser.tokenNumber) {
+      loadPatientTokenData(appState.currentUser.tokenNumber);
+    } else {
+      showPatientAuthGate();
+    }
   }
   lucide.createIcons();
 }
@@ -709,8 +714,11 @@ function renderAllViews() {
 
   const currentActiveView = appState.activeView || document.querySelector('.view-panel.active')?.id?.replace('view-', '');
   if (currentActiveView === 'patient-portal' || appState.currentUser?.role === 'Patient') {
-    const activeTok = appState.currentUser?.tokenNumber || (appState.queue && appState.queue[0]?.tokenNumber) || 'A-024';
-    loadPatientTokenData(activeTok);
+    if (appState.currentUser && appState.currentUser.tokenNumber) {
+      loadPatientTokenData(appState.currentUser.tokenNumber);
+    } else {
+      showPatientAuthGate();
+    }
   }
 }
 
@@ -721,16 +729,18 @@ async function loadPatientTokenData(tokenNumber) {
   if (!searchNum) {
     if (appState.currentUser && appState.currentUser.tokenNumber) {
       searchNum = appState.currentUser.tokenNumber;
-    } else if (appState.queue && appState.queue.length > 0) {
-      searchNum = appState.queue[0].tokenNumber;
-    } else {
-      searchNum = 'A-031';
     }
+  }
+
+  if (!searchNum) {
+    showPatientAuthGate();
+    return;
   }
 
   const cleanStr = String(searchNum).trim();
   const cleanUpper = cleanStr.toUpperCase();
   const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
+  const digitsOnly = cleanStr.replace(/\D/g, '');
 
   let pt = null;
 
@@ -748,11 +758,40 @@ async function loadPatientTokenData(tokenNumber) {
     pt = appState.queue.find(q => {
       if (!q) return false;
       const tUpper = (q.tokenNumber || '').toUpperCase();
-      return tUpper === cleanUpper || tUpper.replace(/[\s\-]/g, '') === cleanNoDash || (q.patientName || '').toLowerCase() === cleanStr.toLowerCase();
+      const ph = (q.phone || '').replace(/\D/g, '');
+      return tUpper === cleanUpper || 
+             tUpper.replace(/[\s\-]/g, '') === cleanNoDash || 
+             (q.patientName || '').toLowerCase() === cleanStr.toLowerCase() ||
+             (digitsOnly.length >= 4 && ph && ph.includes(digitsOnly));
     });
   }
 
   if (pt) {
+    showPatientActivePass();
+
+    // Persist verified patient session
+    const verifiedUser = {
+      name: pt.patientName,
+      role: 'Patient',
+      tokenNumber: pt.tokenNumber,
+      department: pt.department,
+      phone: pt.phone || '',
+      age: pt.age || 30,
+      gender: pt.gender || 'Male'
+    };
+    appState.currentUser = verifiedUser;
+    if (window.sessionStorage) {
+      sessionStorage.setItem('hospitiq_user', JSON.stringify(verifiedUser));
+    }
+
+    // Update sidebar profile
+    const userNameLabel = document.getElementById('userNameLabel');
+    const userRoleBadge = document.getElementById('userRoleBadge');
+    const userAvatar = document.getElementById('userAvatar');
+    if (userNameLabel) userNameLabel.textContent = pt.patientName;
+    if (userRoleBadge) userRoleBadge.textContent = `OPD Patient (${pt.tokenNumber})`;
+    if (userAvatar) userAvatar.textContent = pt.patientName ? pt.patientName.charAt(0).toUpperCase() : 'P';
+
     const tokenEl = document.getElementById('ptTokenNum');
     const nameEl = document.getElementById('ptName');
     const deptEl = document.getElementById('ptDept');
@@ -2506,3 +2545,152 @@ function openAdmitPatientModal() {
   populateAvailableBedsForWard();
   openModal('admitPatientModal');
 }
+
+// --- Patient Portal Gate Controls & Identity Verification ---
+function showPatientAuthGate() {
+  const gate = document.getElementById('patientAuthGate');
+  const pass = document.getElementById('patientActivePass');
+  if (gate) gate.style.display = 'block';
+  if (pass) pass.style.display = 'none';
+
+  const userAvatar = document.getElementById('userAvatar');
+  const userNameLabel = document.getElementById('userNameLabel');
+  const userRoleBadge = document.getElementById('userRoleBadge');
+  if (userAvatar) userAvatar.textContent = '?';
+  if (userNameLabel) userNameLabel.textContent = 'Patient Sign In';
+  if (userRoleBadge) userRoleBadge.textContent = 'Verification Required';
+  lucide.createIcons();
+}
+
+function showPatientActivePass() {
+  const gate = document.getElementById('patientAuthGate');
+  const pass = document.getElementById('patientActivePass');
+  if (gate) gate.style.display = 'none';
+  if (pass) pass.style.display = 'block';
+  lucide.createIcons();
+}
+
+function togglePatientAuthTab(tab) {
+  const isExisting = tab === 'existing';
+  const btnExisting = document.getElementById('btnTabExistingPt');
+  const btnNew = document.getElementById('btnTabNewPt');
+  if (btnExisting) btnExisting.classList.toggle('active', isExisting);
+  if (btnNew) btnNew.classList.toggle('active', !isExisting);
+
+  const loginForm = document.getElementById('patientGateLoginForm');
+  const regForm = document.getElementById('patientGateRegisterForm');
+  if (loginForm) loginForm.style.display = isExisting ? 'block' : 'none';
+  if (regForm) regForm.style.display = !isExisting ? 'block' : 'none';
+  lucide.createIcons();
+}
+
+async function handlePatientGateLogin(e) {
+  e.preventDefault();
+  const identifier = document.getElementById('gatePtIdentifier')?.value?.trim();
+  if (!identifier) {
+    showToast('Please enter your Mobile Number or Token #', 'warning');
+    return;
+  }
+  try {
+    const res = await api.login({ role: 'Patient', identifier });
+    if (res.success && res.user) {
+      appState.sessionToken = res.token || 'pt-session';
+      appState.currentUser = res.user;
+      sessionStorage.setItem('hospitiq_auth_token', appState.sessionToken);
+      sessionStorage.setItem('hospitiq_user', JSON.stringify(res.user));
+      showToast(`Welcome, ${res.user.name}! Token ${res.user.tokenNumber || ''} verified.`, 'success');
+      showPatientActivePass();
+      await loadPatientTokenData(res.user.tokenNumber || identifier);
+    } else {
+      const tokenRes = await api.getPatientToken(identifier);
+      if (tokenRes.success && tokenRes.patientToken) {
+        const pt = tokenRes.patientToken;
+        const user = {
+          name: pt.patientName,
+          role: 'Patient',
+          tokenNumber: pt.tokenNumber,
+          department: pt.department,
+          phone: pt.phone,
+          age: pt.age,
+          gender: pt.gender
+        };
+        appState.currentUser = user;
+        sessionStorage.setItem('hospitiq_user', JSON.stringify(user));
+        showToast(`Token ${pt.tokenNumber} verified for ${pt.patientName}!`, 'success');
+        showPatientActivePass();
+        await loadPatientTokenData(pt.tokenNumber);
+      } else {
+        showToast(res.message || `No patient record found matching "${identifier}".`, 'danger');
+      }
+    }
+  } catch (err) {
+    console.error('Patient gate login error:', err);
+    showToast('Error verifying credentials. Please try again.', 'danger');
+  }
+}
+
+async function handlePatientGateRegister(e) {
+  e.preventDefault();
+  const form = e.target;
+  const name = form.querySelector('#gateRegName')?.value?.trim();
+  const age = parseInt(form.querySelector('#gateRegAge')?.value) || 30;
+  const gender = form.querySelector('#gateRegGender')?.value || 'Male';
+  const phone = form.querySelector('#gateRegPhone')?.value?.trim();
+  const symptomCategory = form.querySelector('#gateRegCategory')?.value || 'General & Routine';
+
+  if (!name) {
+    showToast('Please enter the patient name.', 'warning');
+    return;
+  }
+  if (!phone) {
+    showToast('Please enter a valid mobile number.', 'warning');
+    return;
+  }
+
+  try {
+    const res = await api.createToken({
+      patientName: name,
+      age,
+      gender,
+      phone,
+      symptomCategory,
+      problemDescription: `Outpatient consultation for ${symptomCategory}.`,
+      painScore: 2,
+      patientReportedUrgency: 'Normal'
+    });
+
+    if (res.success && res.token) {
+      const tok = res.token;
+      const user = {
+        name: tok.patientName,
+        role: 'Patient',
+        tokenNumber: tok.tokenNumber,
+        department: tok.department,
+        phone: tok.phone,
+        age: tok.age,
+        gender: tok.gender
+      };
+      appState.currentUser = user;
+      sessionStorage.setItem('hospitiq_user', JSON.stringify(user));
+      showToast(`Registered successfully! Token: ${tok.tokenNumber}`, 'success');
+      form.reset();
+      showPatientActivePass();
+      await loadAppData(true);
+      await loadPatientTokenData(tok.tokenNumber);
+    } else {
+      showToast(res.message || 'Registration failed.', 'danger');
+    }
+  } catch (err) {
+    console.error('Patient gate register error:', err);
+    showToast('Error registering patient token.', 'danger');
+  }
+}
+
+function switchPatientAccount() {
+  appState.currentUser = null;
+  sessionStorage.removeItem('hospitiq_user');
+  sessionStorage.removeItem('hospitiq_auth_token');
+  showPatientAuthGate();
+  showToast('Signed out of patient session.', 'info');
+}
+

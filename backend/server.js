@@ -352,9 +352,11 @@ const evaluateTriage = (description = '', patientReportedUrgency = 'Normal', raw
 // ==============================================================================
 
 app.post('/api/auth/login', rateLimiter, async (req, res) => {
-  const { email, role, identifier, patientName, tokenNumber } = req.body;
-  const lookupToken = (tokenNumber || identifier || '').trim().toUpperCase();
-  const lookupName = (patientName || identifier || '').trim();
+  const { email, role, identifier, patientName, tokenNumber, phone, mobileNumber } = req.body;
+  const rawInput = (identifier || tokenNumber || phone || mobileNumber || patientName || '').trim();
+  const lookupToken = (tokenNumber || (rawInput && !rawInput.match(/^\d{7,15}$/) ? rawInput : '')).trim().toUpperCase();
+  const lookupPhone = (phone || mobileNumber || (rawInput && rawInput.match(/^\d{7,15}$/) ? rawInput : '')).trim();
+  const lookupName = (patientName || (rawInput && !rawInput.match(/^\d{7,15}$/) && !rawInput.match(/^[A-Z]-\d+/i) ? rawInput : '')).trim();
 
   let user = null;
 
@@ -372,16 +374,41 @@ app.post('/api/auth/login', rateLimiter, async (req, res) => {
         if (lookupName) {
           queries.push({ patientName: new RegExp(`^${lookupName}$`, 'i') });
         }
+        if (lookupPhone) {
+          queries.push({ phone: lookupPhone });
+          queries.push({ phone: new RegExp(lookupPhone.slice(-10)) });
+        }
 
-        const tokenDoc = await Token.findOne(queries.length > 0 ? { $or: queries } : { tokenNumber: 'A-031' });
-        if (tokenDoc) {
-          user = {
-            id: tokenDoc._id.toString(),
-            name: tokenDoc.patientName,
-            role: 'Patient',
-            tokenNumber: tokenDoc.tokenNumber,
-            department: tokenDoc.department
-          };
+        if (queries.length > 0) {
+          const tokenDoc = await Token.findOne({ $or: queries }).sort({ createdAt: -1 });
+          if (tokenDoc) {
+            user = {
+              id: tokenDoc._id.toString(),
+              name: tokenDoc.patientName,
+              role: 'Patient',
+              tokenNumber: tokenDoc.tokenNumber,
+              department: tokenDoc.department,
+              phone: tokenDoc.phone || lookupPhone || '',
+              age: tokenDoc.age || 30,
+              gender: tokenDoc.gender || 'Male'
+            };
+          }
+
+          if (!user && lookupPhone) {
+            const ptDoc = await Patient.findOne({ $or: [{ phone: lookupPhone }, { phone: new RegExp(lookupPhone.slice(-10)) }] }).sort({ createdAt: -1 });
+            if (ptDoc) {
+              user = {
+                id: ptDoc._id.toString(),
+                name: ptDoc.name,
+                role: 'Patient',
+                tokenNumber: ptDoc.activeTokenNumber || 'A-024',
+                department: ptDoc.department || 'General Medicine',
+                phone: ptDoc.phone || lookupPhone || '',
+                age: ptDoc.age || 30,
+                gender: ptDoc.gender || 'Male'
+              };
+            }
+          }
         }
       }
 
@@ -389,8 +416,11 @@ app.post('/api/auth/login', rateLimiter, async (req, res) => {
         const foundMem = store.queue.find(q => {
           const t = (q.tokenNumber || '').toUpperCase();
           const pName = (q.patientName || '').toLowerCase();
+          const ph = (q.phone || '').replace(/\D/g, '');
+          const searchPh = lookupPhone.replace(/\D/g, '');
           return (cleanUpper && (t === cleanUpper || t.replace(/[\s\-]/g, '') === cleanNoDash)) ||
-                 (lookupName && pName === lookupName.toLowerCase());
+                 (lookupName && pName === lookupName.toLowerCase()) ||
+                 (searchPh && ph && ph.includes(searchPh));
         });
 
         if (foundMem) {
@@ -399,7 +429,10 @@ app.post('/api/auth/login', rateLimiter, async (req, res) => {
             name: foundMem.patientName,
             role: 'Patient',
             tokenNumber: foundMem.tokenNumber,
-            department: foundMem.department
+            department: foundMem.department,
+            phone: foundMem.phone || lookupPhone || '',
+            age: foundMem.age || 30,
+            gender: foundMem.gender || 'Male'
           };
         }
       }
@@ -408,7 +441,7 @@ app.post('/api/auth/login', rateLimiter, async (req, res) => {
         return res.status(401).json({
           success: false,
           error: 'UNAUTHORIZED',
-          message: 'No patient record or token found matching the provided credentials.'
+          message: 'No patient record or token found matching the provided credentials. Please register or verify your details.'
         });
       }
     } else if (role === 'Doctor') {
@@ -472,25 +505,34 @@ app.get('/api/patient/:tokenNumber', rateLimiter, async (req, res) => {
   const rawParam = String(req.params.tokenNumber || '').trim();
   const cleanUpper = rawParam.toUpperCase();
   const cleanNoDash = cleanUpper.replace(/[\s\-]/g, '');
+  const digitsOnly = rawParam.replace(/\D/g, '');
 
   try {
     let tokenItem = null;
 
     if (isDBConnected()) {
-      tokenItem = await Token.findOne({
-        $or: [
-          { tokenNumber: cleanUpper },
-          { secToken: cleanUpper },
-          { patientName: new RegExp(`^${rawParam}$`, 'i') }
-        ]
-      }).lean();
+      const orConditions = [
+        { tokenNumber: cleanUpper },
+        { secToken: cleanUpper },
+        { patientName: new RegExp(`^${rawParam}$`, 'i') }
+      ];
+      if (digitsOnly.length >= 4) {
+        orConditions.push({ phone: new RegExp(digitsOnly, 'i') });
+      }
+
+      tokenItem = await Token.findOne({ $or: orConditions }).lean();
     }
 
     if (!tokenItem) {
       tokenItem = store.queue.find(q => {
         const t = (q.tokenNumber || '').toUpperCase();
         const sec = (q.secToken || '').toUpperCase();
-        return t === cleanUpper || t.replace(/[\s\-]/g, '') === cleanNoDash || sec === cleanUpper || (q.patientName || '').toLowerCase() === rawParam.toLowerCase();
+        const ph = (q.phone || '').replace(/\D/g, '');
+        return t === cleanUpper || 
+               t.replace(/[\s\-]/g, '') === cleanNoDash || 
+               sec === cleanUpper || 
+               (q.patientName || '').toLowerCase() === rawParam.toLowerCase() ||
+               (digitsOnly.length >= 4 && ph && ph.includes(digitsOnly));
       });
     }
 
@@ -507,8 +549,9 @@ app.get('/api/patient/:tokenNumber', rateLimiter, async (req, res) => {
           tokenNumber: tokenItem.tokenNumber,
           secToken: tokenItem.secToken,
           patientName: tokenItem.patientName,
-          age: tokenItem.age,
-          gender: tokenItem.gender,
+          age: tokenItem.age || 30,
+          gender: tokenItem.gender || 'Male',
+          phone: tokenItem.phone || '',
           department: tokenItem.department,
           doctor: tokenItem.doctor,
           room: tokenItem.room,
@@ -516,6 +559,8 @@ app.get('/api/patient/:tokenNumber', rateLimiter, async (req, res) => {
           patientsAhead: waitCount,
           priority: tokenItem.priority,
           status: tokenItem.status,
+          symptomCategory: tokenItem.symptomCategory || 'General & Routine',
+          problemDescription: tokenItem.problemDescription || '',
           registrationTime: tokenItem.registrationTime || 'Today'
         }
       });

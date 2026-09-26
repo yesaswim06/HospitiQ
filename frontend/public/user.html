@@ -60,12 +60,12 @@
 
       <!-- SIDEBAR USER FOOTER -->
       <div class="sidebar-user-footer">
-        <div class="user-avatar-circle" id="userAvatar" title="Patient Profile">P</div>
+        <div class="user-avatar-circle" id="userAvatar" title="Patient Profile">?</div>
         <div class="user-info-text sidebar-user-info">
-          <span class="user-name" id="userNameLabel">Ramesh Verma</span>
-          <span class="user-role-badge" id="userRoleBadge">OPD Patient</span>
+          <span class="user-name" id="userNameLabel">Patient Sign In</span>
+          <span class="user-role-badge" id="userRoleBadge">Verification Required</span>
         </div>
-        <button class="logout-icon-btn" id="logoutBtn" title="Return to Home"><i data-lucide="log-out"></i></button>
+        <button class="logout-icon-btn" id="logoutBtn" onclick="switchPatientAccount()" title="Switch / Sign Out Patient"><i data-lucide="log-out"></i></button>
       </div>
     </aside>
 
@@ -85,7 +85,7 @@
         <div class="header-center desktop-only">
           <div class="global-search-box">
             <i data-lucide="search"></i>
-            <input type="text" id="ptHeaderSearchInput" placeholder="Enter Token # (e.g. A-024, A-105)..." class="glass-input" onchange="loadPatientTokenData(this.value)" />
+            <input type="text" id="ptHeaderSearchInput" placeholder="Lookup Token # or Mobile Number..." class="glass-input" onchange="loadPatientTokenData(this.value)" />
           </div>
         </div>
 
@@ -111,88 +111,187 @@
         
         <!-- PATIENT PORTAL VIEW -->
         <section id="view-patient-portal" class="view-panel active">
-          <div class="view-header">
-            <div>
-              <h1>Patient Token & Live Wait Status</h1>
-              <p>Real-time queue tracking, consultation room allocation, and QR code pass.</p>
+          
+          <!-- 1. PATIENT AUTH & IDENTITY VERIFICATION GATE (Visible when not verified) -->
+          <div class="glass-card margin-b-lg" id="patientAuthGate" style="display: block;">
+            <div class="text-center padding-b-md">
+              <div class="mtx-b2b-badge margin-b-xs">
+                <span class="badge-pill cyan-pill"><i data-lucide="shield-check"></i> Patient Identity & Pass Access</span>
+              </div>
+              <h2 class="margin-t-xs">Patient OPD Portal Login</h2>
+              <p class="sub-text">Enter your registered Mobile Number or Token # to view your live pass, or register for a new OPD token below.</p>
             </div>
-            <div class="action-row">
-              <input type="text" id="ptTokenSearchInput" placeholder="Lookup Token # (e.g. A-024, A-105)" class="glass-input width-auto" onchange="loadPatientTokenData(this.value)" />
-              <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="user-plus"></i> Book New Token</button>
+
+            <!-- TABS: EXISTING PATIENT vs NEW REGISTRATION -->
+            <div class="mtx-auth-tabs margin-b-md" style="max-width: 520px; margin-left: auto; margin-right: auto;">
+              <button type="button" class="mtx-tab-btn active" id="btnTabExistingPt" onclick="togglePatientAuthTab('existing')">
+                <i data-lucide="log-in"></i>
+                <span>Existing Patient Login</span>
+              </button>
+              <button type="button" class="mtx-tab-btn" id="btnTabNewPt" onclick="togglePatientAuthTab('new')">
+                <i data-lucide="user-plus"></i>
+                <span>New Patient Registration</span>
+              </button>
+            </div>
+
+            <!-- FORM A: EXISTING PATIENT VERIFICATION -->
+            <form id="patientGateLoginForm" class="login-form" style="max-width: 520px; margin: 0 auto;" onsubmit="handlePatientGateLogin(event)">
+              <div class="form-group">
+                <label>Registered Mobile Number or Token #</label>
+                <div class="input-icon-wrapper">
+                  <i data-lucide="phone"></i>
+                  <input type="text" id="gatePtIdentifier" required placeholder="e.g. 9900011223 or A-024" class="glass-input" />
+                </div>
+              </div>
+
+              <div class="demo-cred-hint">
+                <i data-lucide="info"></i> <span><strong>Quick Demo:</strong> Try Mobile: <code>9900011223</code> or Token: <code>A-024</code></span>
+              </div>
+
+              <button type="submit" class="action-btn glow-btn width-full margin-t-md">
+                <i data-lucide="ticket"></i> Verify Credentials & Open My OPD Pass
+              </button>
+            </form>
+
+            <!-- FORM B: NEW PATIENT REGISTRATION -->
+            <form id="patientGateRegisterForm" class="login-form" style="max-width: 520px; margin: 0 auto; display: none;" onsubmit="handlePatientGateRegister(event)">
+              <div class="form-group">
+                <label>Patient Full Name</label>
+                <div class="input-icon-wrapper">
+                  <i data-lucide="user"></i>
+                  <input type="text" id="gateRegName" required placeholder="e.g. Ramesh Verma" class="glass-input" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Age</label>
+                  <input type="number" id="gateRegAge" min="1" max="120" required placeholder="35" class="glass-input" />
+                </div>
+                <div class="form-group">
+                  <label>Gender</label>
+                  <select id="gateRegGender" class="glass-input">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Mobile Number (For Live SMS Queue Alerts)</label>
+                <div class="input-icon-wrapper">
+                  <i data-lucide="phone"></i>
+                  <input type="text" id="gateRegPhone" required placeholder="e.g. 9876543210" class="glass-input" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label><i data-lucide="crosshair"></i> Primary Symptom Category</label>
+                <select id="gateRegCategory" class="glass-input">
+                  <option value="General & Routine">General & Routine Checkup</option>
+                  <option value="Cardiac & Chest">🫀 Cardiac & Chest Discomfort</option>
+                  <option value="Respiratory & Airway">🫁 Respiratory & Shortness of Breath</option>
+                  <option value="Neurological & Stroke">🧠 Neurological, Stroke & Head Injury</option>
+                  <option value="Trauma, Burns & Bleeding">🩸 Trauma, Burns & Bleeding</option>
+                  <option value="Abdominal & Gastrointestinal">🩺 Abdominal & Gastrointestinal Issues</option>
+                  <option value="Orthopedic & Fractures">🦴 Orthopedic, Joint & Fractures</option>
+                  <option value="Infection & High Fever">🌡️ High Fever & Acute Infection</option>
+                </select>
+              </div>
+
+              <button type="submit" class="action-btn glow-btn width-full margin-t-md">
+                <i data-lucide="user-plus"></i> Register Patient & Generate OPD Pass
+              </button>
+            </form>
+          </div>
+
+          <!-- 2. PATIENT ACTIVE PASS SECTION (Visible after login / token creation) -->
+          <div id="patientActivePass" style="display: none;">
+            <div class="view-header">
+              <div>
+                <h1>Patient Token & Live Wait Status</h1>
+                <p>Real-time queue tracking, consultation room allocation, and QR code pass.</p>
+              </div>
+              <div class="action-row">
+                <button class="glass-btn small-btn" onclick="switchPatientAccount()"><i data-lucide="user-x"></i> Switch / Sign Out Patient</button>
+                <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> Book New Token</button>
+              </div>
+            </div>
+
+            <div class="glass-card patient-portal-card margin-b-lg">
+              <div class="patient-hero-header text-center">
+                <span class="badge-pill cyan-pill margin-b-xs"><i data-lucide="ticket"></i> Active OPD Pass</span>
+                <h1 class="patient-token-display font-mono gradient-text" id="ptTokenNum">--</h1>
+                <h2 id="ptName">Patient: --</h2>
+                <div class="patient-meta-row margin-t-xs">
+                  <span><i data-lucide="stethoscope"></i> Department: <strong id="ptDept">--</strong></span> • 
+                  <span><i data-lucide="user"></i> Doctor: <strong id="ptDoctor">--</strong></span> • 
+                  <span><i data-lucide="door-open"></i> Room: <strong id="ptRoom">--</strong></span>
+                </div>
+              </div>
+
+              <div class="patient-wait-grid margin-t-md">
+                <div class="wait-box blue-border">
+                  <span class="sub-text">Estimated Wait Time</span>
+                  <div class="wait-val font-mono" id="ptWaitTime">-- <span class="unit">Mins</span></div>
+                </div>
+                <div class="wait-box orange-border">
+                  <span class="sub-text">Patients Ahead of You</span>
+                  <div class="wait-val font-mono" id="ptAheadCount">-- <span class="unit">Patients</span></div>
+                </div>
+                <div class="wait-box green-border">
+                  <span class="sub-text">Token Status</span>
+                  <div class="wait-val green-text" id="ptStatus">--</div>
+                </div>
+              </div>
+
+              <div class="alert-confirm-strip margin-t-md">
+                <i data-lucide="message-square"></i>
+                <span>Live queue updates synchronized to: <strong id="ptAlertPhone">--</strong> via Instant SMS</span>
+                <span class="badge-pill green-pill margin-l-auto">Alerts Active</span>
+              </div>
+
+              <div class="qr-code-section text-center margin-t-lg">
+                <h4>Contactless Digital Token Pass</h4>
+                <p class="sub-text margin-b-sm">Show this QR code at the OPD entrance terminal or doctor consultation desk.</p>
+                <div class="qr-code-box" id="ptQrCodeContainer"></div>
+                <small class="sub-text display-block margin-t-xs">Scan link: <span class="font-mono cyan-text" id="ptDirectUrl">--</span></small>
+                <div class="margin-t-sm">
+                  <span class="badge-pill green-pill font-mono" id="ptValidityBadge"><i data-lucide="shield-check"></i> OP Valid for 15 Days • Patient Data Auto-Erased After Expiry</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PATIENTS WHO ARE WAITING QUEUE LIST -->
+            <div class="glass-card margin-b-lg">
+              <div class="card-header-flex">
+                <h3><i data-lucide="users"></i> Live Department Queue & Patients in Line</h3>
+                <span class="badge-pill cyan-pill" id="ptQueueDeptBadge">Live OPD Telemetry</span>
+              </div>
+              <p class="sub-text margin-b-md">Live order of patients scheduled for consultation today. Your current position is highlighted below.</p>
+              
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Position</th>
+                      <th>Token #</th>
+                      <th>Patient Name</th>
+                      <th>Assigned Doctor & Room</th>
+                      <th>Est. Wait</th>
+                      <th>Priority</th>
+                      <th>Live Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ptWaitingQueueTableBody">
+                    <!-- Rendered dynamically -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          <div class="glass-card patient-portal-card margin-b-lg">
-            <div class="patient-hero-header text-center">
-              <span class="badge-pill cyan-pill margin-b-xs"><i data-lucide="ticket"></i> Active OPD Pass</span>
-              <h1 class="patient-token-display font-mono gradient-text" id="ptTokenNum">A-024</h1>
-              <h2 id="ptName">Patient: Ramesh Verma (Age: 44, Male)</h2>
-              <div class="patient-meta-row margin-t-xs">
-                <span><i data-lucide="stethoscope"></i> Department: <strong id="ptDept">General Medicine</strong></span> • 
-                <span><i data-lucide="user"></i> Doctor: <strong id="ptDoctor">Dr. Rajesh Sharma</strong></span> • 
-                <span><i data-lucide="door-open"></i> Room: <strong id="ptRoom">OPD Room #101</strong></span>
-              </div>
-            </div>
-
-            <div class="patient-wait-grid margin-t-md">
-              <div class="wait-box blue-border">
-                <span class="sub-text">Estimated Wait Time</span>
-                <div class="wait-val font-mono" id="ptWaitTime">15 <span class="unit">Mins</span></div>
-              </div>
-              <div class="wait-box orange-border">
-                <span class="sub-text">Patients Ahead of You</span>
-                <div class="wait-val font-mono" id="ptAheadCount">02 <span class="unit">Patients</span></div>
-              </div>
-              <div class="wait-box green-border">
-                <span class="sub-text">Token Status</span>
-                <div class="wait-val green-text" id="ptStatus">WAITING IN QUEUE</div>
-              </div>
-            </div>
-
-            <div class="alert-confirm-strip margin-t-md">
-              <i data-lucide="message-square"></i>
-              <span>Live queue updates synchronized to: <strong id="ptAlertPhone">99000 11223</strong> via Instant SMS</span>
-              <span class="badge-pill green-pill margin-l-auto">Alerts Active</span>
-            </div>
-
-            <div class="qr-code-section text-center margin-t-lg">
-              <h4>Contactless Digital Token Pass</h4>
-              <p class="sub-text margin-b-sm">Show this QR code at the OPD entrance terminal or doctor consultation desk.</p>
-              <div class="qr-code-box" id="ptQrCodeContainer"></div>
-              <small class="sub-text display-block margin-t-xs">Scan link: <span class="font-mono cyan-text" id="ptDirectUrl">https://hospiti-q.vercel.app/?token=A-024</span></small>
-              <div class="margin-t-sm">
-                <span class="badge-pill green-pill font-mono" id="ptValidityBadge"><i data-lucide="shield-check"></i> OP Valid for 15 Days • Patient Data Auto-Erased After Expiry</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- PATIENTS WHO ARE WAITING QUEUE LIST -->
-          <div class="glass-card margin-b-lg">
-            <div class="card-header-flex">
-              <h3><i data-lucide="users"></i> Live Department Queue & Patients in Line</h3>
-              <span class="badge-pill cyan-pill" id="ptQueueDeptBadge">Live OPD Telemetry</span>
-            </div>
-            <p class="sub-text margin-b-md">Live order of patients scheduled for consultation today. Your current position is highlighted below.</p>
-            
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Position</th>
-                    <th>Token #</th>
-                    <th>Patient Name</th>
-                    <th>Assigned Doctor & Room</th>
-                    <th>Est. Wait</th>
-                    <th>Priority</th>
-                    <th>Live Status</th>
-                  </tr>
-                </thead>
-                <tbody id="ptWaitingQueueTableBody">
-                  <!-- Rendered dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
         </section>
 
       </main>
