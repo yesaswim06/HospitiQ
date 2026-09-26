@@ -2,7 +2,11 @@
    HOSPITIQ — REST API CLIENT SERVICE
    ========================================================================== */
 
-const API_BASE = window.HOSPITIQ_API_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : 'https://hospitiq.up.railway.app/api');
+const API_BASE = window.HOSPITIQ_API_URL || (
+  typeof window !== 'undefined' && window.location.protocol.startsWith('http')
+    ? `${window.location.origin}/api`
+    : 'http://localhost:5000/api'
+);
 
 const request = async (endpoint, options = {}) => {
   const headers = {
