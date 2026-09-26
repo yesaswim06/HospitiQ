@@ -84,14 +84,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Start Real-Time Live Sync Polling (Every 6 seconds)
+  // Start Real-Time Live Sync Polling (Every 2.5 seconds for true live telemetry)
   if (!appState.syncInterval) {
     appState.syncInterval = setInterval(() => {
       const appShell = document.getElementById('appShell');
       if (appShell && !appShell.classList.contains('hidden') && appShell.style.display !== 'none') {
         loadAppData(true);
       }
-    }, 6000);
+    }, 2500);
   }
 
   lucide.createIcons();
@@ -1053,16 +1053,52 @@ function renderNowServing() {
     return q.status === 'IN_CONSULTATION' || q.status === 'In Consultation';
   }) || appState.queue.find(q => q.status === 'IN_CONSULTATION' || q.status === 'In Consultation');
 
+  const nextWaiting = appState.queue.find(q => q.status === 'WAITING' || q.status === 'Waiting');
+
   const dashCallingToken = document.getElementById('dashCallingToken');
+  const dashCallingPatient = document.getElementById('dashCallingPatient');
+  const dashCallingDoctor = document.getElementById('dashCallingDoctor');
+  const dashCallingVitals = document.getElementById('dashCallingVitals');
+
   if (dashCallingToken) {
     if (inConsult) {
       dashCallingToken.textContent = inConsult.tokenNumber;
-      document.getElementById('dashCallingPatient').textContent = `${inConsult.patientName} (Age: ${inConsult.age || 30}, ${inConsult.gender || 'Male'})`;
-      document.getElementById('dashCallingDoctor').textContent = `${inConsult.department} ${inConsult.room || 'OPD Room #104'} — ${inConsult.doctor}`;
+      if (dashCallingPatient) dashCallingPatient.textContent = `${inConsult.patientName} (Age: ${inConsult.age || 30}, ${inConsult.gender || 'Male'})`;
+      if (dashCallingDoctor) dashCallingDoctor.textContent = `${inConsult.department} ${inConsult.room || 'OPD Room #104'} — ${inConsult.doctor}`;
+      
+      if (dashCallingVitals) {
+        const pulse = inConsult.pulse || (inConsult.priority === 'Emergency' ? 104 : (inConsult.priority === 'High' ? 88 : 76));
+        const bp = inConsult.bp || (inConsult.priority === 'Emergency' ? '145/95' : (inConsult.priority === 'High' ? '135/88' : '120/80'));
+        const temp = inConsult.temperature || (inConsult.priority === 'Emergency' ? '99.8' : '98.6');
+        const prio = inConsult.priority || 'Normal';
+        const prioPill = prio === 'Emergency' ? 'red-pill' : (prio === 'High' ? 'orange-pill' : 'cyan-pill');
+        
+        dashCallingVitals.innerHTML = `
+          <span class="vitals-chip"><i data-lucide="heart"></i> Pulse: ${pulse} bpm</span>
+          <span class="vitals-chip"><i data-lucide="activity"></i> BP: ${bp}</span>
+          <span class="vitals-chip"><i data-lucide="thermometer"></i> ${temp}°F</span>
+          <span class="badge-pill ${prioPill}"><i data-lucide="alert-circle"></i> ${prio} Priority</span>
+        `;
+      }
+    } else if (nextWaiting) {
+      dashCallingToken.innerHTML = `<span class="orange-text font-bold">READY TO CALL</span>`;
+      if (dashCallingPatient) dashCallingPatient.textContent = `Next in Queue: ${nextWaiting.patientName} (${nextWaiting.tokenNumber})`;
+      if (dashCallingDoctor) dashCallingDoctor.textContent = `Assigned to: ${nextWaiting.department} — ${nextWaiting.doctor}`;
+      if (dashCallingVitals) {
+        dashCallingVitals.innerHTML = `
+          <span class="vitals-chip"><i data-lucide="clock"></i> Est. Wait: ${nextWaiting.waitTime || 12} mins</span>
+          <span class="badge-pill orange-pill"><i data-lucide="user-check"></i> Patient Ready at Door</span>
+        `;
+      }
     } else {
-      dashCallingToken.textContent = 'NONE';
-      document.getElementById('dashCallingPatient').textContent = 'No Patient Currently in Consultation';
-      document.getElementById('dashCallingDoctor').textContent = 'Consultation Desk Ready';
+      dashCallingToken.textContent = 'STANDBY';
+      if (dashCallingPatient) dashCallingPatient.textContent = 'All OPD Consultations Completed';
+      if (dashCallingDoctor) dashCallingDoctor.textContent = 'All Specialist Rooms Available';
+      if (dashCallingVitals) {
+        dashCallingVitals.innerHTML = `
+          <span class="badge-pill green-pill"><i data-lucide="check-circle2"></i> Queue Clear</span>
+        `;
+      }
     }
   }
 
@@ -1072,6 +1108,9 @@ function renderNowServing() {
     if (inConsult) {
       docCurrentToken.textContent = inConsult.tokenNumber;
       docCurrentPatient.textContent = `${inConsult.patientName} (Age: ${inConsult.age || 30}, ${inConsult.gender || 'Male'})`;
+    } else if (nextWaiting) {
+      docCurrentToken.textContent = nextWaiting.tokenNumber;
+      docCurrentPatient.textContent = `Next in Line: ${nextWaiting.patientName}`;
     } else {
       docCurrentToken.textContent = 'NONE';
       docCurrentPatient.textContent = 'No Patient Currently in Consultation';
@@ -1091,13 +1130,22 @@ function renderNowServing() {
 // --- Live OPD Queue Workflow & Calling Engine ---
 async function callPatientToken(doctorId) {
   try {
-    const activeDocId = doctorId || (appState.currentUser && appState.currentUser.role === 'Doctor' ? (appState.currentUser.docId || appState.currentUser.id) : 'doc-1');
-    const res = await api.callNextToken(activeDocId);
+    let targetDocId = doctorId;
+    if (!targetDocId || targetDocId.startsWith('usr-adm') || appState.currentUser?.role === 'Admin') {
+      const nextWaitingToken = appState.queue?.find(q => q.status === 'WAITING' || q.status === 'Waiting');
+      if (nextWaitingToken && nextWaitingToken.doctorId) {
+        targetDocId = nextWaitingToken.doctorId;
+      } else {
+        targetDocId = 'doc-1';
+      }
+    }
+
+    const res = await api.callNextToken(targetDocId);
     if (res.success) {
-      showToast(res.message || 'Calling next patient!', 'success');
+      showToast(res.message || 'Calling next patient into consultation chamber!', 'success');
       await loadAppData();
     } else {
-      showToast(res.message || 'No waiting patients for this doctor', 'info');
+      showToast(res.message || 'No waiting patients in queue', 'info');
     }
   } catch (err) {
     console.error('Call next error:', err);
@@ -1109,10 +1157,12 @@ async function completeConsultationCurrentDoctor() {
   const activePt = appState.queue.find(q => q.status === 'IN_CONSULTATION' || q.status === 'In Consultation');
   if (activePt) {
     try {
-      const res = await api.updateQueueStatus(activePt.id, 'COMPLETED');
+      const res = await api.updateQueueStatus(activePt.id || activePt._id || activePt.tokenNumber, 'COMPLETED');
       if (res.success) {
-        showToast(`Consultation completed for ${activePt.patientName} (${activePt.tokenNumber}). Sheet closed.`, 'success');
+        showToast(`Consultation completed for ${activePt.patientName} (${activePt.tokenNumber}).`, 'success');
         await loadAppData();
+      } else {
+        showToast(res.message || 'Failed to complete consultation.', 'warning');
       }
     } catch (err) {
       showToast('Error completing consultation.', 'danger');
