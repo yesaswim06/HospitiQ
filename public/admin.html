@@ -77,12 +77,12 @@
 
       <!-- SIDEBAR USER FOOTER -->
       <div class="sidebar-user-footer">
-        <div class="user-avatar-circle" id="userAvatar" title="Administrator Profile">A</div>
+        <div class="user-avatar-circle" id="userAvatar" title="Administrator Profile">?</div>
         <div class="user-info-text sidebar-user-info">
-          <span class="user-name" id="userNameLabel">Dr. Rajesh Sharma</span>
-          <span class="user-role-badge" id="userRoleBadge">Hospital Admin</span>
+          <span class="user-name" id="userNameLabel">Admin Sign In</span>
+          <span class="user-role-badge" id="userRoleBadge">Verification Required</span>
         </div>
-        <button class="logout-icon-btn" id="logoutBtn" title="Return to Home"><i data-lucide="log-out"></i></button>
+        <button class="logout-icon-btn" id="logoutBtn" onclick="switchAdminAccount()" title="Switch Admin Account"><i data-lucide="log-out"></i></button>
       </div>
     </aside>
 
@@ -140,6 +140,53 @@
       <!-- VIEW PANELS CONTAINER -->
       <main class="content-container">
         
+        <!-- 1. ADMIN AUTH & COMMAND ACCESS GATE (Visible when not verified) -->
+        <div class="glass-card margin-b-lg" id="adminAuthGate" style="display: block;">
+          <div class="text-center padding-b-md">
+            <div class="mtx-b2b-badge margin-b-xs">
+              <span class="badge-pill purple-pill"><i data-lucide="shield-check"></i> Hospital Command Center Security Gate</span>
+            </div>
+            <h2 class="margin-t-xs">Hospital Administrator Sign In</h2>
+            <p class="sub-text">Enter your administrator access email or security passkey to access the command center.</p>
+          </div>
+
+          <form id="adminGateLoginForm" class="login-form" style="max-width: 520px; margin: 0 auto;" onsubmit="handleAdminGateLogin(event)">
+            <div class="form-group">
+              <label>Administrator Email / ID</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="mail"></i>
+                <input type="text" id="gateAdmIdentifier" required placeholder="admin@hospitiq.org" class="glass-input" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Security Key / Master Password (Optional for Demo)</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="lock"></i>
+                <input type="password" id="gateAdmPin" placeholder="••••••••" class="glass-input" />
+              </div>
+            </div>
+
+            <div class="demo-cred-hint" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.2);">
+              <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">
+                <i data-lucide="key" style="width: 16px; height: 16px;"></i> <span>Administrator Demo Credentials (Click to Auto-fill):</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <button type="button" class="badge-pill purple-pill" style="cursor: pointer; border: 1px solid rgba(168, 85, 247, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateAdmIdentifier').value='admin@hospitiq.org';">
+                  🛡️ Admin Command (<code>admin@hospitiq.org</code>)
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="action-btn glow-btn width-full margin-t-md">
+              <i data-lucide="shield-check"></i> Authenticate & Enter Command Center
+            </button>
+          </form>
+        </div>
+
+        <!-- 2. ADMIN ACTIVE COMMAND CONTAINER (Visible after authentication) -->
+        <div id="adminActiveCommand" style="display: none;">
+
         <!-- OVERVIEW DASHBOARD VIEW -->
         <section id="view-dashboard" class="view-panel active">
           
@@ -149,6 +196,7 @@
               <p>Real-time Hospital Operations Overview & Patient-Flow Command Center.</p>
             </div>
             <div class="action-row">
+              <button class="glass-btn small-btn" onclick="switchAdminAccount()"><i data-lucide="user-x"></i> Switch Admin Account</button>
               <button class="glass-btn" onclick="openRecommendBedModal()"><i data-lucide="sparkles"></i> Bed Recommend</button>
               <button class="action-btn glow-btn" onclick="switchView('opd-queue')"><i data-lucide="ticket"></i> OPD Queue Terminal</button>
             </div>
@@ -778,6 +826,8 @@
             </div>
           </div>
         </section>
+
+        </div> <!-- /#adminActiveCommand -->
 
       </main>
     </div>

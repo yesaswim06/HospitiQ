@@ -445,33 +445,94 @@ app.post('/api/auth/login', rateLimiter, async (req, res) => {
         });
       }
     } else if (role === 'Doctor') {
-      const lookupEmail = (email || identifier || '').trim();
+      const lookup = (email || identifier || '').trim();
       if (isDBConnected()) {
-        const docUser = await User.findOne({ role: 'Doctor', ...(lookupEmail ? { email: new RegExp(`^${lookupEmail}$`, 'i') } : {}) });
+        const docUser = await User.findOne({
+          role: 'Doctor',
+          ...(lookup ? { $or: [{ email: new RegExp(`^${lookup}$`, 'i') }, { name: new RegExp(lookup, 'i') }] } : {})
+        });
         if (docUser) user = docUser.toObject();
+
+        if (!user && lookup) {
+          const docDoc = await Doctor.findOne({
+            $or: [
+              { email: new RegExp(`^${lookup}$`, 'i') },
+              { name: new RegExp(lookup, 'i') },
+              { docId: new RegExp(`^${lookup}$`, 'i') }
+            ]
+          });
+          if (docDoc) {
+            user = {
+              id: docDoc.docId || docDoc._id.toString(),
+              docId: docDoc.docId || 'doc-1',
+              name: docDoc.name,
+              role: 'Doctor',
+              department: docDoc.department,
+              specialization: docDoc.specialization,
+              email: docDoc.email || 'doctor@hospitiq.org',
+              room: docDoc.room || 'OPD Room #104'
+            };
+          }
+        }
       }
+
       if (!user) {
-        if (lookupEmail) {
-          const memDoc = store.users.find(u => u.role === 'Doctor' && u.email && u.email.toLowerCase() === lookupEmail.toLowerCase());
-          if (memDoc) user = memDoc;
+        if (lookup) {
+          const memDoc = store.doctors.find(d => 
+            (d.email && d.email.toLowerCase() === lookup.toLowerCase()) ||
+            (d.name && d.name.toLowerCase().includes(lookup.toLowerCase())) ||
+            (d.docId && d.docId.toLowerCase() === lookup.toLowerCase()) ||
+            lookup.toLowerCase().includes('doctor')
+          ) || store.users.find(u => u.role === 'Doctor' && (u.email.toLowerCase() === lookup.toLowerCase() || u.name.toLowerCase().includes(lookup.toLowerCase())));
+          
+          if (memDoc) {
+            user = {
+              id: memDoc.docId || memDoc.id || 'doc-1',
+              docId: memDoc.docId || memDoc.id || 'doc-1',
+              name: memDoc.name,
+              role: 'Doctor',
+              department: memDoc.department,
+              specialization: memDoc.specialization || 'Attending Physician',
+              email: memDoc.email || 'doctor@hospitiq.org',
+              room: memDoc.room || 'OPD Room #104'
+            };
+          }
         }
         if (!user) {
-          user = store.users.find(u => u.role === 'Doctor') || { id: 'usr-doc-1', name: 'Dr. Sunita Rao', role: 'Doctor', department: 'Cardiology', email: 'doctor@hospitiq.org' };
+          user = {
+            id: 'doc-1',
+            docId: 'doc-1',
+            name: 'Dr. Sunita Rao',
+            role: 'Doctor',
+            department: 'Cardiology',
+            specialization: 'Interventional Cardiology',
+            email: 'doctor@hospitiq.org',
+            room: 'OPD Room #104'
+          };
         }
       }
     } else {
-      const lookupEmail = (email || identifier || '').trim();
+      const lookup = (email || identifier || '').trim();
       if (isDBConnected()) {
-        const admUser = await User.findOne({ role: 'Admin', ...(lookupEmail ? { email: new RegExp(`^${lookupEmail}$`, 'i') } : {}) });
+        const admUser = await User.findOne({
+          role: 'Admin',
+          ...(lookup ? { $or: [{ email: new RegExp(`^${lookup}$`, 'i') }, { name: new RegExp(lookup, 'i') }] } : {})
+        });
         if (admUser) user = admUser.toObject();
       }
       if (!user) {
-        if (lookupEmail) {
-          const memAdm = store.users.find(u => u.role === 'Admin' && u.email && u.email.toLowerCase() === lookupEmail.toLowerCase());
+        if (lookup) {
+          const memAdm = store.users.find(u => u.role === 'Admin' && (u.email.toLowerCase() === lookup.toLowerCase() || u.name.toLowerCase().includes(lookup.toLowerCase())));
           if (memAdm) user = memAdm;
         }
         if (!user) {
-          user = store.users.find(u => u.role === 'Admin') || { id: 'usr-adm-1', name: 'Dr. Vikramaditya Roy', role: 'Admin', department: 'Administration', email: 'admin@hospitiq.org' };
+          user = {
+            id: 'usr-adm-1',
+            name: 'Dr. Rajesh Sharma',
+            role: 'Admin',
+            department: 'Hospital Administration',
+            email: 'admin@hospitiq.org'
+          };
         }
       }
     }

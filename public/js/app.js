@@ -64,17 +64,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       showPatientAuthGate();
     }
   } else if (pageRole === 'Doctor' || path.endsWith('/doctor') || path.endsWith('/doctor.html')) {
-    const defaultDoctor = (appState.currentUser && appState.currentUser.role === 'Doctor')
-      ? appState.currentUser
-      : { name: 'Dr. Sunita Rao', role: 'Doctor', email: 'doctor@hospitiq.org', department: 'Cardiology', docId: 'doc-1' };
-    await launchPortal(defaultDoctor, 'doctor-portal', false);
+    if (appState.currentUser && appState.currentUser.role === 'Doctor') {
+      await launchPortal(appState.currentUser, 'doctor-portal', false);
+    } else {
+      showDoctorAuthGate();
+    }
   } else if (pageRole === 'Admin' || path.endsWith('/admin') || path.endsWith('/admin.html')) {
-    const defaultAdmin = (appState.currentUser && appState.currentUser.role === 'Admin')
-      ? appState.currentUser
-      : { name: 'Dr. Rajesh Sharma', role: 'Admin', email: 'admin@hospitiq.org', department: 'Hospital Administration' };
-    await launchPortal(defaultAdmin, 'dashboard', false);
+    if (appState.currentUser && appState.currentUser.role === 'Admin') {
+      await launchPortal(appState.currentUser, 'dashboard', false);
+    } else {
+      showAdminAuthGate();
+    }
   } else {
-    // If user has existing active session, restore portal
+    // If user has existing active session on landing page, launch appropriate portal
     if (appState.sessionToken && appState.currentUser) {
       const defaultView = appState.currentUser.role === 'Patient' ? 'patient-portal' 
         : (appState.currentUser.role === 'Doctor' ? 'doctor-portal' : 'dashboard');
@@ -545,12 +547,19 @@ async function launchPortal(user, defaultView, loadData = true) {
 
   switchView(safeTargetView);
 
-  if (loadData) {
-    await loadAppData();
+  if (user.role === 'Doctor') {
+    showDoctorActiveTerminal();
+  } else if (user.role === 'Admin') {
+    showAdminActiveCommand();
+  } else if (user.role === 'Patient') {
+    showPatientActivePass();
+    if (user.tokenNumber) {
+      loadPatientTokenData(user.tokenNumber);
+    }
   }
 
-  if (user.role === 'Patient' && user.tokenNumber) {
-    loadPatientTokenData(user.tokenNumber);
+  if (loadData) {
+    await loadAppData();
   }
 
   lucide.createIcons();
@@ -2718,4 +2727,196 @@ function switchPatientAccount() {
   showPatientAuthGate();
   showToast('Signed out of patient session.', 'info');
 }
+
+// --- Doctor Portal Gate Controls & Identity Verification ---
+function showDoctorAuthGate() {
+  const appShell = document.getElementById('appShell');
+  if (appShell) {
+    appShell.classList.remove('hidden');
+    appShell.style.display = 'flex';
+  }
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (landingWrapper) {
+    landingWrapper.classList.add('hidden');
+    landingWrapper.style.display = 'none';
+  }
+
+  const gate = document.getElementById('doctorAuthGate');
+  const term = document.getElementById('doctorActiveTerminal');
+  if (gate) gate.style.display = 'block';
+  if (term) term.style.display = 'none';
+
+  const userAvatar = document.getElementById('userAvatar');
+  const userNameLabel = document.getElementById('userNameLabel');
+  const userRoleBadge = document.getElementById('userRoleBadge');
+  if (userAvatar) userAvatar.textContent = '?';
+  if (userNameLabel) userNameLabel.textContent = 'Doctor Sign In';
+  if (userRoleBadge) userRoleBadge.textContent = 'Verification Required';
+  lucide.createIcons();
+}
+
+function showDoctorActiveTerminal() {
+  const appShell = document.getElementById('appShell');
+  if (appShell) {
+    appShell.classList.remove('hidden');
+    appShell.style.display = 'flex';
+  }
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (landingWrapper) {
+    landingWrapper.classList.add('hidden');
+    landingWrapper.style.display = 'none';
+  }
+
+  const gate = document.getElementById('doctorAuthGate');
+  const term = document.getElementById('doctorActiveTerminal');
+  if (gate) gate.style.display = 'none';
+  if (term) term.style.display = 'block';
+
+  if (appState.currentUser && appState.currentUser.role === 'Doctor') {
+    const doc = appState.currentUser;
+    const userAvatar = document.getElementById('userAvatar');
+    const userNameLabel = document.getElementById('userNameLabel');
+    const userRoleBadge = document.getElementById('userRoleBadge');
+    if (userAvatar) userAvatar.textContent = doc.name ? doc.name.charAt(0).toUpperCase() : 'D';
+    if (userNameLabel) userNameLabel.textContent = doc.name;
+    if (userRoleBadge) userRoleBadge.textContent = `${doc.specialization || 'Attending Physician'} (${doc.department || 'Cardiology'})`;
+
+    const greeting = document.getElementById('docHeaderGreeting');
+    if (greeting) greeting.textContent = `${doc.name} — Consultation Terminal`;
+  }
+
+  lucide.createIcons();
+}
+
+async function handleDoctorGateLogin(e) {
+  e.preventDefault();
+  const identifier = document.getElementById('gateDocIdentifier')?.value?.trim();
+  const pin = document.getElementById('gateDocPin')?.value?.trim();
+
+  if (!identifier) {
+    showToast('Please enter your doctor account email or name.', 'warning');
+    return;
+  }
+
+  try {
+    const res = await api.login({ role: 'Doctor', email: identifier, identifier, password: pin });
+    if (res.success && res.user) {
+      appState.sessionToken = res.token || 'doc-session';
+      appState.currentUser = res.user;
+      sessionStorage.setItem('hospitiq_auth_token', appState.sessionToken);
+      sessionStorage.setItem('hospitiq_user', JSON.stringify(res.user));
+      showToast(`Welcome, ${res.user.name}! (${res.user.department})`, 'success');
+      showDoctorActiveTerminal();
+      await launchPortal(res.user, 'doctor-portal', true);
+    } else {
+      showToast(res.message || 'Invalid doctor credentials.', 'danger');
+    }
+  } catch (err) {
+    console.error('Doctor login error:', err);
+    showToast('Error connecting to authentication server.', 'danger');
+  }
+}
+
+function switchDoctorAccount() {
+  appState.currentUser = null;
+  sessionStorage.removeItem('hospitiq_user');
+  sessionStorage.removeItem('hospitiq_auth_token');
+  showDoctorAuthGate();
+  showToast('Signed out of doctor terminal.', 'info');
+}
+
+// --- Admin Portal Gate Controls & Identity Verification ---
+function showAdminAuthGate() {
+  const appShell = document.getElementById('appShell');
+  if (appShell) {
+    appShell.classList.remove('hidden');
+    appShell.style.display = 'flex';
+  }
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (landingWrapper) {
+    landingWrapper.classList.add('hidden');
+    landingWrapper.style.display = 'none';
+  }
+
+  const gate = document.getElementById('adminAuthGate');
+  const cmd = document.getElementById('adminActiveCommand');
+  if (gate) gate.style.display = 'block';
+  if (cmd) cmd.style.display = 'none';
+
+  const userAvatar = document.getElementById('userAvatar');
+  const userNameLabel = document.getElementById('userNameLabel');
+  const userRoleBadge = document.getElementById('userRoleBadge');
+  if (userAvatar) userAvatar.textContent = '?';
+  if (userNameLabel) userNameLabel.textContent = 'Admin Sign In';
+  if (userRoleBadge) userRoleBadge.textContent = 'Verification Required';
+  lucide.createIcons();
+}
+
+function showAdminActiveCommand() {
+  const appShell = document.getElementById('appShell');
+  if (appShell) {
+    appShell.classList.remove('hidden');
+    appShell.style.display = 'flex';
+  }
+  const landingWrapper = document.getElementById('publicLandingPage');
+  if (landingWrapper) {
+    landingWrapper.classList.add('hidden');
+    landingWrapper.style.display = 'none';
+  }
+
+  const gate = document.getElementById('adminAuthGate');
+  const cmd = document.getElementById('adminActiveCommand');
+  if (gate) gate.style.display = 'none';
+  if (cmd) cmd.style.display = 'block';
+
+  if (appState.currentUser && appState.currentUser.role === 'Admin') {
+    const adm = appState.currentUser;
+    const userAvatar = document.getElementById('userAvatar');
+    const userNameLabel = document.getElementById('userNameLabel');
+    const userRoleBadge = document.getElementById('userRoleBadge');
+    if (userAvatar) userAvatar.textContent = 'A';
+    if (userNameLabel) userNameLabel.textContent = adm.name || 'Hospital Admin';
+    if (userRoleBadge) userRoleBadge.textContent = 'Hospital Administration';
+  }
+
+  lucide.createIcons();
+}
+
+async function handleAdminGateLogin(e) {
+  e.preventDefault();
+  const identifier = document.getElementById('gateAdmIdentifier')?.value?.trim();
+  const pin = document.getElementById('gateAdmPin')?.value?.trim();
+
+  if (!identifier) {
+    showToast('Please enter your administrator email.', 'warning');
+    return;
+  }
+
+  try {
+    const res = await api.login({ role: 'Admin', email: identifier, identifier, password: pin });
+    if (res.success && res.user) {
+      appState.sessionToken = res.token || 'adm-session';
+      appState.currentUser = res.user;
+      sessionStorage.setItem('hospitiq_auth_token', appState.sessionToken);
+      sessionStorage.setItem('hospitiq_user', JSON.stringify(res.user));
+      showToast(`Welcome, Administrator ${res.user.name}!`, 'success');
+      showAdminActiveCommand();
+      await launchPortal(res.user, 'dashboard', true);
+    } else {
+      showToast(res.message || 'Invalid administrator credentials.', 'danger');
+    }
+  } catch (err) {
+    console.error('Admin login error:', err);
+    showToast('Error connecting to authentication server.', 'danger');
+  }
+}
+
+function switchAdminAccount() {
+  appState.currentUser = null;
+  sessionStorage.removeItem('hospitiq_user');
+  sessionStorage.removeItem('hospitiq_auth_token');
+  showAdminAuthGate();
+  showToast('Signed out of administrator session.', 'info');
+}
+
 

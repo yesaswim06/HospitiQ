@@ -133,14 +133,71 @@
       <!-- VIEW PANELS CONTAINER -->
       <main class="content-container">
         
+        <!-- 1. DOCTOR AUTH & ACCESS GATE (Visible when not verified) -->
+        <div class="glass-card margin-b-lg" id="doctorAuthGate" style="display: block;">
+          <div class="text-center padding-b-md">
+            <div class="mtx-b2b-badge margin-b-xs">
+              <span class="badge-pill blue-pill"><i data-lucide="stethoscope"></i> Physician Identity & Consultation Access</span>
+            </div>
+            <h2 class="margin-t-xs">Doctor Consultation Terminal Sign In</h2>
+            <p class="sub-text">Enter your registered physician email or select your department roster account below.</p>
+          </div>
+
+          <form id="doctorGateLoginForm" class="login-form" style="max-width: 520px; margin: 0 auto;" onsubmit="handleDoctorGateLogin(event)">
+            <div class="form-group">
+              <label>Doctor Account Email / ID</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="mail"></i>
+                <input type="text" id="gateDocIdentifier" required placeholder="e.g. doctor@hospitiq.org or Dr. Sunita Rao" class="glass-input" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Access PIN / Passcode (Optional for Demo)</label>
+              <div class="input-icon-wrapper">
+                <i data-lucide="lock"></i>
+                <input type="password" id="gateDocPin" placeholder="••••••••" class="glass-input" />
+              </div>
+            </div>
+
+            <div class="demo-cred-hint" style="margin-top: 12px; padding: 12px; border-radius: 8px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2);">
+              <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">
+                <i data-lucide="key" style="width: 16px; height: 16px;"></i> <span>Select Attending Physician Roster (Click to Auto-fill):</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='doctor@hospitiq.org';">
+                  🩺 Dr. Sunita Rao (Cardiology)
+                </button>
+                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='vikram@hospitiq.org';">
+                  🩺 Dr. Vikram Malhotra (General Medicine)
+                </button>
+                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='ananya@hospitiq.org';">
+                  🩺 Dr. Ananya Reddy (Orthopedics)
+                </button>
+                <button type="button" class="badge-pill blue-pill" style="cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('gateDocIdentifier').value='priya@hospitiq.org';">
+                  🩺 Dr. Priya Patel (Neurology)
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="action-btn glow-btn width-full margin-t-md">
+              <i data-lucide="log-in"></i> Authenticate & Open Consultation Terminal
+            </button>
+          </form>
+        </div>
+
+        <!-- 2. DOCTOR ACTIVE TERMINAL (Visible after physician verification) -->
+        <div id="doctorActiveTerminal" style="display: none;">
+        
         <!-- DOCTOR PORTAL VIEW -->
         <section id="view-doctor-portal" class="view-panel active">
           <div class="view-header">
             <div>
-              <h1>Doctor Consultation Terminal</h1>
+              <h1 id="docHeaderGreeting">Doctor Consultation Terminal</h1>
               <p>Room-specific patient roster categorized by emergency priority level and vital signs.</p>
             </div>
             <div class="action-row">
+              <button class="glass-btn small-btn" onclick="switchDoctorAccount()"><i data-lucide="user-x"></i> Switch Doctor Account</button>
               <button class="action-btn glow-btn" onclick="openNewTokenModal()"><i data-lucide="plus-circle"></i> + Register New Patient</button>
             </div>
           </div>
@@ -453,6 +510,8 @@
             </table>
           </div>
         </section>
+
+        </div> <!-- /#doctorActiveTerminal -->
 
       </main>
     </div>
